@@ -1,0 +1,2314 @@
+---
+title: "Migración reciente 2010 - 2015"
+author: "CONAPO"
+output:
+   html_document:
+      highlight: tango
+      theme: flatly
+      toc: yes
+      toc_depth: 2
+      toc_float:
+        collapsed: yes
+---
+
+\usepackage{color}
+
+```{=html}
+<style>
+code.r{
+  font-size: 10px;
+}
+pre {
+  font-size: 12px
+}
+</style>
+
+<style>
+body {
+text-align: justify;
+font-style: normal;
+font-family: "Montserrat";
+font-size: 12px
+}
+h1.title {
+  font-size: 40px;
+  color: #000D3B;
+}
+h1 {
+  color: #B6854D;
+}
+h2 {
+  color: #172984;
+}
+h3 {
+  color: #172984;
+}
+</style>
+```
+
+```{=html}
+<style>
+.nav>li>a {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    color: #0A2687;
+}
+.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
+    color: #ffffff;
+    background-color: #09C2BC;
+}
+</style>
+```
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
+                         eval = FALSE, class.source = "fold-show")
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+options(digits = 2, encoding = "UTF8")
+```   
+ 
+
+```{r, echo=FALSE}
+rm(list = ls())
+```
+
+```{r, echo=FALSE}
+setwd(here::here())
+```
+
+
+```{r, echo=FALSE}
+#Font Stlye
+require(showtext)
+library(extrafont)
+# activar showtext
+showtext_auto()
+#font_add_google("Montserrat", "montserrat")
+#font_add_google("Raleway", "Raleway")
+loadfonts(device = "win")
+font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+```
+
+
+
+```{r, echo = FALSE}
+# Librerías que se usaron en el documCVE_ENTo
+require(chorddiag)
+require(circlize)
+require(haven)
+require(Hmisc) # %nin%
+require(dplyr)
+require(survey)
+require(srvyr)
+require(stringr)
+require(sna)
+require(expss)
+require(knitr)
+require(kableExtra)
+require(sjlabelled)
+require(gt)
+require(ggplot2)
+require(ggpubr)
+require(ggalluvial)
+require(ggsankey)
+require(ggrepel)
+require(tibble)
+require(tidyr)
+require(reshape2)
+require(openxlsx)
+```
+
+**Encuesta Intercensal 2015**
+
+La Encuesta Intercensal se guarda en un un archivo `.RData`. 
+
+```{r, eval = FALSE}
+data <- read_sav("~/Persona.-Encuesta Intercensal 2015.sav")
+#data <- data %>%
+ #        select(., c(1:96)) %>%
+  #        select(-"filter_$")
+save(data, 
+      file = paste0(here::here(), "/Bases/Encuesta Intercensal_2015.RData"))
+```
+
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.
+
+**Posibles variables que se pueden contemplar en la migración reciente**
+
+-   `EDAD`   
+-   `SEXO`  
+-   `AFRODES`\   
+-   `HLENGUA`\   
+-   `QDIALECT_INALI`    
+-   `PERTE_INDIGENA`\  
+-   `NIVACAD`   
+-   `ALFABET`   
+-   `CAUSA_MIG`\   
+-   `SITUA_CONYUGAL`\   
+-   `CONACT`\  
+-   `HIJOS_NAC_VIVOS`  
+
+La variable `mydata` contiene **15 015 683 observaciones** y **12 variables**.
+
+```{r, eval = FALSE}
+load(paste0(here::here(), "/Bases/Encuesta Intercensal_2015.RData"))
+
+mydata <- data %>%
+           select(CVE_ENT, NOM_ENT, MUN, NOM_MUN, ENT_MUN, ENT_PAIS_RES10, MUN_RES10, ENT_PAIS_RES10, EDAD, 
+                  SEXO, AFRODES, HLENGUA, QDIALECT_INALI, PERTE_INDIGENA, NIVACAD, ALFABET, 
+                  SITUA_CONYUGAL, CONACT, HIJOS_NAC_VIVOS, FACTOR, ESTRATO, UPM) %>%
+            rename("CVE_MUN" = "ENT_MUN")
+
+save(mydata, file = paste0(here::here(), "/Bases/01_Migracion interna_2015.RData"))
+```
+
+
+```{r, echo = FALSE}
+load(paste0(here::here(), "/Bases/01_Migracion interna_2015.RData"))
+```
+
+
+**Claves de entidades y municipios**
+
+Se genera un vector con el nombre de las entdades llamado `estados` para facilitar los filtros en el documento.\  
+Se genera un vector con las abreviaturas de las entidades llamado `est` para fines prácticos.\      
+Se genera un vector con las claves de los municipios, pero es importante hacer notar que tres municipios no entraron el muestreo la Encuesta Intercensal.      
+
+```{r}
+# Claves de los estados
+estados <- sjlabelled::get_labels(mydata$CVE_ENT)
+nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza", "Colima", 
+                  "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",        
+                  "México", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", 
+                  "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", 
+                  "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas")
+est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO",
+         "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", 
+         "TAMS", "TLX", "VER", "YUC", "ZAC")
+
+# Claves de los municipios
+MUN <- readRDS(paste0(here::here(), "/Bases/municipios_2015.RDS"))
+nom_municipios <- sjlabelled::get_labels(MUN$NOM_MUN) %>% as.factor()
+municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
+```
+
+
+**Población de 5 años y más**
+
+Se identifica a la población de 5 años y más.
+
+`filter(EDAD >= 5 & EDAD != 999)'.`
+
+```{r}
+Pob.5ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 5 & EDAD <= 130) %>%
+                 filter(ENT_PAIS_RES10 %in% estados)  # Filtro del lugar de residencia dentro del país. 
+```
+
+```{r, echo = FALSE}
+# Población de 5 años y más
+tabla <- Pob.5ymas %>%
+          summarise(Pob_5ymas = sum(.$FACTOR))
+
+as.integer(tabla) %>%  
+ as.data.frame() %>%
+  mutate(across(where(is.numeric), ~ prettyNum(., big.mark = " ", preserve.width = "none"))) %>%
+   gt() %>% 
+    tab_header(title = "Población de 5 años y más") %>%
+     tab_options(heading.title.font.size = 12, 
+                 heading.align = "center",
+                 heading.subtitle.font.size = 10,
+                 table.align = "center",
+                 column_labels.font.weight = "bold",
+                 table.font.names = 'montserrat',
+                 table.font.size = 8) %>%  
+      as_raw_html()
+```
+
+# Nivel estatal {.tabset .tabset-pills}
+
+## Migración reciente {.tabset .tabset-pills}
+
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.
+
+```{r, eval = FALSE}
+options(survey.lonely.psu = "adjust")
+
+MC <- mydata %>%
+       as.data.frame() %>%
+        mutate(EDAD = as.numeric(.$EDAD)) %>%
+         subset(EDAD >= 5 & EDAD <= 130) %>%
+          filter(ENT_PAIS_RES10 %in% estados) %>%
+           svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2015/MC_estado.RDS"))
+```
+
+```{r}
+MC <- readRDS(paste0(here::here(), "/Output/Estado/01_Migracion reciente/2015/MC_estado.RDS"))
+
+Migrantes <- svytable(~ENT_PAIS_RES10 + CVE_ENT, design = MC) 
+```
+
+La función `cross_cases()` de la paquetería `expss`  se utiliza para crear tablas de contingencia cruzadas a partir de dos o más variables categóricas. Utilizando el comando `weight`, permite ponderar las observaciones "factores de expansión" en la tabla.   
+
+Se quita la diagonal a la matriz cruadrada con la función `diag.remove()` de la paquetería `sna`, donde esta función reemplaza los elemCVE_ENTos de la diagonal principal de una matriz por un valor nulo o por el valor especifico.   
+
+
+```{r}
+Migrantes <- Migrantes %>%
+              as.data.frame() %>%
+               expss::cross_cases(CVE_ENT, ENT_PAIS_RES10, weight = Freq) %>%
+                as.data.frame() %>%
+                 slice(-33) %>% 
+                  select(-row_labels) 
+
+rownames(Migrantes)<- nom_estados
+colnames(Migrantes) <- nom_estados
+
+save(Migrantes, file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2015/Matriz de migracion reciente a nivel estatal 2010-2015.RData"))
+
+wb <- createWorkbook()
+addWorksheet(wb, "MREst. 2010-2015")
+writeData(wb, 1, Migrantes, colNames = TRUE, rowNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2015/Matriz de migracion reciente a nivel estatal 2010-2015.xlsx"), overwrite = TRUE)
+```
+
+**Matriz de migración reciente hace 5 años a nivel estatal, 2010 - 2015**
+
+::: {style="height:500px;overflow:auto;"}
+```{r, echo = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2015/Matriz de migracion reciente a nivel estatal 2010-2015.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "Entidad")  
+
+tabla %>%  
+ gt() %>% 
+   tab_header(title = "Matriz de migración reciente 2010 - 2015", 
+              subtitle = "Nivel estatal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+      tab_style(style = list(cell_text(align = "center",
+                                       weight = 'bold')),
+                locations = list(cells_title(groups = c("title")))) %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       sub_missing(columns = everything(), missing_text = "0") %>%
+        as_raw_html()
+```
+:::
+
+## Gráfico dinámico
+
+Gráfico dinámico de migración reciente a nivel estatal.
+
+```{r, fig.width=7, fig.height=5, fig.align='center'}
+#devtools::install_github("mattflor/chorddiag")
+require(chorddiag)
+
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2015/Matriz de migracion reciente a nivel estatal 2010-2015.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0) 
+
+# Paleta de colores
+groupColors <- viridis::viridis(32, option = "A")
+
+
+p <- chorddiag(tabla, 
+               groupColors = groupColors, 
+               groupnamePadding = 10, 
+               height = 500, 
+               width = 500,
+               margin = 60,
+               groupThickness = 0.07,
+               groupPadding = 1,
+               groupnameFontsize = 10,
+               fadeLevel = 1,
+               chordedgeColor = "#D0D0CF", 
+               showTicks = TRUE)
+
+p
+require(htmlwidgets)
+htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2015/MR5a a nivel estatal 2010 - 2015.html"), selfcontained = TRUE)
+#require(webshot)
+#webshot(url = paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2015/MR5a a nivel estatal 2010 - 2015.html"),
+ #         file = paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2015/MR5a a nivel estatal 2010 - 2015.png"),
+  #                cliprect = "viewport")
+```
+
+## Gráficos {.tabset .tabset-pills}
+
+### ChordDiagram
+
+```{r, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2015/Matriz de migracion reciente a nivel estatal 2010-2015.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0)  
+
+rownames(tabla) <- stringr::str_wrap(nom_estados, 15)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 15)
+```
+
+```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
+# Paleta de colores
+groupColors <- viridis::viridis(32, option = "A")
+
+circos.clear()
+pdf(paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2015/ChordDiagram de MR5a a nivel estatal.pdf"), width = 20, height = 20)
+circos.par(start.degree = 90, 
+           gap.degree = 3, 
+           track.margin = c(-0.1, 0.1), 
+           points.overflow.warning = FALSE)
+
+par(mar = rep(0, 4))
+
+chordDiagram(x  = tabla, 
+             grid.col = groupColors,
+             order = union(rownames(estados), colnames(estados)),
+             keep.diagonal = FALSE,
+             transparency = 0.25,
+             directional = 1,
+             direction.type = c("arrows", "diffHeight"), 
+             diffHeight  = -0.04,
+             annotationTrack = "grid", 
+             annotationTrackHeight = mm_h(c(10)),
+             preAllocateTracks = 1, 
+             big.gap = 40,
+             link.arr.type = "big.arrow", 
+             link.lwd = 0.5,
+             link.visible = TRUE,
+             link.largest.ontop = FALSE)
+
+# Add text and axis
+circos.trackPlotRegion(track.index = 1,
+                       bg.border = NA, 
+                       panel.fun = function(x, y) {
+                                                   xlim = get.cell.meta.data("xlim")
+                                                   ylim = get.cell.meta.data("ylim")
+                                                   sector.name = get.cell.meta.data("sector.index")
+                                                 # Add names to the sector. 
+                                                   circos.text(x = mean(xlim), 
+                                                               y = ylim[1] + 0.5, 
+                                                               labels = sector.name, 
+                                                               facing = "clockwise",
+                                                               niceFacing = TRUE, 
+                                                               adj = c(-0.01, 0), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(20),
+                                                               col = groupColors,
+                                                               font = 2)
+                                                 # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 100, 500, 1000, 5000, 10000,30000,50000,100000, 200000),
+                                                               major.tick.length = 0.5,
+                                                               minor.ticks = 4, 
+                                                               labels.cex = fontsize(12),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                   }
+)
+dev.off()
+```
+
+#### Gráfico por estados
+
+Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
+
+```{r, results=FALSE, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2015/Matriz de migracion reciente a nivel estatal 2010-2015.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0)  
+
+rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
+
+# Nombre de los estados 
+estado <- stringr::str_wrap(nom_estados, 50)
+
+filtro_est <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) 
+
+tabla1 <- lapply(1:32, function(x){
+                         filtro_rn  <- filtro_est %>%
+                                        mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                         group_by(rn) %>%
+                                          summarise(Inm = sum(value, na.rm = TRUE))
+
+                         filtro_cn  <- filtro_est %>%
+                                        mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                         group_by(cn) %>%
+                                          summarise(Emg = sum(value, na.rm = TRUE))
+
+                         filtro <- filtro_rn %>%
+                                    full_join(., filtro_cn, by = c("rn" = "cn")) %>%
+                                     mutate(value = sum_row(.$Inm, .$Emg, na.rm = TRUE)) %>%
+                                      filter(value > 5000 & rn != estado[x]) %>%
+                                       pull(rn)
+
+                          tabla  %>%
+                           as.data.frame() %>%
+                            tibble::rownames_to_column(var = "rn") %>%
+                             melt(., id.vars = "rn", variable.name = "cn") %>%
+                              mutate_if(is.factor, as.character) %>%
+                               mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                mutate(rn = case_when(.$rn %in% estado[x] ~ .$rn,
+                                                      .$rn %in% filtro ~ .$rn,
+                                                      .$rn %nin% filtro ~ "Otros estados"),
+                                       cn = case_when(.$cn %in% estado[x] ~.$cn, 
+                                                      .$cn %in% filtro ~ .$cn,
+                                                      .$cn %nin% filtro ~ "Otros estados")) %>%
+                                 dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                               
+                                  column_to_rownames(., var = "rn") 
+  }
+)
+
+tabla2 <- lapply(1:32, function(x){
+                          # Paleta de colores 
+                           groupColors <- viridis::viridis(max(nrow(tabla1[[x]]), ncol(tabla1[[x]])), option = "A")
+                          
+                            circos.clear()
+                             chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                           grid.col = groupColors)  %>%
+                              pull(col)
+  }
+)
+```
+
+```{r, eval = FALSE, class.source = "fold-hide"}
+pdf(paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2015/ChordDiagram de MR5a desagregado por estado.pdf"), width = 20, height = 20)
+for(i in 1:32){
+# Paleta de colores 
+groupColors <- viridis::viridis(max(nrow(tabla1[[i]]), ncol(tabla1[[i]])), option = "A")
+
+circos.clear()
+circos.par(start.degree = 90, 
+           gap.degree = 3, 
+           clock.wise = FALSE,
+           track.margin = c(-0.07, 0.1), 
+           points.overflow.warning = FALSE)
+
+chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
+             grid.col = groupColors,
+             col = tabla2[[i]],
+             #order = union(rownames(estados), colnames(estados)),
+             keep.diagonal = FALSE,
+             transparency =  0,
+             directional = 1,
+             direction.type = c("arrows", "diffHeight"), 
+             diffHeight  = -0.04, # adjust the starting end of the link
+             annotationTrack = "grid", 
+             annotationTrackHeight = c(0.05, 0.1),
+             preAllocateTracks = 1, 
+             big.gap = 40, # Gap between row sectors and column sectors.
+             link.arr.type = "big.arrow", 
+             link.lwd = 3,    # Line width width for link borders
+             link.lty = 1,
+             link.visible = TRUE,
+             link.largest.ontop = TRUE)
+
+# Add text and axis
+circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
+                       bg.border = NA, 
+                       panel.fun = function(x, y) {
+                                                   xlim = get.cell.meta.data("xlim")
+                                                   ylim = get.cell.meta.data("ylim")
+                                                   sector.name = get.cell.meta.data("sector.index")
+                                                  # Add names to the sector. 
+                                                   circos.text(x = mean(xlim), 
+                                                               y = ylim[1] + 0.1, 
+                                                               labels = sector.name, 
+                                                               facing = "clockwise",
+                                                               niceFacing = TRUE, 
+                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(20),
+                                                               col = groupColors,
+                                                               font = 1)
+                                                  # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               major.tick.length = 0.5,
+                                                               minor.ticks = 4, 
+                                                               labels.cex = fontsize(12),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                }
+  )
+}
+dev.off()
+```
+
+### Gráfico Sankey
+
+```{r, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2015/Matriz de migracion reciente a nivel estatal 2010-2015.RData"))
+
+Migrantes <- Migrantes %>%
+              sna::diag.remove(remove.val = 0)  
+
+rownames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
+colnames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
+
+# Matiz migración interna (Población de 5 años y más)
+tabla <- Migrantes %>% 
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             as_tibble() %>%
+              mutate(rn = forcats::fct_relevel(.$rn, nom_estados),
+                     cn = forcats::fct_relevel(.$cn, nom_estados)) %>%
+               filter(value >= 0)  
+```
+
+
+```{r, eval = FALSE}
+p <- tabla %>% 
+       ggplot(aes(axis1 = rn, 
+                   axis2 = cn, 
+                    y = value),  # c("value", "freq", "tasa")
+               reverse = FALSE, 
+                na.rm = TRUE) +
+        geom_alluvium(aes(fill = rn),
+                       curve_type = "quintic", 
+                        color = "transparent", 
+                         alpha = 0.85, 
+                          lwd = 0.001, 
+                           width = 1/5,
+                            reverse = FALSE) +
+          geom_stratum(aes(fill = cn), 
+                        color = "white", 
+                         alpha = 0.65,  
+                          lwd = 0.001, 
+                           width = 1/5,
+                            reverse = FALSE) +
+           geom_text_repel(aes(label = ifelse(after_stat(x) == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""), 
+                               fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                            stat = "stratum", 
+                             size = 3, 
+                              direction = "y", 
+                               nudge_x = -.2,
+                                min.segment.length = unit(1, "lines"),
+                                 force = 1,
+                                  force_pull = 0,
+                                   family = "montserrat",
+                                    reverse = FALSE) +
+            geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                             stat = "stratum", 
+                              size = 3,
+                               direction = "y", 
+                                nudge_x = .2, 
+                                 force = 1,
+                                  force_pull = 0,
+                                   family = "montserrat",
+                                    reverse = FALSE) +
+             theme_void() + 
+              theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                     text = element_text(family = "montserrat"),
+                      axis.text = element_blank(),
+                       axis.title = element_blank(),
+                        strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                         legend.key.size = unit(0.5, "cm"),
+                          legend.text = element_text(size = 9, family = "montserrat"),
+                           legend.position = c(1, .5)) + 
+               scale_x_discrete(expand = c(-0.1, 0.35)) +
+                scale_fill_viridis_d(option = "A", end = 0.9, begin = 0.2) +
+                 guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                  labs(fill = "", 
+                       color = "")
+
+path = paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2015/GSankey de MR5a a nivel estatal.pdf")
+ggexport(p, width = 14, height = 10, dpi = 400, filename = path)
+```
+
+**Desagregado por estados**
+
+```{r, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2015/Matriz de migracion reciente a nivel estatal 2010-2015.RData"))
+
+# Se cambian las equiquetas de los estados 
+estados <- est 
+
+rownames(Migrantes) <- estados
+colnames(Migrantes) <- estados
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0) %>%
+           as.data.frame() %>%
+            tibble::rownames_to_column(var = "rn") %>% 
+             melt(., id.vars = "rn", variable.name = "cn") %>%
+              mutate_if(is.factor, as.character) %>%
+               mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% estados | .$cn %in% estados), value, 0)) %>%
+                mutate(rn = forcats::fct_relevel(.$rn, estados),
+                       cn = forcats::fct_relevel(.$cn, estados)) 
+```
+
+```{r, eval = FALSE}
+p <- lapply(1:32, function(x){
+                   tabla <- tabla %>%
+                             mutate(rn = forcats::fct_relevel(.$rn, estados),
+                                    cn = forcats::fct_relevel(.$cn, estados)) %>%
+                              mutate(value = ifelse(.$rn %in% estados[x] | .$cn %in% estados[x], value, 0)) 
+ 
+                    tabla %>% 
+                     ggplot(aes(axis1 = rn, 
+                                 axis2 = cn, 
+                                  y = value),  # c("value", "freq", "tasa")
+                             reverse = FALSE, 
+                              na.rm = TRUE) + 
+                      geom_alluvium(aes(fill = rn),  
+                                     color = "transparent", 
+                                      alpha = 0.8, 
+                                       lwd = 0.001, 
+                                        width = 1/5,
+                                         reverse = FALSE) +
+                       geom_stratum(aes(fill = rn), 
+                                     color = "#F1F1F1", 
+                                      alpha = 1, 
+                                       lwd = 0.001, 
+                                        width = 1/5,
+                                         reverse = FALSE) +
+                         geom_text_repel(aes(label = ifelse(after_stat(x)  == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                             fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                                           stat = "stratum", 
+                                            size = 3,
+                                             direction = "y", 
+                                              nudge_x = -.2, 
+                                               force = 1,
+                                                        force_pull = 0,
+                                                         family = "montserrat",
+                                                          reverse = FALSE) +
+                          geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                              fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                                           stat = "stratum", 
+                                            size = 3,
+                                             direction = "y", 
+                                              nudge_x = .2, 
+                                               force = 1,
+                                                force_pull = 0,
+                                                 family = "montserrat",
+                                                  reverse = FALSE) +
+                            theme_void() + 
+                             theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                                    text = element_text(family = "montserrat"),
+                                     axis.text = element_blank(),
+                                      axis.title = element_blank(),
+                                       strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                                        legend.key.size = unit(0.5, "cm"),
+                                         legend.text = element_text(size = 9, family = "montserrat"),
+                                          legend.position = c(1, .5)) + 
+                              scale_x_discrete(expand = c(-0.1, 0.35)) +
+                               scale_fill_viridis_d(option = "A", end = 0.9, begin = 0.2) +
+                                guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                                 labs(fill = "", 
+                                      color = "")
+              }
+)
+
+path = paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2015/GSankey de MR5a desagregado por estados_Absolutos.pdf")
+ggexport(list = p, width = 14, height = 10, dpi = 400, filename = path)
+```
+
+
+## Indicadores {.tabset .tabset-pills}
+
+Se realizan cálculos generales de migración\
+- Residentes\
+- Inmigrantes\
+- Emigrantes\
+- % Inmigrantes\
+- % Emigrante\
+- Migración bruta\
+- Migración Neta\
+- % Tasa de migración bruta\
+- % Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
+
+```{r, eval = FALSE}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_ENT) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Población de 5 años y más ###############################
+Pob.5ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset((EDAD >= 5 & EDAD <= 130)) %>%
+                 group_by(CVE_ENT) %>%
+                  summarise(Pob.5ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2015/Matriz de migracion reciente a nivel estatal 2010-2015.RData"))
+
+rownames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
+colnames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>%
+                gather(CVE_ENT, Value, -rowname)%>%
+                 filter(rowname == CVE_ENT) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+Inmigrantes <- Migrantes %>% 
+                sna::diag.remove(remove.val = 0) %>%
+                 as.data.frame() %>%
+                  tibble::rownames_to_column(var = "CVE_ENT") %>%
+                   melt(., id.vars = "CVE_ENT", variable.name = "ENT_PAIS_RES10") %>%
+                    mutate_at(vars(3), as.numeric) %>%
+                     as_tibble() %>%
+                      filter(CVE_ENT != ENT_PAIS_RES10) %>%
+                       group_by(CVE_ENT) %>%
+                        summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+Emigrantes <- Migrantes %>% 
+               sna::diag.remove(remove.val = 0) %>%
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_ENT") %>%
+                  melt(., id.vars = "CVE_ENT", variable.name = "ENT_PAIS_RES10") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_ENT != ENT_PAIS_RES10) %>%
+                      group_by(ENT_PAIS_RES10) %>%
+                       summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                        rename("CVE_ENT" = "ENT_PAIS_RES10") 
+
+tabla <- Pob.Total %>%
+          merge(., Pob.5ymas, by = c("CVE_ENT")) %>%
+          merge(., Residentes, by = c("CVE_ENT")) %>%
+          merge(., Inmigrantes, by = c("CVE_ENT")) %>%
+          merge(., Emigrantes, by = c("CVE_ENT")) %>%
+           mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                  Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                  Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2)) * 1000,
+                  Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2)) * 1000,
+                  Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                  Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2015/Indicadores de MR5a por estado 2010 - 2015.xlsx"), overwrite = TRUE)
+
+save(tabla, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2015/Indicadores de MR5a por estado 2010 - 2015.RData"))
+```
+
+```{r, echo = FALSE}
+load(file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2015/Indicadores de MR5a por estado 2010 - 2015.RData"))
+
+tabla %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  migración reciente", 
+              subtitle = "Nivel estatal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+
+# Nivel municipal {.tabset .tabset-pills}
+
+## Migración reciente {.tabset .tabset-pills}
+
+### Matrices 
+
+```{r, eval = FALSE}
+#Clave de los municipios 2020 
+municipios <- MUN %>%
+               select(CVE_MUN) %>%
+                unique() %>%
+                 pull(CVE_MUN)
+
+Pob.5ymas <- mydata %>%
+              mutate(CVE_MUN_RES = paste0(ENT_PAIS_RES10, MUN_RES10)) %>%
+               mutate(ENT_PAIS_RES10 = case_when(.$ENT_PAIS_RES10 %in% estados ~.$ENT_PAIS_RES10,
+                                                 .$ENT_PAIS_RES10 %nin% estados ~ "888", #Residencia en otro país
+                                                 .$ENT_PAIS_RES10 %in% "997" ~ "997",
+                                                 .$ENT_PAIS_RES10 %in% "998" ~ "998",
+                                                 .$ENT_PAIS_RES10 %in% "997" ~ "999"),
+                      CVE_MUN_RES = case_when(.$CVE_MUN_RES %in% municipios ~.$CVE_MUN_RES,
+                                               nchar(.$CVE_MUN_RES) == 3 ~ "888",  #Residencia en otro país
+                                              .$CVE_MUN_RES %in% "997999" ~ '997999',
+                                              .$ENT_PAIS_RES10 %in% "997" ~ "997",
+                                              .$ENT_PAIS_RES10 %in% "998" ~ "998",
+                                              .$ENT_PAIS_RES10 %in% "999" ~ "999",
+                                              .$MUN_RES10 %in% "999" ~ "999")) %>%
+                mutate(EDAD = as.numeric(.$EDAD)) %>%
+                 subset(EDAD >= 5 & EDAD <=130) %>%
+                  select(FACTOR, ESTRATO, UPM, CVE_MUN, CVE_MUN_RES, EDAD) %>%
+                   filter(CVE_MUN_RES %in% municipios) 
+
+MC <- Pob.5ymas %>%
+       svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/MC_municipal.RDS"))
+```
+
+```{r, eval = FALSE}
+MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/MC_municipal.RDS"))
+
+Migrantes <- svytable(~CVE_MUN_RES + CVE_MUN, design = MC) 
+```
+
+Se genera la matriz cuadrada y se le asignan los nombres de los estados.
+
+```{r, eval = FALSE}
+Migrantes <- Migrantes %>%
+              as.data.frame() %>%
+               expss::cross_cases(CVE_MUN, CVE_MUN_RES, weight = Freq) %>%
+                as.data.frame() %>%
+                 rename("CVE_MUN" = "row_labels") %>% 
+                  arrange(CVE_MUN) %>%
+                   slice(-1) 
+
+rownames <- Migrantes %>% 
+             mutate(CVE_MUN = substr(.$CVE_MUN, 9, 16)) %>% 
+              pull(CVE_MUN)
+
+colnames <- names(Migrantes) %>% 
+             as.data.frame() %>% 
+              slice(-1) %>% 
+               rename("CVE_MUN" = ".") %>%
+                mutate(`CVE_MUN` = substr(.$CVE_MUN, 13, 20)) %>%
+                 pull(CVE_MUN)
+
+# Se elimina la variable CVE_MUN
+Migrantes <- Migrantes %>%
+              select(-CVE_MUN)
+
+rownames(Migrantes) <- rownames
+colnames(Migrantes) <- colnames
+
+saveRDS(Migrantes, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel municipal.RDS"))
+save(Migrantes, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel municipal.RData"))
+
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "MRreciente")
+writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(var = "CVE_MUN"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel municipal.xlsx"), overwrite = TRUE)
+```
+
+**Matriz de migración reciente hace 5 años a nivel municipal, 2010 - 2015**
+
+::: {style="height:500px;overflow:auto;"}
+```{r, echo = FALSE}
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel municipal.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "CVE_MUN") %>%
+            mutate_if(is.numeric, as.numeric)
+
+tabla[1:30, 1:30] %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de migración reciente 2010 - 2015", 
+             subtitle = "Nivel municipal") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "0") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
+:::
+
+### Gráficos {.tabset .tabset-pills}
+
+#### ChordDiagram
+
+##### Gráficos por estados
+
+```{r, results = FALSE, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel municipal.RData"))
+
+# Nombre de los estados 
+estados <- str_pad(rep(1:32), width = 3, pad = "0")
+
+################################################################################
+################################## Filtro ######################################
+Inmigrantes  <- Migrantes %>%
+                 as.data.frame() %>%
+                  tibble::rownames_to_column(var = "rn") %>% 
+                   melt(., id.vars = "rn", variable.name = "cn") %>%
+                    mutate_if(is.factor, as.character) %>%
+                     mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% municipios | .$cn %in% municipios), value, 0)) %>%
+                      filter(value > 0) %>%
+                       group_by(rn) %>% 
+                        summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
+
+Emigrantes <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% municipios | .$cn %in% municipios), value, 0)) %>%
+                    filter(value > 0) %>%
+                     group_by(cn) %>% 
+                      summarise(Emigrantes = sum(value, na.rm = TRUE))     
+
+################################## Filtro ######################################
+filtro  <- Inmigrantes %>%
+            full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+             mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+              filter(value > 0)
+
+filtro_est <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   filter(value > 0)
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>% 
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character) %>%
+              mutate(value = ifelse((.$rn != .$cn), value, 0)) %>%
+               filter(value > 0)
+
+## Se generan los filtros correspondientes a la matriz cuadrada por estados 
+tabla1 <-  lapply(9, function(x){
+                         # filtro de municipios
+                         filtro <- filtro %>%
+                                    filter(substr(.$rn, 1, 3) == estados[x]) %>%
+                                     filter(value < 3000) %>%
+                                      pull(rn)
+                         # filtro de estados
+                         filtro_rn  <- filtro_est %>%
+                                        mutate(value = ifelse(substr(.$rn, 1, 3) == estados[x] | substr(.$cn, 1, 3) == estados[x], value, 0)) %>%
+                                         mutate(rn = substr(.$rn, 1, 3)) %>%
+                                          group_by(rn) %>%
+                                           summarise(Inm = sum(value, na.rm = TRUE))
+
+                         filtro_cn  <- filtro_est %>%
+                                        mutate(value = ifelse(substr(.$rn, 1, 3) == estados[x] | substr(.$cn, 1, 3) == estados[x], value, 0)) %>%
+                                         mutate(cn = substr(.$cn, 1, 3)) %>%
+                                          group_by(cn) %>%
+                                           summarise(Emg = sum(value, na.rm = TRUE))
+
+                         filtro_estados <- filtro_rn %>%
+                                            full_join(., filtro_cn, by = c("rn" = "cn")) %>%
+                                             mutate(value = sum_row(.$Inm, .$Emg, na.rm = TRUE)) %>%
+                                              filter(value > 5000 & rn != estado[x]) %>%
+                                               pull(rn)
+                         tabla %>%
+                         # Se reestructura la clave de municipios y se seleccionan solo los municipios que superan el filtro de municipios
+                           # Se reestructuran a los municipios que superan al filtro de estados
+                          mutate(rn = case_when(.$rn %in% filtro ~ paste0(estados[x], " Otros municipios"), 
+                                                substr(.$rn, 1, 3) %in% estados[x] & .$rn %nin% filtro ~ .$rn, 
+                                                substr(.$rn, 1, 3) %nin% estados[x] & substr(.$rn, 1, 3) %in% filtro_estados ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 30),
+                                                substr(.$rn, 1, 3) %nin% estados[x] & substr(.$rn, 1, 3) %nin% filtro_estados ~ "Otros estados"),
+                                 cn = case_when(.$cn %in% filtro ~ paste0(estados[x], " Otros municipios"), 
+                                                substr(.$cn, 1, 3) %in% estados[x] & .$cn %nin% filtro ~ .$cn, 
+                                                substr(.$cn, 1, 3) %nin% estados[x] & substr(.$cn, 1, 3) %in% filtro_estados ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 30),
+                                                substr(.$cn, 1, 3) %nin% estados[x] & substr(.$cn, 1, 3) %nin% filtro_estados ~ "Otros estados"))  %>%
+                          # Se seleccionan los valores de la entidad seleccionada
+                           mutate(value = ifelse(substr(.$rn, 1, 3) %in% estados[x] | substr(.$cn, 1, 3) %in% estados[x], value, 0)) %>% 
+                            filter(value > 0) %>%
+                             dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
+                              column_to_rownames(., var = "rn") 
+  }
+)
+
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Tabla MR5a a nivel municipal.RDS"))
+```
+
+
+**Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
+
+```{r, eval = FALSE}
+## Genera una lista de vectores con los colores a nivel municipal 
+tabla2 <- lapply(1, function(x){
+                  groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))), option = "A"), 
+                                          nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
+                  circos.clear()
+                  chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                grid.col = groupColors)  %>%
+                   pull(col)
+  }
+)
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Paleta de colores MR5a a nivel municipal.RDS"))
+```
+
+```{r, eval = FALSE}
+pdf(paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2015/ChordDiagram de MR5a desagregado por estado.pdf"), width = 20, height = 20)
+for(i in 1){
+# Estuctura de colores
+groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))), option = "A"), 
+                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
+
+circos.clear()
+circos.par(start.degree = 90, 
+           gap.degree = 1, 
+           clock.wise = FALSE,
+           track.margin = c(-0.1, 0.1),  
+           points.overflow.warning = FALSE)
+
+chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
+             grid.col = groupColors,
+             col = tabla2[[i]],
+             keep.diagonal = FALSE,
+             symmetric = FALSE,
+             transparency =  0,
+             directional = 1,
+             direction.type = c("arrows", "diffHeight"), 
+             diffHeight  = -0.04, # adjust the starting end of the link
+             annotationTrack = "grid", 
+             annotationTrackHeight = c(0.05, 0.1),
+             preAllocateTracks = 1, 
+             big.gap = 40, # Gap between row sectors and column sectors.
+             link.arr.type = "big.arrow", 
+             link.lwd = 3,    # Line width width for link borders
+             link.lty = 1,
+             link.visible = TRUE,
+             link.largest.ontop = TRUE)
+
+# Add text and axis
+circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
+                       bg.border = NA, 
+                       panel.fun = function(x, y) {
+                                                   xlim = get.cell.meta.data("xlim")
+                                                   ylim = get.cell.meta.data("ylim")
+                                                   sector.name = get.cell.meta.data("sector.index")
+                                                  # Add names to the sector. 
+                                                   circos.text(x = mean(xlim), 
+                                                               y = ylim[1] + 0.3, 
+                                                               labels = sector.name, 
+                                                               facing = "clockwise",
+                                                               niceFacing = TRUE, 
+                                                               adj = c(-0.05, 0), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(20),
+                                                               col = groupColors,
+                                                               font = 1)
+                                                  # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               major.tick.length = 0.5,
+                                                               minor.ticks = 4, 
+                                                               labels.cex = fontsize(12),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                }
+  )
+}
+dev.off()
+```
+
+### Indicadores {.tabset .tabset-pills}
+
+Se realizan cálculos generales de migración\
+- Residentes\
+- Inmigrantes\
+- Emigrantes\
+- % Inmigrantes\
+- % Emigrante\
+- Migración Bruta\
+- Migración Neta\
+- % Tasa de migración bruta\
+- % Tasa de migración neta
+
+Dada la cantidad de datos a calcular para la obtención de los indicadores. La obtención de los indicadores se realiza de manera directa, es decir, partiendo de la matriz cuadrada original.
+
+```{r, eval = FALSE}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_MUN) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Población de 5 años y más ###############################
+Pob.5ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 5 & EDAD <=130) %>%
+                 group_by(CVE_MUN) %>%
+                  summarise(Pob.5ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel municipal.RData"))
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>% 
+                gather(CVE_MUN, Value, -rowname)%>%
+                 filter(rowname == CVE_MUN) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+Inmigrantes <- Migrantes %>% 
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_MUN") %>%
+                  melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_RES") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_MUN != CVE_MUN_RES) %>%
+                      group_by(CVE_MUN) %>%
+                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+
+
+Emigrantes <- Migrantes %>% 
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "CVE_MUN") %>%
+                 melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_RES") %>%
+                  mutate_at(vars(3), as.numeric) %>%
+                   as_tibble() %>%
+                    filter(CVE_MUN != CVE_MUN_RES) %>%
+                     group_by(CVE_MUN_RES) %>%
+                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                       rename("CVE_MUN" = "CVE_MUN_RES") 
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.5ymas, by = c("CVE_MUN")) %>%
+          left_join(., Residentes, by = c("CVE_MUN")) %>%
+          left_join(., Inmigrantes, by = c("CVE_MUN")) %>%
+          left_join(., Emigrantes, by = c("CVE_MUN")) %>%
+            mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                   Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                   Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2))*1000,
+                   Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2))*1000,
+                   Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                   Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Indicadores de migracion reciente a nivel municipal 2010 - 2015.xlsx"), overwrite = TRUE)
+
+save(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Indicadores de migracion reciente a nivel municipal 2010 - 2015.RData"))
+```
+
+```{r, echo = FALSE}
+load(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Indicadores de migracion reciente a nivel municipal 2010 - 2015.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  migración reciente", 
+              subtitle = "Nivel municipal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+## Migración intramunicipal {.tabset .tabset-pills}
+
+### Matrices 
+
+```{r, eval = FALSE}
+#Clave de los municipios 2020 
+municipios <- MUN %>%
+               select(CVE_MUN) %>%
+                unique() %>%
+                 pull(CVE_MUN)
+
+Pob.5ymas <- mydata %>%
+              mutate(CVE_MUN_RES = paste0(ENT_PAIS_RES10, MUN_RES10)) %>%
+               mutate(ENT_PAIS_RES10 = case_when(.$ENT_PAIS_RES10 %in% estados ~.$ENT_PAIS_RES10,
+                                                 .$ENT_PAIS_RES10 %nin% estados ~ "888", #Residencia en otro país
+                                                 .$ENT_PAIS_RES10 %in% "997" ~ "997",
+                                                 .$ENT_PAIS_RES10 %in% "998" ~ "998",
+                                                 .$ENT_PAIS_RES10 %in% "997" ~ "999"),
+                      CVE_MUN_RES = case_when(.$CVE_MUN_RES %in% municipios ~.$CVE_MUN_RES,
+                                               nchar(.$CVE_MUN_RES) == 3 ~ "888",  #Residencia en otro país
+                                              .$CVE_MUN_RES %in% "997999" ~ '997999',
+                                              .$ENT_PAIS_RES10 %in% "997" ~ "997",
+                                              .$ENT_PAIS_RES10 %in% "998" ~ "998",
+                                              .$ENT_PAIS_RES10 %in% "999" ~ "999",
+                                              .$MUN_RES10 %in% "999" ~ "999")) %>%
+                mutate(I_Migracion = case_when(.$CVE_ENT == .$ENT_PAIS_RES10 & .$ENT_PAIS_RES10 %in% estados ~ 1,
+                                               .$CVE_ENT != .$ENT_PAIS_RES10 & .$ENT_PAIS_RES10 %in% estados ~ 2,
+                                               .$ENT_PAIS_RES10 %nin% estados ~ 3)) %>%
+                 mutate(EDAD = as.numeric(.$EDAD)) %>%
+                  subset(EDAD >= 5 & EDAD <=130) %>%
+                   select(FACTOR, ESTRATO, UPM, CVE_MUN, CVE_MUN_RES, EDAD, I_Migracion) %>%
+                    filter(CVE_MUN_RES %in% municipios & I_Migracion == 1) 
+
+MC <- Pob.5ymas %>%
+       svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/MC_intramunicipal.RDS"))
+```
+
+```{r, eval = FALSE}
+MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/MC_intramunicipal.RDS"))
+
+Migrantes <- svytable(~CVE_MUN_RES + CVE_MUN, design = MC) 
+```
+
+Se genera la matriz cuadrada y se le asignan los nombres de los estados.
+
+```{r, eval = FALSE}
+Migrantes <- Migrantes %>%
+              as.data.frame() %>%
+               expss::cross_cases(CVE_MUN, CVE_MUN_RES, weight = Freq) %>%
+                as.data.frame() %>%
+                 rename("CVE_MUN" = "row_labels") %>% 
+                  arrange(CVE_MUN) %>%
+                   slice(-1) 
+
+rownames <- Migrantes %>% 
+             mutate(CVE_MUN = substr(.$CVE_MUN, 9, 16)) %>% 
+              pull(CVE_MUN)
+
+colnames <- names(Migrantes) %>% 
+             as.data.frame() %>% 
+              slice(-1) %>% 
+               rename("CVE_MUN" = ".") %>%
+                mutate(`CVE_MUN` = substr(.$CVE_MUN, 13, 20)) %>%
+                 pull(CVE_MUN)
+
+# Se elimina la variable CVE_MUN
+Migrantes <- Migrantes %>%
+              select(-CVE_MUN)
+
+rownames(Migrantes) <- rownames
+colnames(Migrantes) <- colnames
+
+saveRDS(Migrantes, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intramunicipal.RDS"))
+save(Migrantes, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intramunicipal.RData"))
+
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "M.Intramunicipal")
+writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(var = "CVE_MUN"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intramunicipal.xlsx"), overwrite = TRUE)
+```
+
+**Matriz de migración reciente hace 5 años a nivel municipal, 2010 - 2015**
+
+::: {style="height:500px;overflow:auto;"}
+```{r, echo = FALSE}
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intramunicipal.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "CVE_MUN") %>%
+            mutate_if(is.numeric, as.numeric)
+
+tabla[1:30, 1:30] %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de migración reciente 2010 - 2015", 
+             subtitle = "Nivel intramunicipal") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "0") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
+:::
+
+### Gráficos {.tabset .tabset-pills}
+
+#### ChordDiagram
+
+##### Gráficos por estados
+
+```{r, results = FALSE, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intramunicipal.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character)
+
+################################################################################
+################################## Filtro ######################################
+Inmigrantes  <- Migrantes %>%
+                 as.data.frame() %>%
+                  tibble::rownames_to_column(var = "rn") %>% 
+                   melt(., id.vars = "rn", variable.name = "cn") %>%
+                    mutate_if(is.factor, as.character) %>%
+                     mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                      filter(value > 0) %>%
+                       group_by(rn) %>% 
+                        summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
+
+Emigrantes <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                    filter(value > 0) %>%
+                     group_by(cn) %>% 
+                      summarise(Emigrantes = sum(value, na.rm = TRUE))     
+
+################################## Filtro ######################################
+filtro  <- Inmigrantes %>%
+            full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+             mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+              filter(value < 1000) %>% 
+               pull(rn)
+################################################################################
+
+## Se generan los filtros correspondientes a la matriz cuadrada por estados 
+tabla1 <-  lapply(1:32, function(x){
+                   tabla %>%
+                    mutate(rn = case_when(substr(.$rn, 1, 3) %in% estados[x] & .$rn %in% filtro ~ paste0("Otros municipios (", estados[x], ")"),
+                                          substr(.$rn, 1, 3) %in% estados[x]  & .$rn %nin% filtro ~ .$rn,
+                                          substr(.$rn, 1, 3) %nin% estados[x] ~ substr(.$rn, 1, 3)),
+                           cn = case_when(substr(.$cn, 1, 3) %in% estados[x] & .$cn %in% filtro ~ paste0("Otros municipios (", estados[x], ")"),
+                                          substr(.$cn, 1, 3) %in% estados[x] & .$cn %nin% filtro ~ .$cn,
+                                          substr(.$cn, 1, 3) %nin% estados[x] ~ substr(.$cn, 1, 3))) %>%
+                     mutate(value = ifelse(.$rn != .$cn, .$value, 0)) %>%
+                      filter(value > 0) %>%
+                       dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
+                        column_to_rownames(., var = "rn") 
+  }
+)
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Tabla MR5a a nivel intramunicipal.RDS"))
+```
+
+
+**Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
+
+```{r, eval = FALSE}
+## Genera una lista de vectores con los colores a nivel municipal 
+tabla2 <- lapply(1:32, function(x){
+                      # Paleta de colores
+                       groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))), option = "A"), 
+                                               nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
+                       circos.clear()
+                       chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                     grid.col = groupColors) %>%
+                        pull(col)
+  }
+)
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Paleta de colores MR5a a nivel intramunicipal.RDS"))
+```
+
+```{r, eval = FALSE}
+pdf(paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2015/ChordDiagram de MR5a desagregado a nivel intramunicipal.pdf"), width = 20, height = 20)
+for(i in 1:32){
+# Estuctura de colores
+groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))), option = "A"), 
+                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
+
+circos.clear()
+circos.par(start.degree = 90, 
+           gap.degree = 1, 
+           clock.wise = FALSE,
+           track.margin = c(-0.1, 0.1),  
+           points.overflow.warning = FALSE)
+
+chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
+             grid.col = groupColors,
+             col = tabla2[[i]],
+             keep.diagonal = FALSE,
+             symmetric = FALSE,
+             transparency =  0,
+             directional = 1,
+             direction.type = c("arrows", "diffHeight"), 
+             diffHeight  = -0.04, # adjust the starting end of the link
+             annotationTrack = "grid", 
+             annotationTrackHeight = c(0.05, 0.1),
+             preAllocateTracks = 1, 
+             big.gap = 40, # Gap between row sectors and column sectors.
+             link.arr.type = "big.arrow", 
+             link.lwd = 3,    # Line width width for link borders
+             link.lty = 1,
+             link.visible = TRUE,
+             link.largest.ontop = TRUE)
+
+# Add text and axis
+circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
+                       bg.border = NA, 
+                       panel.fun = function(x, y) {
+                                                   xlim = get.cell.meta.data("xlim")
+                                                   ylim = get.cell.meta.data("ylim")
+                                                   sector.name = get.cell.meta.data("sector.index")
+                                                  # Add names to the sector. 
+                                                   circos.text(x = mean(xlim), 
+                                                               y = ylim[1] + 0.3, 
+                                                               labels = sector.name, 
+                                                               facing = "clockwise",
+                                                               niceFacing = TRUE, 
+                                                               adj = c(-0.05, 0), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(20),
+                                                               col = groupColors,
+                                                               font = 1)
+                                                  # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               major.tick.length = 0.5,
+                                                               minor.ticks = 4, 
+                                                               labels.cex = fontsize(12),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                }
+  )
+}
+dev.off()
+```
+
+#### Gráfico Sankey
+
+```{r, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intramunicipal.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character)
+
+################################################################################
+################################## Filtro ######################################
+Inmigrantes  <- Migrantes %>%
+                 as.data.frame() %>%
+                  tibble::rownames_to_column(var = "rn") %>% 
+                   melt(., id.vars = "rn", variable.name = "cn") %>%
+                    mutate_if(is.factor, as.character) %>%
+                     mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                      filter(value > 0) %>%
+                       group_by(rn) %>% 
+                        summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
+
+Emigrantes <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                    filter(value > 0) %>%
+                     group_by(cn) %>% 
+                      summarise(Emigrantes = sum(value, na.rm = TRUE))     
+
+################################## Filtro ######################################
+filtro  <- Inmigrantes %>%
+            full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+             mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+              filter(value < 5000) %>% 
+               pull(rn)
+################################################################################
+
+tabla1 <- lapply(1:32, function(x){
+                   tabla %>%
+                    mutate(rn = case_when(substr(.$rn, 1, 3) %in% estados[x] & .$rn %in% filtro ~ paste0("Otros municipios (", estados[x], ")"),
+                                          substr(.$rn, 1, 3) %in% estados[x]  & .$rn %nin% filtro ~ .$rn,
+                                          substr(.$rn, 1, 3) %nin% estados[x] ~ substr(.$rn, 1, 3)),
+                           cn = case_when(substr(.$cn, 1, 3) %in% estados[x] & .$cn %in% filtro ~ paste0("Otros municipios (", estados[x], ")"),
+                                          substr(.$cn, 1, 3) %in% estados[x] & .$cn %nin% filtro ~ .$cn,
+                                          substr(.$cn, 1, 3) %nin% estados[x] ~ substr(.$cn, 1, 3))) %>%
+
+                     mutate(value = ifelse(.$rn != .$cn, .$value, 0)) %>%
+                      filter(value > 0) 
+  }
+)
+```
+
+
+```{r, eval = FALSE}
+p <- lapply(1:32, function(x){
+             tabla1[[x]] %>% 
+              ggplot(aes(axis1 = rn, 
+                          axis2 = cn, 
+                           y = value),  # c("value", "freq", "tasa")
+                      reverse = FALSE, 
+                       na.rm = TRUE) +
+               geom_alluvium(aes(fill = rn),
+                              curve_type = "quintic", 
+                               color = "transparent", 
+                                alpha = 0.85, 
+                                 lwd = 0.001, 
+                                  width = 1/5,
+                                   reverse = FALSE) +
+                 geom_stratum(aes(fill = cn), 
+                               color = "white", 
+                                alpha = 0.65,  
+                                 lwd = 0.001, 
+                                  width = 1/5,
+                                   reverse = FALSE) +
+                  geom_text_repel(aes(label = ifelse(after_stat(x) == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""), 
+                                       fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                                   stat = "stratum", 
+                                    size = 3, 
+                                     direction = "y", 
+                                      nudge_x = -.2,
+                                       min.segment.length = unit(1, "lines"),
+                                        force = 1,
+                                         force_pull = 0,
+                                          family = "montserrat",
+                                           reverse = FALSE) +
+                   geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                        fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                                    stat = "stratum", 
+                                     size = 3,
+                                      direction = "y", 
+                                       nudge_x = .2, 
+                                        force = 1,
+                                         force_pull = 0,
+                                          family = "montserrat",
+                                           reverse = FALSE) +
+                     theme_void() + 
+                      theme(plot.margin = margin(t = 1, r = 5, b = 1, l = 0, "cm"),
+                             text = element_text(family = "montserrat"),
+                              axis.text = element_blank(),
+                               axis.title = element_blank(),
+                                strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                                 legend.key.size = unit(0.5, "cm"),
+                                  legend.text = element_text(size = 7, family = "montserrat"),
+                                   legend.position = c(1.02, .5)) + 
+                       scale_x_discrete(expand = c(-0.1, 0.5)) +
+                        scale_fill_viridis_d(option = "A", end = 1, begin = 0.2) +
+                         guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                          labs(fill = "", 
+                               color = "")
+  }
+)
+
+path = paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2015/GSankey de MR5a desagregado a nivel intramunicipal.pdf")
+ggexport(list = p, width = 18, height = 10, dpi = 400, filename = path)
+```
+
+
+### Indicadores {.tabset .tabset-pills}
+
+Se realizan cálculos generales de migración\
+- Residentes\
+- Inmigrantes\
+- Emigrantes\
+- % Inmigrantes\
+- % Emigrante\
+- Migración Bruta\
+- Migración Neta\
+- % Tasa de migración bruta\
+- % Tasa de migración neta
+
+Dada la cantidad de datos a calcular para la obtención de los indicadores. La obtención de los indicadores se realiza de manera directa, es decir, partiendo de la matriz cuadrada original.
+
+```{r, eval = FALSE}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_MUN) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Población de 5 años y más ###############################
+Pob.5ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 5 & EDAD <=130) %>%
+                 group_by(CVE_MUN) %>%
+                  summarise(Pob.5ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intramunicipal.RData"))
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>% 
+                gather(CVE_MUN, Value, -rowname)%>%
+                 filter(rowname == CVE_MUN) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+Inmigrantes <- Migrantes %>% 
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_MUN") %>%
+                  melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_RES") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_MUN != CVE_MUN_RES) %>%
+                      group_by(CVE_MUN) %>%
+                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+Emigrantes <- Migrantes %>% 
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "CVE_MUN") %>%
+                 melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_RES") %>%
+                  mutate_at(vars(3), as.numeric) %>%
+                   as_tibble() %>%
+                    filter(CVE_MUN != CVE_MUN_RES) %>%
+                     group_by(CVE_MUN_RES) %>%
+                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                       rename("CVE_MUN" = "CVE_MUN_RES") 
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.5ymas, by = c("CVE_MUN")) %>%
+          left_join(., Residentes, by = c("CVE_MUN")) %>%
+          left_join(., Inmigrantes, by = c("CVE_MUN")) %>%
+          left_join(., Emigrantes, by = c("CVE_MUN")) %>%
+            mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                   Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                   Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2))*1000,
+                   Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2))*1000,
+                   Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                   Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Indicadores de migracion reciente a nivel intramunicipal 2015.xlsx"), overwrite = TRUE)
+
+save(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Indicadores de migracion reciente a nivel intramunicipal 2015.RData"))
+```
+
+```{r, echo = FALSE}
+load(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Indicadores de migracion reciente a nivel intramunicipal 2015.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  migración reciente", 
+              subtitle = "Nivel intramunicipal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+## Migración intermunicipal {.tabset .tabset-pills}
+
+### Matrices 
+
+```{r, eval = FALSE}
+#Clave de los municipios 2020 
+municipios <- MUN %>%
+               select(CVE_MUN) %>%
+                unique() %>%
+                 pull(CVE_MUN)
+
+Pob.5ymas <- mydata %>%
+              mutate(CVE_MUN_RES = paste0(ENT_PAIS_RES10, MUN_RES10)) %>%
+               mutate(ENT_PAIS_RES10 = case_when(.$ENT_PAIS_RES10 %in% estados ~.$ENT_PAIS_RES10,
+                                                 .$ENT_PAIS_RES10 %nin% estados ~ "888", #Residencia en otro país
+                                                 .$ENT_PAIS_RES10 %in% "997" ~ "997",
+                                                 .$ENT_PAIS_RES10 %in% "998" ~ "998",
+                                                 .$ENT_PAIS_RES10 %in% "997" ~ "999"),
+                      CVE_MUN_RES = case_when(.$CVE_MUN_RES %in% municipios ~.$CVE_MUN_RES,
+                                               nchar(.$CVE_MUN_RES) == 3 ~ "888",  #Residencia en otro país
+                                              .$CVE_MUN_RES %in% "997999" ~ '997999',
+                                              .$ENT_PAIS_RES10 %in% "997" ~ "997",
+                                              .$ENT_PAIS_RES10 %in% "998" ~ "998",
+                                              .$ENT_PAIS_RES10 %in% "999" ~ "999",
+                                              .$MUN_RES10 %in% "999" ~ "999")) %>%
+                mutate(I_Migracion = case_when(.$CVE_ENT == .$ENT_PAIS_RES10 & .$ENT_PAIS_RES10 %in% estados ~ 1,
+                                               .$CVE_ENT != .$ENT_PAIS_RES10 & .$ENT_PAIS_RES10 %in% estados ~ 2,
+                                               .$ENT_PAIS_RES10 %nin% estados ~ 3)) %>%
+                 mutate(EDAD = as.numeric(.$EDAD)) %>%
+                  subset(EDAD >= 5 & EDAD <=130) %>%
+                   select(FACTOR, ESTRATO, UPM, CVE_MUN, CVE_MUN_RES, EDAD, I_Migracion) %>%
+                    filter(CVE_MUN_RES %in% municipios & I_Migracion == 2) 
+
+MC <- Pob.5ymas %>%
+       svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/MC_intermunicipal.RDS"))
+```
+
+```{r, eval = FALSE}
+MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/MC_intermunicipal.RDS"))
+
+Migrantes <- svytable(~CVE_MUN_RES + CVE_MUN, design = MC) 
+```
+
+Se genera la matriz cuadrada y se le asignan los nombres de los estados.
+
+```{r, eval = FALSE}
+Migrantes <- Migrantes %>%
+              as.data.frame() %>%
+               expss::cross_cases(CVE_MUN, CVE_MUN_RES, weight = Freq) %>%
+                as.data.frame() %>%
+                 rename("CVE_MUN" = "row_labels") %>% 
+                  arrange(CVE_MUN) %>%
+                   slice(-1) 
+
+rownames <- Migrantes %>% 
+             mutate(CVE_MUN = substr(.$CVE_MUN, 9, 16)) %>% 
+              pull(CVE_MUN)
+
+colnames <- names(Migrantes) %>% 
+             as.data.frame() %>% 
+              slice(-1) %>% 
+               rename("CVE_MUN" = ".") %>%
+                mutate(`CVE_MUN` = substr(.$CVE_MUN, 13, 20)) %>%
+                 pull(CVE_MUN)
+
+# Se elimina la variable CVE_MUN
+Migrantes <- Migrantes %>%
+              select(-CVE_MUN)
+
+rownames(Migrantes) <- rownames
+colnames(Migrantes) <- colnames
+
+saveRDS(Migrantes, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intermunicipal.RDS"))
+save(Migrantes, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intermunicipal.RData"))
+
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "M.Intermunicipal")
+writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(var = "CVE_MUN"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intermunicipal.xlsx"), overwrite = TRUE)
+```
+
+**Matriz de migración reciente hace 5 años a nivel municipal, 2010 - 2015**
+
+::: {style="height:500px;overflow:auto;"}
+```{r, echo = FALSE}
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intermunicipal.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "CVE_MUN") %>%
+            mutate_if(is.numeric, as.numeric)
+
+tabla[1:30, 1:30] %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de migración reciente 2010 - 2015", 
+             subtitle = "Nivel intermunicipal") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "0") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
+:::
+
+### Gráficos {.tabset .tabset-pills}
+
+#### ChordDiagram
+
+##### Gráficos por estados
+
+```{r, results = FALSE, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intermunicipal.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character)
+
+# Nombre de los estados 
+estado <- stringr::str_wrap(nom_estados, 50)
+
+################################################################################
+################################## Filtro ######################################
+Inmigrantes  <- Migrantes %>%
+                 as.data.frame() %>%
+                  tibble::rownames_to_column(var = "rn") %>% 
+                   melt(., id.vars = "rn", variable.name = "cn") %>%
+                    mutate_if(is.factor, as.character) %>%
+                     mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                      filter(value > 0) %>%
+                       group_by(rn) %>% 
+                        summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
+
+Emigrantes <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                    filter(value > 0) %>%
+                     group_by(cn) %>% 
+                      summarise(Emigrantes = sum(value, na.rm = TRUE))     
+
+################################## Filtro ######################################
+filtro  <- Inmigrantes %>%
+            full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+             mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+              filter(value > 0)
+
+filtro_est <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   filter(value > 0)
+
+################################################################################
+
+## Se generan los filtros correspondientes a la matriz cuadrada por estados 
+tabla1 <-  lapply(15, function(x){
+                             # filtro de municipios
+                             filtro <- filtro %>%
+                                        filter(substr(.$rn, 1, 3) == estados[x]) %>%
+                                         filter(value < 3000) %>%
+                                          pull(rn)
+                             
+                             # filtro de estados
+                             filtro_rn  <- filtro_est %>%
+                                            mutate(value = ifelse(substr(.$rn, 1, 3) == estados[x] | substr(.$cn, 1, 3) == estados[x], value, 0)) %>%
+                                             mutate(rn = substr(.$rn, 1, 3)) %>%
+                                              group_by(rn) %>%
+                                               summarise(Inm = sum(value, na.rm = TRUE))
+    
+                             filtro_cn  <- filtro_est %>%
+                                            mutate(value = ifelse(substr(.$rn, 1, 3) == estados[x] | substr(.$cn, 1, 3) == estados[x], value, 0)) %>%
+                                             mutate(cn = substr(.$cn, 1, 3)) %>%
+                                              group_by(cn) %>%
+                                               summarise(Emg = sum(value, na.rm = TRUE))
+    
+                             filtro_estados <- filtro_rn %>%
+                                                full_join(., filtro_cn, by = c("rn" = "cn")) %>%
+                                                 mutate(value = sum_row(.$Inm, .$Emg, na.rm = TRUE)) %>%
+                                                  filter(value > 5000 & rn != estado[x]) %>%
+                                                   pull(rn)
+                                            
+                             tabla %>%
+                              mutate(rn = case_when(.$rn %in% filtro ~ paste0(estados[x], " Otros municipios"), 
+                                                    substr(.$rn, 1, 3) %in% estados[x] & .$rn %nin% filtro ~ .$rn, 
+                                                    substr(.$rn, 1, 3) %nin% estados[x] & substr(.$rn, 1, 3) %in% filtro_estados ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 30),
+                                                    substr(.$rn, 1, 3) %nin% estados[x] & substr(.$rn, 1, 3) %nin% filtro_estados ~ "Otros estados"),
+                                     cn = case_when(.$cn %in% filtro ~ paste0(estados[x], " Otros municipios"), 
+                                                    substr(.$cn, 1, 3) %in% estados[x] & .$cn %nin% filtro ~ .$cn, 
+                                                    substr(.$cn, 1, 3) %nin% estados[x] & substr(.$cn, 1, 3) %in% filtro_estados ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 30),
+                                                    substr(.$cn, 1, 3) %nin% estados[x] & substr(.$cn, 1, 3) %nin% filtro_estados ~ "Otros estados"))  %>%
+                               mutate(value = ifelse(substr(.$rn, 1, 3) %in% estados[x] | substr(.$cn, 1, 3) %in% estados[x], value, 0)) %>% 
+                                filter(value > 0)%>%
+                                 dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
+                                  column_to_rownames(., var = "rn") 
+  }
+)
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Tabla MR5a a nivel intermunicipal.RDS"))
+```
+
+
+**Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
+
+```{r, eval = FALSE}
+## Genera una lista de vectores con los colores a nivel municipal 
+tabla2 <- lapply(1, function(x){
+                      # Paleta de colores
+                       groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))), option = "A"), 
+                                               nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
+                       circos.clear()
+                       chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                     grid.col = groupColors) %>%
+                        pull(col)
+  }
+)
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Paleta de colores MR5a a nivel intermunicipal.RDS"))
+```
+
+```{r, eval = FALSE}
+pdf(paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2015/ChordDiagram de MR5a desagregado a nivel intermunicipal.pdf"), width = 20, height = 20)
+for(i in 1){
+# Estuctura de colores
+groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))), option = "A"), 
+                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
+
+circos.clear()
+circos.par(start.degree = 90, 
+           gap.degree = 1, 
+           clock.wise = FALSE,
+           track.margin = c(-0.1, 0.1),  
+           points.overflow.warning = FALSE)
+
+chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
+             grid.col = groupColors,
+             col = tabla2[[i]],
+             keep.diagonal = FALSE,
+             symmetric = FALSE,
+             transparency =  0,
+             directional = 1,
+             direction.type = c("arrows", "diffHeight"), 
+             diffHeight  = -0.04, # adjust the starting end of the link
+             annotationTrack = "grid", 
+             annotationTrackHeight = c(0.05, 0.1),
+             preAllocateTracks = 1, 
+             big.gap = 40, # Gap between row sectors and column sectors.
+             link.arr.type = "big.arrow", 
+             link.lwd = 3,    # Line width width for link borders
+             link.lty = 1,
+             link.visible = TRUE,
+             link.largest.ontop = TRUE)
+
+# Add text and axis
+circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
+                       bg.border = NA, 
+                       panel.fun = function(x, y) {
+                                                   xlim = get.cell.meta.data("xlim")
+                                                   ylim = get.cell.meta.data("ylim")
+                                                   sector.name = get.cell.meta.data("sector.index")
+                                                  # Add names to the sector. 
+                                                   circos.text(x = mean(xlim), 
+                                                               y = ylim[1] + 0.3, 
+                                                               labels = sector.name, 
+                                                               facing = "clockwise",
+                                                               niceFacing = TRUE, 
+                                                               adj = c(-0.05, 0), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(20),
+                                                               col = groupColors,
+                                                               font = 1)
+                                                  # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               major.tick.length = 0.5,
+                                                               minor.ticks = 4, 
+                                                               labels.cex = fontsize(12),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                }
+  )
+}
+dev.off()
+```
+
+#### Gráfico Sankey
+
+```{r, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intermunicipal.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character)
+
+################################################################################
+################################## Filtro ######################################
+Inmigrantes  <- Migrantes %>%
+                 as.data.frame() %>%
+                  tibble::rownames_to_column(var = "rn") %>% 
+                   melt(., id.vars = "rn", variable.name = "cn") %>%
+                    mutate_if(is.factor, as.character) %>%
+                     mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                      filter(value > 0) %>%
+                       group_by(rn) %>% 
+                        summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
+
+Emigrantes <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                    filter(value > 0) %>%
+                     group_by(cn) %>% 
+                      summarise(Emigrantes = sum(value, na.rm = TRUE))     
+
+################################## Filtro ######################################
+filtro  <- Inmigrantes %>%
+            full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+             mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+              filter(value < 5000) %>% 
+               pull(rn)
+################################################################################
+
+tabla1 <-  lapply(1:32, function(x){
+                   tabla %>%
+                    mutate(rn = case_when(substr(.$rn, 1, 3) %in% estados[x] & .$rn %in% filtro ~ paste0(estados[x], " Otros municipios (", estados[x], ")"),
+                                          substr(.$rn, 1, 3) %in% estados[x]  & .$rn %nin% filtro ~ .$rn,
+                                          substr(.$rn, 1, 3) %nin% estados[x] ~ paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))])),
+                           cn = case_when(substr(.$cn, 1, 3) %in% estados[x] & .$cn %in% filtro ~ paste0(estados[x], " Otros municipios (", estados[x], ")"),
+                                          substr(.$cn, 1, 3) %in% estados[x] & .$cn %nin% filtro ~ .$cn,
+                                          substr(.$cn, 1, 3) %nin% estados[x] ~ paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]))) %>%
+                     mutate(value = ifelse(.$rn != .$cn & (substr(.$rn, 1, 3) %in% estados[x] | substr(.$cn, 1, 3) %in% estados[x]), .$value, 0)) %>%
+                      filter(value > 0)  
+  }
+)
+```
+
+
+```{r, eval = FALSE}
+p <- lapply(1:32, function(x){
+             tabla1[[x]] %>% 
+              ggplot(aes(axis1 = rn, 
+                          axis2 = cn, 
+                           y = value),  # c("value", "freq", "tasa")
+                      reverse = FALSE, 
+                       na.rm = TRUE) +
+               geom_alluvium(aes(fill = rn),
+                              curve_type = "quintic", 
+                               color = "transparent", 
+                                alpha = 0.85, 
+                                 lwd = 0.001, 
+                                  width = 1/5,
+                                   reverse = FALSE) +
+                 geom_stratum(aes(fill = cn), 
+                               color = "white", 
+                                alpha = 0.65,  
+                                 lwd = 0.001, 
+                                  width = 1/5,
+                                   reverse = FALSE) +
+                  geom_text_repel(aes(label = ifelse(after_stat(x) == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""), 
+                                       fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                                   stat = "stratum", 
+                                    size = 3, 
+                                     direction = "y", 
+                                      nudge_x = -.2,
+                                       min.segment.length = unit(1, "lines"),
+                                        force = 1,
+                                         force_pull = 0,
+                                          family = "montserrat",
+                                           reverse = FALSE) +
+                   geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                        fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                                    stat = "stratum", 
+                                     size = 3,
+                                      direction = "y", 
+                                       nudge_x = .2, 
+                                        force = 1,
+                                         force_pull = 0,
+                                          family = "montserrat",
+                                           reverse = FALSE) +
+                     theme_void() + 
+                      theme(plot.margin = margin(t = 1, r = 5, b = 1, l = 0, "cm"),
+                             text = element_text(family = "montserrat"),
+                              axis.text = element_blank(),
+                               axis.title = element_blank(),
+                                strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                                 legend.key.size = unit(0.5, "cm"),
+                                  legend.text = element_text(size = 7, family = "montserrat"),
+                                   legend.position = c(1.02, .5)) + 
+                       scale_x_discrete(expand = c(-0.1, 0.5)) +
+                        scale_fill_viridis_d(option = "A", end = 1, begin = 0.2) +
+                         guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                          labs(fill = "", 
+                               color = "")
+  }
+)
+
+path = paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2015/GSankey de MR5a desagregado a nivel intermunicipal.pdf")
+ggexport(list = p, width = 18, height = 10, dpi = 400, filename = path)
+```
+
+
+### Indicadores {.tabset .tabset-pills}
+
+Se realizan cálculos generales de migración\
+- Residentes\
+- Inmigrantes\
+- Emigrantes\
+- % Inmigrantes\
+- % Emigrante\
+- Migración Bruta\
+- Migración Neta\
+- % Tasa de migración bruta\
+- % Tasa de migración neta
+
+Dada la cantidad de datos a calcular para la obtención de los indicadores. La obtención de los indicadores se realiza de manera directa, es decir, partiendo de la matriz cuadrada original.
+
+```{r, eval = FALSE}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_MUN) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Población de 5 años y más ###############################
+Pob.5ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 5 & EDAD <=130) %>%
+                 group_by(CVE_MUN) %>%
+                  summarise(Pob.5ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz de migracion reciente a nivel intermunicipal.RData"))
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>% 
+                gather(CVE_MUN, Value, -rowname)%>%
+                 filter(rowname == CVE_MUN) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+Inmigrantes <- Migrantes %>% 
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_MUN") %>%
+                  melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_RES") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_MUN != CVE_MUN_RES) %>%
+                      group_by(CVE_MUN) %>%
+                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+Emigrantes <- Migrantes %>% 
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "CVE_MUN") %>%
+                 melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_RES") %>%
+                  mutate_at(vars(3), as.numeric) %>%
+                   as_tibble() %>%
+                    filter(CVE_MUN != CVE_MUN_RES) %>%
+                     group_by(CVE_MUN_RES) %>%
+                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                       rename("CVE_MUN" = "CVE_MUN_RES") 
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.5ymas, by = c("CVE_MUN")) %>%
+          left_join(., Residentes, by = c("CVE_MUN")) %>%
+          left_join(., Inmigrantes, by = c("CVE_MUN")) %>%
+          left_join(., Emigrantes, by = c("CVE_MUN")) %>%
+            mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                   Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                   Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2))*1000,
+                   Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2))*1000,
+                   Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                   Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Indicadores de migracion reciente a nivel intermunicipal 2015.xlsx"), overwrite = TRUE)
+
+save(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Indicadores de migracion reciente a nivel intermunicipal 2015.RData"))
+```
+
+```{r, echo = FALSE}
+load(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Indicadores de migracion reciente a nivel intermunicipal 2015.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  migración reciente", 
+              subtitle = "Nivel intermunicipal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+
+# Referencias
+
+Librerias que se usaron en el documento
+
+```{r, echo = FALSE}
+sesion_info <- devtools::session_info()
+kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),
+                    c(package, loadedversion, source))) %>%
+ kable_styling(font_size = 10, 
+               bootstrap_options = c("condensed", "responsive", "bordered")) %>%
+  kable_classic(full_width = TRUE, html_font = "montserrat") %>% 
+   scroll_box(width = "100%", height = "150px") %>%  
+    gsub("font-size: initial !important;", "font-size: 10pt !important;", .)
+```

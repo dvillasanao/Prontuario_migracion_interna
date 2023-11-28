@@ -1,0 +1,218 @@
+---
+title: "Zonas Metropolitanas 2020"
+subtitle: 'Migración de retorno 2020'
+author: "CONAPO"
+output:
+   html_document:
+      highlight: tango
+      theme: flatly
+      toc: yes
+      toc_depth: 2
+      toc_float:
+        collapsed: yes
+---
+
+\usepackage{color}
+
+```{=html}
+<style>
+code.r{
+  font-size: 10px;
+}
+pre {
+  font-size: 12px
+}
+</style>
+
+<style>
+body {
+text-align: justify;
+font-style: normal;
+font-family: "Montserrat";
+font-size: 12px
+}
+h1.title {
+  font-size: 40px;
+  color: #000D3B;
+}
+h1 {
+  color: #B6854D;
+}
+h2 {
+  color: #172984;
+}
+h3 {
+  color: #172984;
+}
+</style>
+```
+
+```{=html}
+<style>
+.nav>li>a {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    color: #0A2687;
+}
+.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
+    color: #ffffff;
+    background-color: #09C2BC;
+}
+</style>
+```
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
+                         eval = FALSE, class.source = "fold-show")
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+options(digits = 2, encoding = "UTF8")
+```   
+ 
+
+```{r, echo=FALSE}
+rm(list = ls())
+```
+
+```{r, echo=FALSE}
+setwd(here::here())
+```
+
+
+```{r, echo=FALSE}
+#Font Stlye
+require(showtext)
+library(extrafont)
+# activar showtext
+showtext_auto()
+#font_add_google("Montserrat", "montserrat")
+#font_add_google("Raleway", "Raleway")
+loadfonts(device = "win")
+font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+```
+
+
+
+```{r, echo = FALSE}
+# Librerías que se usaron en el documCVE_ENTo
+require(chorddiag)
+require(circlize)
+require(haven)
+require(Hmisc) # %nin%
+require(dplyr)
+require(survey)
+require(srvyr)
+require(stringr)
+require(sna)
+require(expss)
+require(knitr)
+require(kableExtra)
+require(sjlabelled)
+require(gt)
+require(ggplot2)
+require(ggpubr)
+require(ggalluvial)
+require(ggsankey)
+require(ggrepel)
+require(tibble)
+require(tidyr)
+require(reshape2)
+require(openxlsx)
+```
+
+**Cuestionario Ampliado del Censo de Población y Vivienda 2020**
+
+El cuestionario ampliado se guarda en un un archivo `.RData`. 
+
+```{r, eval = FALSE}
+data <- read_sav("~/Personas_Censo 2020.SAV")
+
+save(data, 
+      file = paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
+```
+
+
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos. 
+
+
+```{r, eval = FALSE}
+load(paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
+
+mydata <- data %>%
+           select(CVE_ENT, ENT, MUN, CVE_MUN, ENT_PAIS_RES_5A, MUN_RES_5A, CVE_MUN_RES15, 
+                  ENT_PAIS_NAC, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
+                  ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI, EDAD, SEXO, AFRODES, HLENGUA, QDIALECT_INALI, 
+                  PERTE_INDIGENA, ALFABET, CAUSA_MIG, SITUA_CONYUGAL, HIJOS_NAC_VIVOS, 
+                  CONACT, OCUPACION_C, SITTRA, VACACIONES, SERVICIO_MEDICO, INCAP_SUELDO, INGTRMEN, 
+                  ACTIVIDADES_C, TIE_TRASLADO_TRAB, MED_TRASLADO_TRAB1, MED_TRASLADO_TRAB2, MED_TRASLADO_TRAB3,
+                  ASISTEN, NIVACAD, ESCOLARI, ESCOACUM,  NOMCAR_C, TIE_TRASLADO_ESCU, 
+                  MED_TRASLADO_ESC1, MED_TRASLADO_ESC2, MED_TRASLADO_ESC3,
+                  FACTOR, ESTRATO, UPM) 
+```
+
+
+**Zonas Metropolitanas 2020**
+
+Se anexa la base de datos de las Zonas Metropolitanas 2020 a la base orginal
+
+```{r, eval = FALSE}
+ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"), 
+                      startRow = 7, 
+                       skipEmptyRows = TRUE) %>%
+            select(CVE_ZM, NOM_ZM, CVE_ENT, NOM_ENT, CVE_MUN, NOM_MUN, MC, CF) %>%
+             mutate(CVE_ENT = stringr::str_pad(.$CVE_ENT, width = 3, side = c("left"), pad = "0"),
+                    CVE_MUN = stringr::str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0"))
+```
+
+
+Se asignan las claves de las zonas metropolitanas de acuerdo a las diferentes variables de interes:
+- Residencia hace 5 años 
+- Laboral
+- Estudiantil 
+- Nacimiento
+
+```{r, eval = FALSE}
+mydata <- mydata %>%
+          # Zonas Metropolitanas por residenicia
+           left_join(., ZM_2020 %>% select(-CVE_ENT), by = c("CVE_MUN")) %>%
+           # Zonas Metropolitanas en el lugar de residencia hace 5 años
+            left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>% 
+                          rename("CVE_ZM_RES15" = "CVE_ZM",
+                                 "ZM_RES15" = "NOM_ZM",
+                                 "MC_RES15" = "MC",
+                                 "CF_RES15" = "CF"), by = c("CVE_MUN_RES15" = "CVE_MUN")) %>%
+            # Zonas Metropolitanas en el lugar de trabajo
+             left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>%
+                           rename("CVE_ZM_TRABAJO" = "CVE_ZM",
+                                  "ZM_TRABAJO" = "NOM_ZM",
+                                  "MC_TRABAJO" = "MC",
+                                  "CF_TRABAJO" = "CF"), by = c("CVE_MUN_TRABAJO" = "CVE_MUN")) %>%
+             # Zonas Metropolitanas en el lugar de estudio
+              left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>%
+                            rename("CVE_ZM_ASI" = "CVE_ZM",
+                                   "ZM_ASI" = "NOM_ZM",
+                                   "MC_ASI" = "MC",
+                                   "CF_ASI" = "CF"), by = c("CVE_MUN_ASI" = "CVE_MUN"))
+
+save(mydata, file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2020.RData"))          
+```
+
+
+Se carga el archivo `Migracion por Zonas Metropolitanas_2020.RData`.   
+
+```{r}
+load(file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2020.RData"))
+names(mydata)
+# Para fines prácticos se genera un ponderador de uno 
+mydata <- mydata %>%
+           select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
+                  EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
+            mutate(M = 1) 
+
+# Se vuelve a cargar la base de datos para fines practicos
+ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"), 
+                      startRow = 7, 
+                       skipEmptyRows = TRUE) %>%
+            mutate(CVE_ENT = stringr::str_pad(.$CVE_ENT, width = 3, side = c("left"), pad = "0"),
+                   CVE_MUN = stringr::str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0"))
+```

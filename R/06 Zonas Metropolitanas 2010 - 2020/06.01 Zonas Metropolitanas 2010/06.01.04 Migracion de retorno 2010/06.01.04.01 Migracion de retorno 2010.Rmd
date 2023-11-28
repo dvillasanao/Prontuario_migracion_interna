@@ -1,0 +1,234 @@
+---
+title: "Zonas Metropolitanas 2010"
+subtitle: 'Migración de retorno'
+author: "CONAPO"
+output:
+   html_document:
+      highlight: tango
+      theme: flatly
+      toc: yes
+      toc_depth: 2
+      toc_float:
+        collapsed: yes
+---
+
+\usepackage{color}
+
+```{=html}
+<style>
+code.r{
+  font-size: 10px;
+}
+pre {
+  font-size: 12px
+}
+</style>
+
+<style>
+body {
+text-align: justify;
+font-style: normal;
+font-family: "Montserrat";
+font-size: 12px
+}
+h1.title {
+  font-size: 40px;
+  color: #000D3B;
+}
+h1 {
+  color: #B6854D;
+}
+h2 {
+  color: #172984;
+}
+h3 {
+  color: #172984;
+}
+</style>
+```
+
+```{=html}
+<style>
+.nav>li>a {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    color: #0A2687;
+}
+.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
+    color: #ffffff;
+    background-color: #09C2BC;
+}
+</style>
+```
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
+                         eval = FALSE, class.source = "fold-show")
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+options(digits = 2, encoding = "UTF8")
+```   
+ 
+
+```{r, echo=FALSE}
+rm(list = ls())
+```
+
+```{r, echo=FALSE}
+setwd(here::here())
+```
+
+
+```{r, echo=FALSE}
+#Font Stlye
+require(showtext)
+library(extrafont)
+# activar showtext
+showtext_auto()
+#font_add_google("Montserrat", "montserrat")
+#font_add_google("Raleway", "Raleway")
+loadfonts(device = "win")
+font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+```
+
+
+
+```{r, echo = FALSE}
+# Librerías que se usaron en el documCVE_ENTo
+require(chorddiag)
+require(circlize)
+require(haven)
+require(Hmisc) # %nin%
+require(dplyr)
+require(survey)
+require(srvyr)
+require(stringr)
+require(sna)
+require(expss)
+require(knitr)
+require(kableExtra)
+require(sjlabelled)
+require(gt)
+require(ggplot2)
+require(ggpubr)
+require(ggalluvial)
+require(ggsankey)
+require(ggrepel)
+require(tibble)
+require(tidyr)
+require(reshape2)
+require(openxlsx)
+```
+
+**Cuestionario Ampliado del Censo de Población y Vivienda 2010**
+
+El cuestionario ampliado se guarda en un un archivo `.RData`.
+
+```{r, eval = FALSE}
+data <- read_sav("D:/CONAPO_Respaldo/CENSO 2010/CENSO 2010/CENSO 2010/Cuestionario Ampliado 2010/Población 2010/Cuestionario Ampliado_2010_Persona.sav")
+
+#data <- data %>%
+ #        select(., c(1:96, 101:103))
+save(data, 
+      file = paste0(here::here(),"/Bases/Censo_Personas_2010.RData"))
+```
+
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.
+
+```{r, eval = FALSE}
+load(paste0(here::here(),"/Bases/Censo_Personas_2010.RData"))
+
+mydata <- data %>%
+           select(ENT, NOM_ENT, MUN, NOM_MUN, ENT_MUN, 
+                  LNACEDO_C, LNACPAIS_C,
+                  RES05EDO_C, RES05PAI_C, MUN05OTR_C,
+                  LTRABPAI_C, LTRABMUN_C, ENT_MUN_TRABAJO,
+                  EDAD, SEXO, HLENGUA, QDIALECT_C, LI_INALI, PERETN, NIVACAD, ALFABET, 
+                  ESTCON, CONACT,  OCUACTIV_C, HORTRA, INGTRMEN, SITTRA, FACTOR, ESTRATO, UPM) %>%
+            rename("CVE_ENT" = "ENT",
+                   "CVE_MUN" = "ENT_MUN",
+                   "MUN_TRAB" = "LTRABMUN_C",
+                   "CVE_MUN_TRABAJO" = "ENT_MUN_TRABAJO") %>%
+             mutate(CVE_ENT = str_pad(.$CVE_ENT, width = 3, side = c("left"), pad = "0"),
+                    CVE_MUN = str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0")) %>%
+              mutate(CVE_MUN_RES = paste0(.$RES05EDO_C, MUN05OTR_C))
+```
+
+**Zonas Metropolitanas 2010**
+
+Se anexa la base de datos de las Zonas Metropolitanas 2010 a la base orginal
+
+```{r, eval = FALSE}
+ZM_2010 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2010.xlsx"), sheet = "ZM_2010") %>%
+            select(CVE_ENT, CVE_MUN, CVE_ZM, NOM_ZM) %>%
+             mutate(CVE_ENT = stringr::str_pad(.$CVE_ENT, width = 3, side = c("left"), pad = "0"),
+                    CVE_MUN = stringr::str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0"))
+```
+
+Se asignan las claves de las zonas metropolitanas de acuerdo a las diferentes variables de interes:
+- Residencia hace 5 años 
+- Laboral
+- Estudiantil 
+- Nacimiento
+
+```{r, eval = FALSE}
+mydata <- mydata %>%
+           # Zonas Metropolitanas por residenicia
+           left_join(., ZM_2010 %>% select(-CVE_ENT), by = c("CVE_MUN")) %>%
+            # Zonas Metropolitanas en el lugar de residencia hace 5 años
+            left_join(., ZM_2010 %>% select(-CVE_ENT) %>% 
+                           rename("CVE_ZM_RES" = "CVE_ZM",
+                                  "ZM_RES" = "NOM_ZM"), by = c("CVE_MUN_RES" = "CVE_MUN")) %>%
+             # Zonas Metropolitanas en el lugar de trabajo
+             left_join(., ZM_2010 %>% select(-CVE_ENT) %>% 
+                           rename("CVE_ZM_TRABAJO" = "CVE_ZM",
+                                  "ZM_TRABAJO" = "NOM_ZM"), by = c("CVE_MUN_TRABAJO" = "CVE_MUN")) 
+
+save(mydata, file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2010.RData"))          
+```
+
+
+Se carga el archivo `Migracion por Zonas Metropolitanas_2010.RData`.   
+
+```{r}
+load(file = paste0(here::here(), "/Bases/Migracion por Zonas Metropolitanas_2010.RData"))
+
+# Para fines prácticos se genera un ponderador de uno 
+mydata <- mydata %>%
+           mutate(M = 1)
+
+# Se vuelve a cargar la base de datos para fines practicos
+ZM_2010 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2010.xlsx"), sheet = "ZM_2010") %>%
+            mutate(CVE_ENT = stringr::str_pad(.$CVE_ENT, width = 3, side = c("left"), pad = "0"),
+                   CVE_MUN = stringr::str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0"))
+```
+
+
+**Claves de entidades y municipios**
+
+Se genera un vector con el nombre de las entdades llamado `estados` para facilitar los filtros en el documento.\  
+Se genera un vector con las abreviaturas de las entidades llamado `est` para fines prácticos.\      
+Se genera un vector con las claves de los municipios, pero es importante hacer notar que tres municipios no entraron el muestreo la Encuesta Intercensal.      
+
+```{r}
+# Claves de los estados
+estados <- sjlabelled::get_labels(mydata$CVE_ENT) 
+nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza", "Colima", 
+                  "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",        
+                  "México", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", 
+                  "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala",
+                  "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas")
+
+est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO",
+         "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", 
+         "TAMS", "TLX", "VER", "YUC", "ZAC")
+
+# Claves de los municipios
+municipios <- sjlabelled::get_labels(mydata$CVE_MUN) %>% as.factor()
+#saveRDS(municipios, file = paste0(here::here(), "/Bases/municipios_2010.RDS"))
+
+# Claves de las zonas metropolitanas 
+zm <- sjlabelled::get_labels(mydata$CVE_ZM)[-2]
+nom_zm <- sjlabelled::get_labels(mydata$NOM_ZM)[-2]
+```
+

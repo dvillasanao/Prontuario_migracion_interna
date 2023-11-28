@@ -1,0 +1,925 @@
+---
+title: "Migración por lugar de nacimiento 2020"
+author: "CONAPO"
+output:
+  html_document:
+    highlight: tango
+    theme: flatly
+    toc: yes
+    toc_depth: 2
+    toc_float:
+      collapsed: yes
+---
+
+\usepackage{color}
+
+```{=html}
+<style>
+code.r{
+  font-size: 10px;
+}
+pre {
+  font-size: 12px
+}
+</style>
+
+<style>
+body {
+text-align: justify;
+font-style: normal;
+font-family: "Montserrat";
+font-size: 12px
+}
+h1.title {
+  font-size: 40px;
+  color: #000D3B;
+}
+h1 {
+  color: #B6854D;
+}
+h2 {
+  color: #172984;
+}
+h3 {
+  color: #172984;
+}
+</style>
+```
+
+```{=html}
+<style>
+.nav>li>a {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    color: #0A2687;
+}
+.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
+    color: #ffffff;
+    background-color: #09C2BC;
+}
+</style>
+```
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
+                         eval = FALSE, class.source = "fold-show")
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+options(digits = 2, encoding = "UTF8")
+```   
+ 
+
+```{r, echo=FALSE}
+rm(list = ls())
+```
+
+```{r, echo=FALSE}
+setwd(here::here())
+```
+
+
+```{r, echo=FALSE}
+#Font Stlye
+require(showtext)
+library(extrafont)
+# activar showtext
+showtext_auto()
+font_add_google("Montserrat", "montserrat")
+font_add_google("Raleway", "Raleway")
+#loadfonts(device = "win")
+#font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+```
+
+```{r, echo = FALSE}
+# Librerías que se usaron en el documCVE_ENTo
+require(chorddiag)
+require(circlize)
+require(Cairo)
+require(haven)
+require(Hmisc) # %nin%
+require(dplyr)
+require(survey)
+require(srvyr)
+require(stringr)
+require(sna)
+require(expss)
+require(knitr)
+require(kableExtra)
+require(sjlabelled)
+require(gt)
+require(ggplot2)
+require(ggpubr)
+require(ggalluvial)
+require(ggsankey)
+require(ggrepel)
+require(janitor)
+require(tibble)
+require(tidyr)
+require(reshape2)
+require(openxlsx)
+require(doMC)
+registerDoMC(cores = 18)
+```
+
+
+**Cuestionario Ampliado del Censo de Población y Vivienda 2020**
+
+El cuestionario ampliado se guarda en un un archivo `.RData`. 
+
+```{r, eval = FALSE}
+data <- read_sav("~/Personas_Censo 2020.SAV")
+save(data, 
+      file = paste0(here::here(),"/Bases/Censo_Personas_2020.RData"))
+```
+
+El cuestionario ampliado se guarda en un un archivo `.RData`.
+
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.
+
+La variable `mydata` contiene **15 015 683 observaciones** y **18 variables**.
+
+```{r, eval = FALSE}
+load(paste0(here::here(),"/Bases/Censo_Personas_2020.RData"))
+
+mydata <- data %>%
+           select(CVE_ENT, ENT, ENT_PAIS_NAC, EDAD, SEXO, AFRODES, HLENGUA, QDIALECT_INALI, PERTE_INDIGENA, 
+                  NIVACAD, ALFABET, CAUSA_MIG, SITUA_CONYUGAL, CONACT, HIJOS_NAC_VIVOS, FACTOR, ESTRATO, UPM)
+
+save(mydata, file = paste0(here::here(),"/Bases/02_Migracion de lugar de nacimiento_2020.RData"))
+```
+
+✔️A partir de aquí se pueden correr los códidos 👇.
+Se carga el archivo `Migracion interna_2020.RData`.
+
+```{r}
+load(file = paste0(here::here(), "/Bases/02_Migracion de lugar de nacimiento_2020.RData"))
+
+# Para fines prácticos se genera un ponderador de uno 
+mydata <- mydata %>%
+           select(CVE_ENT, ENT, ENT_PAIS_NAC, FACTOR, ESTRATO, UPM) %>%
+            mutate(M = 1) %>%
+             mutate(NOM_ENT = as.factor(.$CVE_ENT)) %>%
+              ungroup()
+```
+
+**Entidades**
+
+Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento. Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.
+
+```{r}
+# Claves de los estados
+estados <- sjlabelled::get_labels(mydata$CVE_ENT)
+nom_estados <- sjlabelled::get_labels(mydata$ENT)
+
+est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO", "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", "TAMS", "TLX", "VER", "YUC", "ZAC")
+
+nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza", "Colima", 
+                  "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",    
+                  "México", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", 
+                  "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", 
+                  "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas")
+est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO",
+         "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", 
+         "TAMS", "TLX", "VER", "YUC", "ZAC")
+
+# Se le asignan las etiquetas a los nombres de los estados 
+levels(mydata$NOM_ENT) <- estados
+```
+
+**Población total**
+
+Se identifica a la población total dentro del cuestionario ampliado.
+
+```{r}
+# Clave de los estados
+tablas <- str_pad(rep(1:32), width = 3, pad = "0")
+
+Pob.total <- mydata %>%
+              as.data.frame() %>%
+               summarise(Pob_Total = sum(.$FACTOR))
+```
+
+```{r, echo = FALSE}
+Pob.total %>%  
+ as.data.frame() %>%
+   gt() %>% 
+    fmt_integer(columns = 1, sep = " ") %>%
+     tab_header(title = "Población total 2020") %>%
+      tab_options(heading.title.font.size = 12, 
+                  heading.align = "center",
+                  heading.subtitle.font.size = 10,
+                  table.align = "center",
+                  column_labels.font.weight = "bold",
+                  table.font.names = 'montserrat',
+                  table.font.size = 8) %>%  
+       as_raw_html()
+```
+
+# Muestro Complejo
+
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a toda la población.
+
+```{r, eval = FALSE}
+options(survey.lonely.psu = "adjust")
+
+MC <- mydata %>%
+       filter(ENT_PAIS_NAC %in% tablas) %>%
+        svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+saveRDS(MC, file = paste0(here::here(), "/Output/Estado/02_Lugar de nacimiento/2020/MC_estado.RDS"))
+```
+
+# Nivel estatal {.tabset .tabset-pills}
+
+## Migración por lugar de nacimiento {.tabset .tabset-pills}
+
+Se genera una matriz cruzada del lugar de de nacimiento a nivel estatal, utilizando la función `svytable` de la paquetería `survey`.  
+
+```{r}
+MC <- readRDS(paste0(here::here(), "/Output/Estado/02_Lugar de nacimiento/2020/MC_estado.RDS"))
+Migrantes <- svytable(~CVE_ENT + ENT_PAIS_NAC, design = MC)
+```
+
+La función `cross_cases()` de la paquetería `expss`  se utiliza para crear tablas de contingencia cruzadas a partir de dos o más variables categóricas. Utilizando el comando `weight`, permite ponderar las observaciones "factores de expansión" en la tabla.   
+
+Se quita la diagonal a la matriz cruadrada con la función `diag.remove()` de la paquetería `sna`, donde esta función reemplaza los elementos de la diagonal principal de una matriz por un valor nulo o por el valor especifico.     
+
+```{r}
+Migrantes <- Migrantes %>%
+              as.data.frame() %>%
+               expss::cross_cases(CVE_ENT, ENT_PAIS_NAC, weight = Freq) %>%
+                as.data.frame() %>%
+                 slice(-33) %>% 
+                  select(-row_labels) #%>%
+                   #mutate(across(where(is.numeric), ~ prettyNum(., big.mark = " ", preserve.width = "none"))) %>%
+                    #sna::diag.remove(remove.val = 0) 
+
+rownames(Migrantes)<- stringr::str_wrap(estados, 50)
+colnames(Migrantes) <- stringr::str_wrap(estados, 50)
+
+wb <- createWorkbook()
+addWorksheet(wb, "MNac. 2020")
+writeData(wb, 1, Migrantes, colNames = TRUE, rowNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.xlsx"), overwrite = TRUE)
+
+save(Migrantes, file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
+```
+
+**Matriz de migración en el lugar de nacimiento**
+
+::: {style="height:500px;overflow:auto;"}
+```{r, echo = FALSE}
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column() 
+
+tabla %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de migración en el lugar de nacimiento", 
+              subtitle = "Nivel estatal") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+      sub_missing(columns = everything(), missing_text = "0") %>%
+       as_raw_html()
+```
+:::
+
+## Gráfico dínámico
+
+Gráfico dinámico de migración por lugar de nacimiento a nivel estatal.
+
+```{r, fig.width=7, fig.height=5, fig.align='center'}
+#devtools::install_github("mattflor/chorddiag")
+require(chorddiag)
+
+load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0) 
+
+# Paleta de colores
+groupColors <- viridis::viridis(32, option = "A")
+
+p <- chorddiag(tabla, 
+               groupColors = groupColors, 
+               groupnamePadding = 10, 
+               height = 500, 
+               width = 500,
+               margin = 100,
+               groupThickness = 0.07,
+               groupPadding = 0.8,
+               groupnameFontsize = 10,
+               fadeLevel = 1,
+               chordedgeColor = "#D0D0CF", 
+               showTicks = TRUE)
+
+p
+require(htmlwidgets)
+htmlwidgets::saveWidget(p, paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"), selfcontained = TRUE)
+#require(webshot)
+#webshot(url = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"),
+ #         file = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.png"),
+  #                cliprect = "viewport")
+```
+
+## Gráficos migración de nacimiento {.tabset .tabset-pills}
+
+### ChordDiagram
+
+```{r, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0)  
+
+rownames(tabla) <- stringr::str_wrap(nom_estados, 30)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 30)
+```
+
+
+```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
+# Paleta de colores
+groupColors <- viridis::viridis(32, option = "A")
+
+circos.clear()
+cairo_pdf(paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/ChordDiagram de MNac a nivel estatal.pdf"), width = 20, height = 20)
+circos.par(start.degree = 90, 
+           gap.degree = 3, 
+           track.margin = c(-0.1, 0.1), 
+           points.overflow.warning = FALSE)
+
+par(mar = rep(0, 4))
+
+chordDiagram(x  = tabla, 
+             grid.col = groupColors,
+             order = union(rownames(estados), colnames(estados)),
+             keep.diagonal = FALSE,
+             transparency = 0.25,
+             directional = 1,
+             direction.type = c("arrows", "diffHeight"), 
+             diffHeight  = -0.04,
+             annotationTrack = "grid", 
+             annotationTrackHeight = mm_h(c(10)),
+             preAllocateTracks = 1, 
+             big.gap = 40,
+             link.arr.type = "big.arrow", 
+             link.lwd = 0.5,
+             link.visible = TRUE,
+             link.largest.ontop = FALSE)
+
+# Add text and axis
+circos.trackPlotRegion(track.index = 1,
+                       bg.border = NA, 
+                       panel.fun = function(x, y) {
+                                                   xlim = get.cell.meta.data("xlim")
+                                                   ylim = get.cell.meta.data("ylim")
+                                                   sector.name = get.cell.meta.data("sector.index")
+                                                   # Add names to the sector. 
+                                                   circos.text(x = mean(xlim), 
+                                                               y = ylim[1] + 0.5, 
+                                                               labels = sector.name, 
+                                                               facing = "clockwise",
+                                                               niceFacing = TRUE, 
+                                                               adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(20),
+                                                               col = groupColors,
+                                                              font = 2)
+                                                   # Add graduation on axis
+                                                    circos.axis(h = "top",
+                                                                labels = c(0, 20, 50, 70, 100, 500, 1000, 5000, 10000,30000,50000,100000, 200000),
+                                                                major.tick.length = 0.5,
+                                                                minor.ticks = 4, 
+                                                                labels.cex = fontsize(12),
+                                                                sector.index = sector.name,
+                                                                track.index = 2,
+                                                                labels.niceFacing = TRUE,
+                                                                labels.pos.adjust = c(0, 0.8))
+                                                    }
+)
+dev.off()
+```
+
+### Gráfico por estados
+
+Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
+
+```{r, results = FALSE, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0) 
+
+rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
+
+
+# Nombre de los estados 
+estado <- stringr::str_wrap(nom_estados, 50)
+
+filtro_est <- tabla %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) 
+
+### Sacar el promedio de los flujos migratiorios para determinar como se van a grupar los estados 
+#### Es importante correr la tabla1[[x]] sin filtros para determinar el número promedio de flujos de migración
+#### Filtro <<<<< filter(value > 0 & rn != estado[x]) %>%
+#filtro_mig <- sapply(1:32, function(x)
+                      mean(tail(sort(tabla1[[x]]), 1), na.rm = TRUE))
+#p <- data.frame(estados = est,
+ #               filtro_estados = filtro_mig,
+  #               NUM = 1:32)
+#write.xlsx(p, file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Filtro a nivel estatal.xlsx"))
+
+filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Filtro a nivel estatal.xlsx"), colNames = TRUE) %>% 
+               pull(filtro_estados)
+
+tabla1 <- lapply(1:32, function(x){
+                         filtro_rn  <- filtro_est %>%
+                                        mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                         group_by(rn) %>%
+                                          summarise(Inm = sum(value, na.rm = TRUE))
+
+                         filtro_cn  <- filtro_est %>%
+                                        mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                         group_by(cn) %>%
+                                          summarise(Emg = sum(value, na.rm = TRUE))
+
+                         filtro <- filtro_rn %>%
+                                    full_join(., filtro_cn, by = c("rn" = "cn")) %>%
+                                     mutate(value = sum_row(.$Inm, .$Emg, na.rm = TRUE)) %>%
+                                      filter(value > filtro_mig[x] & rn != estado[x]) %>%
+                                       pull(rn)
+
+                          tabla  %>%
+                           as.data.frame() %>%
+                            tibble::rownames_to_column(var = "rn") %>%
+                             melt(., id.vars = "rn", variable.name = "cn") %>%
+                              mutate_if(is.factor, as.character) %>%
+                               mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                mutate(rn = case_when(.$rn %in% estado[x] ~ .$rn,
+                                                      .$rn %in% filtro ~ .$rn,
+                                                      .$rn %nin% filtro ~ "Otros estados"),
+                                       cn = case_when(.$cn %in% estado[x] ~.$cn, 
+                                                      .$cn %in% filtro ~ .$cn,
+                                                      .$cn %nin% filtro ~ "Otros estados")) %>%
+                                 dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                               
+                                  column_to_rownames(., var = "rn") 
+  }
+)
+
+## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+wb <- createWorkbook()
+for(i in 1:32){
+     tabla <- tabla1[[i]] %>%
+                as.data.frame() %>%
+                 adorn_totals(c("row", "col"), 
+                               fill = "-", 
+                                na.rm = TRUE, 
+                                 name = "Total",,,,contains(colnames(tabla1[[i]])))
+                 
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Estado/02_Lugar de nacimiento/2020/Matriz MNac por estados_2020_Reduccion.xlsx"), 
+               overwrite = TRUE)
+}
+```
+
+```{r}
+tabla2 <- lapply(1:32, function(x){
+                          # Paleta de colores 
+                           groupColors <- viridis::viridis(max(nrow(tabla1[[x]]), ncol(tabla1[[x]])), option = "A")
+                          
+                            circos.clear()
+                             chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                          grid.col = groupColors)  %>%
+                              pull(col)
+  }
+)
+```
+
+```{r, eval = FALSE}
+pdf(paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/ChordDiagram de MNac para cada estado.pdf"), width = 20, height = 20)
+for(i in 1:32){
+# Paleta de colores 
+groupColors <- viridis::viridis(max(nrow(tabla1[[i]]), ncol(tabla1[[i]])), option = "A")
+
+circos.clear()  
+circos.par(start.degree = 90, 
+           gap.degree = 3, 
+           clock.wise = FALSE,
+           track.margin = c(-0.07, 0.1), 
+           points.overflow.warning = FALSE)
+
+chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
+             grid.col = groupColors,
+             col = tabla2[[i]],
+             #order = union(rownames(estados), colnames(estados)),
+             keep.diagonal = FALSE,
+             transparency =  0.5,
+             directional = 1,
+             direction.type = c("arrows", "diffHeight"), 
+             diffHeight  = -0.04, # adjust the starting end of the link
+             annotationTrack = "grid", 
+             annotationTrackHeight = c(0.05, 0.1),
+             preAllocateTracks = 1, 
+             big.gap = 40, # Gap between row sectors and column sectors.
+             link.arr.type = "big.arrow", 
+             link.lwd = 3,    # Line width width for link borders
+             link.lty = 1,
+             link.visible = tabla1[[i]] > 0,
+             link.largest.ontop = TRUE)
+
+# Add text and axis
+circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
+                       bg.border = NA, 
+                       panel.fun = function(x, y) {
+                                                   xlim = get.cell.meta.data("xlim")
+                                                   ylim = get.cell.meta.data("ylim")
+                                                   sector.name = get.cell.meta.data("sector.index")
+                                                  # Add names to the sector. 
+                                                   circos.text(x = mean(xlim), 
+                                                               y = ylim[1] + 0.1, 
+                                                               labels = sector.name, 
+                                                               facing = "clockwise",
+                                                               niceFacing = TRUE, 
+                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(20),
+                                                               col = groupColors,
+                                                               font = 1)
+                                                  # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 5, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               major.tick.length = 0.5,
+                                                               minor.ticks = 4, 
+                                                               labels.cex = fontsize(12),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                }
+  )
+}
+dev.off()
+```
+
+
+**Etiquetas**
+
+```{r}
+ etiquetas  <- lapply(1:32, function(x){
+                        p <- tabla1[[x]] %>% 
+                              as.data.frame() %>%
+                               tibble::rownames_to_column(var = "rn") %>%
+                                melt(., id.vars = "rn", variable.name = "cn") %>%
+                                 as_tibble() %>%
+                                  ggplot() + 
+                                   geom_bar(aes(x = value, fill = rn))  + 
+                                    geom_bar(aes(x = value, fill = cn))  + 
+                                     theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                                            text = element_text(family = "montserrat"),
+                                             axis.text = element_blank(),
+                                              axis.title = element_blank(),
+                                               strip.text = element_text(size = 8, face = "bold", family = "montserrat"),
+                                                legend.key.size = unit(0.3, "cm"),
+                                                 legend.spacing.y = unit(0.2, "cm"),
+                                                  legend.text = element_text(size = 6, family = "montserrat"),
+                                                   legend.title = element_text(size = 8, family = "montserrat")) + 
+                                       scale_fill_viridis_d(option = "A") + 
+                                        guides(fill = guide_legend(ncol = 1)) + 
+                                         labs(fill = stringr::str_wrap(nom_estados[x], 50),
+                                              color = stringr::str_wrap(nom_estados[x], 50))
+                         leg <- get_legend(p)
+                          as_ggplot(leg)
+ })
+path = paste0(here::here(), "/Graficos/Estado/02_Lugar de nacimiento/2020/Etiquetas a nivel estatal.pdf")
+ggexport(etiquetas, width = 5, height = 5, dpi = 400, filename = path)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Gráfico Sankey
+
+
+```{r, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
+
+Migrantes <- Migrantes %>%
+              sna::diag.remove(remove.val = 0) 
+
+# Etiquetas 
+estados <- est 
+colnames(Migrantes) <- estados
+rownames(Migrantes) <- estados
+```
+
+
+```{r, eval=FALSE}
+tabla <-  Migrantes %>% 
+           as.data.frame() %>%
+            tibble::rownames_to_column(var = "rn") %>%
+             melt(., id.vars = "rn", variable.name = "cn") %>%
+              as_tibble() %>%
+               mutate(rn = forcats::fct_relevel(.$rn, estados),
+                      cn = forcats::fct_relevel(.$cn, estados)) %>%
+                filter(value >= 0)   
+```
+
+
+```{r, eval = FALSE}
+p <- tabla %>% 
+       ggplot(aes(axis1 = rn, 
+                   axis2 = cn, 
+                    y = value),  # c("value", "freq", "tasa")
+               reverse = FALSE, 
+                na.rm = TRUE) +
+        geom_alluvium(aes(fill = rn),
+                       curve_type = "quintic", 
+                        color = "transparent", 
+                         alpha = 0.7, 
+                          lwd = 0.001, 
+                           width = 1/5,
+                            reverse = FALSE) +
+          geom_stratum(aes(fill = cn), 
+                        color = "white", 
+                         alpha = 0.65,  
+                          lwd = 0.001, 
+                           width = 1/5,
+                            reverse = FALSE) +
+           geom_text_repel(aes(label = ifelse(after_stat(x) == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""), 
+                               fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                            stat = "stratum", 
+                             size = 3, 
+                              direction = "y", 
+                               nudge_x = -.2,
+                                min.segment.length = unit(1, "lines"),
+                                 force = 1,
+                                  force_pull = 0,
+                                   family = "montserrat",
+                                    reverse = FALSE) +
+            geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                             stat = "stratum", 
+                              size = 3,
+                               direction = "y", 
+                                nudge_x = .2, 
+                                 force = 1,
+                                  force_pull = 0,
+                                   family = "montserrat",
+                                    reverse = FALSE) +
+             theme_void() + 
+              theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                     text = element_text(family = "montserrat"),
+                      axis.text = element_blank(),
+                       axis.title = element_blank(),
+                        strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                         legend.key.size = unit(0.5, "cm"),
+                          legend.text = element_text(size = 9, family = "montserrat"),
+                           legend.position = c(1, .5)) + 
+               scale_x_discrete(expand = c(-0.1, 0.35)) +
+                scale_fill_viridis_d(option = "A", end = 0.9, begin = 0.2) +
+                 guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                  labs(fill = "", 
+                       color = "")
+
+path = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/GSankey de MNac a nivel estatal.pdf")
+ggexport(list = p, width = 14, height = 10, dpi = 400, filename = path)
+```
+
+
+**Desagregado por estado**
+
+```{r, eval = FALSE}
+p <- lapply(1:32, function(x){
+                   tabla <- tabla %>%
+                             mutate(rn = forcats::fct_relevel(.$rn, estados),
+                                    cn = forcats::fct_relevel(.$cn, estados)) %>%
+                              mutate(value = ifelse(.$rn %in% estados[x] | .$cn %in% estados[x], value, 0)) 
+ 
+                    tabla %>% 
+                     ggplot(aes(axis1 = rn, 
+                                 axis2 = cn, 
+                                  y = value),  # c("value", "freq", "tasa")
+                             reverse = FALSE, 
+                              na.rm = TRUE) + 
+                      geom_alluvium(aes(fill = rn),  
+                                     color = "transparent", 
+                                      alpha = 0.8, 
+                                       lwd = 0.001, 
+                                        width = 1/5,
+                                         reverse = FALSE) +
+                       geom_stratum(aes(fill = rn), 
+                                     color = "#F1F1F1", 
+                                      alpha = 1, 
+                                       lwd = 0.001, 
+                                        width = 1/5,
+                                         reverse = FALSE) +
+                         geom_text_repel(aes(label = ifelse(after_stat(x)  == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                             fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                                           stat = "stratum", 
+                                            size = 3,
+                                             direction = "y", 
+                                              nudge_x = -.2, 
+                                               force = 1,
+                                                        force_pull = 0,
+                                                         family = "montserrat",
+                                                          reverse = FALSE) +
+                          geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                              fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                                           stat = "stratum", 
+                                            size = 3,
+                                             direction = "y", 
+                                              nudge_x = .2, 
+                                               force = 1,
+                                                force_pull = 0,
+                                                 family = "montserrat",
+                                                  reverse = FALSE) +
+                            theme_void() + 
+                             theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                                    text = element_text(family = "montserrat"),
+                                     axis.text = element_blank(),
+                                      axis.title = element_blank(),
+                                       strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                                        legend.key.size = unit(0.5, "cm"),
+                                         legend.text = element_text(size = 9, family = "montserrat"),
+                                          legend.position = c(1, .5)) + 
+                              scale_x_discrete(expand = c(-0.1, 0.35)) +
+                               scale_fill_viridis_d(option = "A", end = 0.9, begin = 0.2) +
+                                guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                                 labs(fill = "", 
+                                      color = "")
+              }
+        )
+
+path = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/GSankey de MNac desagregado por estados_Absolutos.pdf")
+ggexport(list = p, width = 14, height = 10, dpi = 400, filename = path)
+```
+
+## Indicadores {.tabset .tabset-pills}
+
+Se realizan cálculos generales de migración\
+- Residentes\
+- Inmigrantes\
+- Emigrantes\
+- % Inmigrantes\
+- % Emigrante\
+- Migración bruta\
+- Migración Neta\
+- % Tasa de migración bruta\
+- % Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora
+
+```{r, eval = FALSE}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_ENT) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
+
+rownames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
+colnames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>%
+                tidyr::gather(CVE_ENT, Value, -rowname)%>%
+                 filter(rowname == CVE_ENT) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+Inmigrantes <- Migrantes %>% 
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_ENT") %>%
+                  melt(., id.vars = "CVE_ENT", variable.name = "ENT_PAIS_NAC") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_ENT != ENT_PAIS_NAC) %>%
+                      group_by(CVE_ENT) %>%
+                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+Emigrantes <- Migrantes %>% 
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "CVE_ENT") %>%
+                 melt(., id.vars = "CVE_ENT", variable.name = "ENT_PAIS_NAC") %>%
+                  mutate_at(vars(3), as.numeric) %>%
+                   as_tibble() %>%
+                    filter(CVE_ENT != ENT_PAIS_NAC) %>%
+                     group_by(ENT_PAIS_NAC) %>%
+                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                       rename("CVE_ENT" = "ENT_PAIS_NAC") 
+
+tabla <- Pob.Total %>%
+          left_join(., Residentes, by = c("CVE_ENT")) %>%
+          left_join(., Inmigrantes, by = c("CVE_ENT")) %>%
+          left_join(., Emigrantes, by = c("CVE_ENT")) %>%
+           mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                  Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                  Tasa.Inmig = (.$Inmigrantes/.$Pob.Total)/5*1000,
+                  Tasa.Emig = (.$Emigrantes/.$Pob.Total)/5*1000,
+                  Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                  Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(),"/Output/Estado/02_Lugar de nacimiento/2020/Indicadores de migracion de nacimiento a nivel estatal 2020.xlsx"), overwrite = TRUE)
+
+save(tabla, file = paste0(here::here(),"/Output/Estado/02_Lugar de nacimiento/2020/Indicadores de migracion de nacimiento a nivel estatal a nivel estatal 2020.RData"))
+```
+
+```{r, echo = FALSE}
+load(file = paste0(here::here(),"/Output/Estado/02_Lugar de nacimiento/2020/Indicadores de migracion de nacimiento a nivel estatal a nivel estatal 2020.RData"))
+
+tabla %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  migración de naciemiento", 
+              subtitle = "Nivel estatal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:7, 11), sep_mark = " ") %>%
+       fmt_number(columns = c(8:10), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+
+# Referencias
+
+Librerias que se usaron en el documento
+
+```{r, echo = FALSE}
+sesion_info <- devtools::session_info()
+kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),
+                    c(package, loadedversion, source))) %>%
+ kable_styling(font_size = 10, 
+               bootstrap_options = c("condensed", "responsive", "bordered")) %>%
+  kable_classic(full_width = TRUE, html_font = "montserrat") %>% 
+   scroll_box(width = "100%", height = "150px") %>%  
+    gsub("font-size: initial !important;", "font-size: 10pt !important;", .)
+```
