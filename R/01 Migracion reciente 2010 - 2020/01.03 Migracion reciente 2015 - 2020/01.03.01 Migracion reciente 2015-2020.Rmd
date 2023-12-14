@@ -525,14 +525,16 @@ for(i in 1:32){
                   file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2020/Matriz MR5a por estados_2015 -2020_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2020/Tabla MR5a a por estados.RDS"))
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2020/Tabla MR5a a por estados.RDS"))
 ```
 
-
-```{r}
+```{r, eval = FALSE}
 tabla2 <- lapply(1:32, function(x){
                           # Paleta de colores 
-                           groupColors <- viridis::viridis(max(nrow(tabla1[[x]]), ncol(tabla1[[x]])), option = "A")
-                          
+                           #groupColors <- viridis::viridis(max(nrow(tabla1[[x]]), ncol(tabla1[[x]])), option = "A")
+                           #groupColors <- colorRampPalette(brewer.pal(8, "Set2"))(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))
+                            groupColors <- colorRampPalette(brewer.pal(8, "Purples"))(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))    
                            circos.clear()
                             chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
                                           grid.col = groupColors)  %>%
@@ -541,11 +543,62 @@ tabla2 <- lapply(1:32, function(x){
 )
 ```
 
+
+```{r}
+#require(rlist)
+#require(colorBlindness)
+#require(wesanderson)
+require(pals)
+#Paleta1
+colores <- colorRampPalette(pals::kovesi.linear_blue_5_95_c73(50))(32)
+colores <- c("#00014E", "#0D02A4", "#171CE4", "#2E59FB", "#2D7CFD", "#4782E2", "#64A0E2", "#80ADDF", "#91B9E5", "#8CB5DC", "#909ECA",  "#8C91C3", "#8C7CB9", "#8B68AF","#88459F","#84258B","#7F0E7A", "#6E096A", "#660762", "#5D045A", "#550252", "#4D004B", "#561655")
+
+#Paleta2
+colores <- colorRampPalette(pals::parula(100))(50)
+colores <- c("#00014E", "#072789", "#224BC6",  "#036CDE", "#107CD6", "#0E8DD1","#069ECB","#0AAABD","#20B2AA","#39B89B","#63BD85", "#8EBE72","#B3BC63",  "#C9BA5A", "#E8B94B", "#FCC236", "#F8D625")
+
+#Paleta3
+colores <- colorRampPalette(pals::inferno(100))(50)
+colores <- colorRampPalette(pals::ocean.matter(100))(50)
+colores <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
+
+#Paleta4 (estudinatil)
+colores <- colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)  
+
+#Paleta5
+colores <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
+colores <- c("#000C7D", "#0B14A0","#2C12A7","#560D9E", "#780896","#8E0390","#AD0088", "#CA0081",  "#E40679", "#F8276E", "#FD4762",  "#FF6854", "#FF8643", "#FFA22F", "#FFB821", "#FFBF1F")
+
+#paleta6 (Nacimiento)
+colores <- colorRampPalette(LaCroixColoR::lacroix_palette("PassionFruit", n = 50, type = "continuous"))(25)
+colores <- c("#C70E7B", "#D1207C", "#DC327D", "#E7467F", "#F25880", "#F86C7C", "#E58560", "#D49E46", "#C2B72A", "#B0D00F", "#9ADC0E", "#7CD332", "#60CA57", "#43C17B", "#25B99F", "#24ABAC", "#359CA8", "#468DA4", "#577DA1", "#686E9D", "#5D6093", "#4B5188", "#39437E", "#283573", "#172869")
+
+colores <- colorRampPalette(rcartocolor::carto_pal("ag_GrnYl", n = 11))(25)
+colores <- rev(colorRampPalette(rcartocolor::carto_pal("Teal", n = 11))(25))
+colores <- c("#E2E44E",  "#DBEA5F", "#CAE461", "#BAE063", "#A9DB66", "#99D569", "#8BD06D", "#7BCA70", "#6DC373", "#60BD76", "#52B779", "#45B17B", "#39AB7E", "#2DA37E", "#229C7E", "#19957F", "#128E7F", "#0D877E", "#0D807C", "#0D787A", "#117177", "#146A74", "#196370", "#1E5C6C", "#245668", "#2A5674", "#2E5D7A", "#326481", "#366B87", "#3A728E", "#3F7994", "#44819A", "#49889F", "#4E8FA5", "#5496AA", "#5A9CAE", "#61A3B3", "#68ABB8", "#6FB1BC", "#76B7C0", "#7DBDC4", "#85C3C8", "#8CC9CC", "#96CFD0", "#9FD4D4", "#A8DAD8", "#B2DFDC")
+
+colores <- colorRampPalette(pals::ocean.curl(50))(15) 
+colores <- c("#6064bf", "#5662A6", "#F2D22E", "#F27127", "#F23E2E")
+```
+
+
+```{r}
+tabla2 <- lapply(1:32, function(x){
+             #groupColors <- colorRampPalette(wesanderson::wes_palette("Zissou1"))(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))
+             groupColors <- colorRampPalette(colores)(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))
+             c(matrix(data = paste0(rep(groupColors, length.out = nrow(tabla1[[x]])*ncol(tabla1[[x]])), "7F"), nrow = nrow(tabla1[[x]]), ncol = ncol(tabla1[[x]])))
+})
+```
+
+
+
+
 ```{r, eval = FALSE, results='hide'}
 pdf(paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2020/ChordDiagram de MR5a desagregado por estado.pdf"), width = 25, height = 23)
 for(i in 1:32){
 # Paleta de colores 
-groupColors <- viridis::viridis(max(nrow(tabla1[[i]]), ncol(tabla1[[i]])), option = "A")
+#groupColors <- viridis::viridis(max(nrow(tabla1[[i]]), ncol(tabla1[[i]])), option = "A")
+groupColors <- colorRampPalette(colores)(max(ncol(tabla1[[i]]), nrow(tabla1[[i]])))   
 
 circos.clear()
 circos.par(start.degree = 90, 
@@ -589,7 +642,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(20),
-                                                               col = groupColors,
+                                                               col = "black",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
@@ -1280,13 +1333,30 @@ tabla2 <- lapply(1:32, function(x){
 )
 ```
 
+```{r}
+#tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MR5a a nivel municipal.RDS"))
+#paleta <- colorRampPalette(rtist::rtist_palette("warhol"))(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))
+#paleta <- colorRampPalette(colorBlindness:::Blue2DarkOrange18Steps)(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))
+#paleta <- colorRampPalette(wesanderson::wes_palette("AsteroidCity1"))(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))
+
+# Elegidas 
+#groupColors <- colorRampPalette(wesanderson::wes_palette("Rushmore1"))(max(ncol(tabla1[[i]]), nrow(tabla1[[i]])))   
+#paleta <- colorRampPalette(wesanderson::wes_palette("Zissou1"))(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))
+tabla2 <- lapply(1:32, function(x){
+             paleta <- colorRampPalette(pals::parula(n = 25))(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))
+             c(matrix(data = paste0(rep(paleta, length.out = nrow(tabla1[[x]])*ncol(tabla1[[x]])), "7F"), nrow = nrow(tabla1[[x]]), ncol = ncol(tabla1[[x]])))
+})
+```
+
+
 
 ```{r}
 pdf(paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2020/ChordDiagram de MR5a desagregado por estado.pdf"), width = 27, height = 25)
 for(i in 1:32){
 # Estuctura de colores
-groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))), option = "A"), 
+groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))), option = "E"), 
                         nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
+#groupColors <- colorRampPalette(wesanderson::wes_palette("Zissou1"))(max(ncol(tabla1[[i]]), nrow(tabla1[[i]])))
 
 par(mar = rep(1.5, 4))
 
@@ -1331,7 +1401,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(20),
-                                                               col = groupColors,
+                                                               col = "black",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",

@@ -94,6 +94,7 @@ font_add_google("Raleway", "Raleway")
 # Librerías que se usaron en el documCVE_ENTo
 require(chorddiag)
 require(circlize)
+require(Cairo)
 require(haven)
 require(Hmisc) # %nin%
 require(dplyr)
@@ -364,17 +365,17 @@ load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2020/Ma
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0)  
 
-rownames(tabla) <- stringr::str_wrap(nom_estados, 15)
-colnames(tabla) <- stringr::str_wrap(nom_estados, 15)
+rownames(tabla) <- stringr::str_wrap(nom_estados, 30)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 30)
 ```
 
 ```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
 # Paleta de colores
-groupColors <- viridis::viridis(32, option = "A")
+groupColors <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(max(ncol(tabla), nrow(tabla))))
 
 circos.clear()
 #svglite::svglite(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst a nivel estatal.svg"), width = 20, height = 20)
-pdf(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst a nivel estatal.pdf"), width = 20, height = 20)
+cairo_pdf(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst a nivel estatal.pdf"), width = 20, height = 20, family = "montserrat", bg = "transparent", fallback_resolution = 400)
 circos.par(start.degree = 90, 
            gap.degree = 3, 
            track.margin = c(-0.1, 0.1), 
@@ -414,8 +415,8 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(20),
-                                                               col = groupColors,
-                                                              font = 2)
+                                                               col = "#2E334D",
+                                                               font = 2)
                                                    # Add graduation on axis
                                                     circos.axis(h = "top",
                                                                 labels = c(0, 20, 50, 70, 100, 500, 1000, 5000, 10000,30000,50000,100000, 200000),
@@ -425,7 +426,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                 sector.index = sector.name,
                                                                 track.index = 2,
                                                                 labels.niceFacing = TRUE,
-                                                                labels.pos.adjust = c(0, 0.8))
+                                                                labels.pos.adjust = c(0, 1.5))
                                                     }
 )
 dev.off()
@@ -441,18 +442,15 @@ load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2020/Ma
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
 
-rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
-colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
-
+rownames(tabla) <- stringr::str_wrap(nom_estados, 20)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 20)
+rownames(tabla) == colnames(tabla)
 
 # Nombre de los estados 
-estado <- stringr::str_wrap(nom_estados, 50)
-
-# Paleta de colores 
-groupColors <- viridis::viridis(32, option = "A")
+estado <- stringr::str_wrap(nom_estados, 20)
 
 ################################## Filtro  #####################################
-filtro_est <- Migrantes %>%
+filtro_est <- tabla %>%
                as.data.frame() %>%
                 tibble::rownames_to_column(var = "rn") %>% 
                  melt(., id.vars = "rn", variable.name = "cn") %>%
@@ -526,24 +524,25 @@ for(i in 1:32){
 
 ```{r}
 tabla2 <- lapply(1:32, function(x){
-                          # Paleta de colores 
-                          groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))), option = "A"), 
-                                               nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
-                          
-                           circos.clear()
-                            chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                          grid.col = groupColors)  %>%
-                             pull(col)
-  }
-)
+             paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))))
+             groupColors <- setNames(paleta,  
+                                      nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
+             circos.clear()
+              chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                            transparency = 0.4,
+                             grid.col = groupColors)  %>%
+                pull(col)
+})
 ```
 
+
 ```{r, eval = FALSE, results='hide'}
-pdf(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst para cada estado.pdf"), width = 20, height = 20)
+cairo_pdf(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst para cada estado.pdf"), width = 7, height = 7, 
+          family = "montserrat", onefile = TRUE)
 for(i in 1:32){
 # Paleta de colores 
-groupColors <- viridis::viridis(max(nrow(tabla1[[i]]), ncol(tabla1[[i]])), option = "A")
-
+groupColors <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(max(ncol(tabla1[[i]]), nrow(tabla1[[i]]))))   
+          
 circos.clear()
 circos.par(start.degree = 90, 
            gap.degree = 3, 
@@ -551,10 +550,12 @@ circos.par(start.degree = 90,
            track.margin = c(-0.07, 0.1), 
            points.overflow.warning = FALSE)
 
+par(mar = rep(0, 4))
+
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-             #order = union(rownames(estados), colnames(estados)),
+            # order = union(rownames(tabla1[[i]]), colnames(tabla1[[i]])),
              keep.diagonal = FALSE,
              transparency =  0,
              directional = 1,
@@ -585,15 +586,15 @@ circos.trackPlotRegion(track.index = 1,
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(20),
-                                                               col = groupColors,
+                                                               cex = fontsize(7),
+                                                               col = "#4F2841",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
                                                                labels = c(0, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
                                                                major.tick.length = 0.5,
                                                                minor.ticks = 4, 
-                                                               labels.cex = fontsize(12),
+                                                               labels.cex = fontsize(5),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
@@ -603,6 +604,7 @@ circos.trackPlotRegion(track.index = 1,
 }
 dev.off()
 ```
+
 **Etiquetas**
 
 ```{r}
@@ -624,7 +626,7 @@ dev.off()
                                                  legend.spacing.y = unit(0.2, "cm"),
                                                   legend.text = element_text(size = 6, family = "montserrat"),
                                                    legend.title = element_text(size = 8, family = "montserrat")) + 
-                                       scale_fill_viridis_d(option = "A") + 
+                                       scale_fill_manual(values = rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(max(ncol(tabla1[[x]]), nrow(tabla1[[x]]))))) + 
                                         guides(fill = guide_legend(ncol = 1)) + 
                                          labs(fill = stringr::str_wrap(nom_estados[x], 50),
                                               color = stringr::str_wrap(nom_estados[x], 50))
@@ -632,7 +634,8 @@ dev.off()
                           as_ggplot(leg)
  })
 path = paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/Etiquetas a nivel estatal.pdf")
-ggexport(etiquetas, width = 5, height = 5, dpi = 400, filename = path)
+require(Cairo)
+ggexport(etiquetas, width = 5, height = 5, units = c("in"), dpi = 400, filename = path, device = cairo_pdf)
 ```
 
 
