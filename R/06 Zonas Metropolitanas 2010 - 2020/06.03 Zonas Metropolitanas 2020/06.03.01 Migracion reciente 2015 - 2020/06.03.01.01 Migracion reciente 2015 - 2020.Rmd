@@ -388,7 +388,6 @@ colnames <- colnames(Migrantes) %>%
 rownames(Migrantes) <- rownames
 colnames(Migrantes) <- colnames
 
-
 # Nombre de las Zonas Metropolitanas
 NOM_ZM <- stringr::str_wrap(nom_zm, 100)
 
@@ -437,7 +436,7 @@ Emigrantes <- lapply(1:length(ZM), function(x){
                                               summarise(Emigrantes = sum(value, na.rm = TRUE)) 
 })
 ################################## Filtro ######################################
-#p <- data.frame(ZM = ZM_CF,
+p <- data.frame(ZM = ZM_CF,
  #               filtro_municipio = tabla_municipios,
   #              filtro_estado = tabla_estados)
 #write.xlsx(p, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Filtro a nivel municipal.xlsx"), overwrite = TRUE)
@@ -493,39 +492,38 @@ tabla1 <- lapply(1:length(ZM_CF), function(x){
 )
 
 ## Se sacan los flujos migratorios que pertencen a otros estados
-tabla_estados <- sapply(1:length(ZM_CF), function(i){
-                                           tabla1[[i]] %>%
-                                            as.data.frame() %>%
-                                             adorn_totals(c("row", "col"), 
-                                                           fill = "-", 
-                                                            na.rm = TRUE, 
-                                                             ,,,,contains(colnames(tabla1[[i]]))) %>% 
-                                              select(`Otros estados`) %>%
-                                               slice(nrow(.)) %>%
-                                                mutate(`Otros estados` = .$`Otros estados`/4) %>%
-                                                 pull(`Otros estados`)
-})
+#tabla_estados <- sapply(1:length(ZM_CF), function(i){
+#                                           tabla1[[i]] %>%
+#                                            as.data.frame() %>%
+#                                             adorn_totals(c("row", "col"), 
+#                                                           fill = "-", 
+#                                                            na.rm = TRUE, 
+#                                                             ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                              select(`Otros estados`) %>%
+#                                               slice(nrow(.)) %>%
+#                                                mutate(`Otros estados` = .$`Otros estados`/4) %>%
+#                                                 pull(`Otros estados`)
+#})
 
 ## Se sacan los flujos migratorios que pertencen a otros municipios
-tabla_municipios <- sapply(1:length(ZM_CF), function(i){
-                              p <- tabla1[[i]] %>%
-                                    as.data.frame() %>%
-                                     select(-c(`Otros estados`)) %>%
-                                      slice(-nrow(.))
-                              if(sum(p) == 0) {
-                                return(0)
-                              } else {
-                                p %>% 
-                                 adorn_totals(c("row", "col"), 
-                                                              fill = "-", 
-                                                               na.rm = TRUE, 
-                                                                ,,,,contains(colnames(tabla1[[i]]))) %>% 
-                                                  slice(nrow(.)) %>%
-                                                   mutate(Total = .$Total/50) %>%
-                                                    pull(Total)
-                              }
-                                           
-})
+#tabla_municipios <- sapply(1:length(ZM_CF), function(i){
+#                              p <- tabla1[[i]] %>%
+#                                    as.data.frame() %>%
+#                                     select(-c(`Otros estados`)) %>%
+#                                      slice(-nrow(.))
+#                              if(sum(p) == 0) {
+#                                return(0)
+#                              } else {
+#                                p %>% 
+#                                 adorn_totals(c("row", "col"), 
+#                                                              fill = "-", 
+#                                                               na.rm = TRUE, 
+#                                                                ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                                  slice(nrow(.)) %>%
+#                                                   mutate(Total = .$Total/50) %>%
+#                                                    pull(Total)
+#                              }
+#})
 
 ## Se guardan las matrices de movilidad laboral para analizarlos después. 
 wb <- createWorkbook()
@@ -3424,7 +3422,7 @@ filtro  <- Inmigrantes %>%
             full_join(., Emigrantes, by = c("rn" = "cn")) %>%
              filter(rn %in% ZM) %>%
               mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-               filter(value > 15000) %>% 
+               filter(value > 11000) %>% 
                 pull(rn)
 
 filtro_est <- Inmigrantes %>%
@@ -3434,7 +3432,7 @@ filtro_est <- Inmigrantes %>%
                   mutate(rn = substr(.$rn, 1, 3)) %>%
                    group_by(rn) %>%
                     summarise(value = sum(value)) %>%
-                     filter(value > 10000) %>%
+                     filter(value > 15000) %>%
                       pull(rn)
 
 ################################################################################
@@ -3589,7 +3587,7 @@ filtro  <- Inmigrantes %>%
             full_join(., Emigrantes, by = c("rn" = "cn")) %>%
              filter(rn %in% ZM) %>%
               mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-               filter(value > 10000) %>% 
+               filter(value > 11000) %>% 
                 pull(rn)
 
 filtro_est <- Inmigrantes %>%
@@ -3599,7 +3597,7 @@ filtro_est <- Inmigrantes %>%
                   mutate(rn = substr(.$rn, 1, 3)) %>%
                    group_by(rn) %>%
                     summarise(value = sum(value)) %>%
-                     filter(value > 10000) %>%
+                     filter(value > 15000) %>%
                       pull(rn)
 
 ################################################################################
@@ -4068,8 +4066,17 @@ options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
        select(CVE_ENT, CVE_MUN, ENT_PAIS_RES_5A, MUN_RES_5A, CVE_MUN_RES, CVE_ZM, MC, CF, CVE_ZM_RES, M, EDAD, FACTOR, ESTRATO, UPM) %>%
-        mutate(I_ZM = case_when(.$CVE_ZM == .$CVE_ZM_RES ~ "Pertenecen a la Zona Metropolitana",
-                                .$CVE_ZM != .$CVE_ZM_RES ~ "No pertenecen a la Zona Metropolitana")) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_RES5A_ZM_2020 = ifelse(is.na(.$CVE_ZM_RES), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_RES ~ 'Pertenecen a la Zona Metropolitana', #Residentes
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_RES ~ "Pertenecen a la Zona Metropolitana", #Migrantes que residen en la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_RES ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residen en otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian fuera de la zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian dentro de una zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Migrantes que no residen en la zona metropolitana
+                                )) %>%
          filter(EDAD >= 5 & EDAD <= 130) %>%
           filter(CVE_MUN_RES %in% municipios) %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
@@ -4418,6 +4425,7 @@ for(i in 1:length(ZM)){
 ```{r, eval = FALSE}
 paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
 paleta <- c("#000C7D", "#00108D", "#02149C", "#1614A4", "#3012A6", "#5A0D9D", "#7A0895", "#910390", "#A7008A", "#BB0085", "#CE0080", "#DF047A", "#EE1774", "#FA2C6C", "#FD4364", "#FE595B", "#FF6F51", "#FF8445","#FF9636", "#FFA72B", "#FFB622")
+
 tabla2 <- lapply(1:length(ZM), function(x){
                     # Paleta de colores
                        groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
@@ -4507,6 +4515,7 @@ dev.off()
 **Etiquetas**
 
 ```{r}
+x <- 1
 etiquetas  <- lapply(1:length(ZM_CF), function(x){
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
@@ -4527,7 +4536,7 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                              legend.spacing.y = unit(0.2, "cm"),
                                              legend.text = element_text(size = 6, family = "montserrat"),
                                              legend.title = element_text(size = 8, family = "montserrat")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(max(ncol(tabla1[[x]]), nrow(tabla1[[x]])))) + 
+                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
                                                color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))

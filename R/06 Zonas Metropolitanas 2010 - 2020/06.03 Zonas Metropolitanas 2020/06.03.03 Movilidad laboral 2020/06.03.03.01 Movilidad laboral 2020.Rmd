@@ -143,7 +143,7 @@ Se seleccionan las variables que se desean conservar para la realización de est
 load(paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
 
 mydata <- data %>%
-           select(CVE_ENT, ENT, MUN, CVE_MUN, ENT_PAIS_RES_5A, MUN_RES_5A, CVE_MUN_RES15, 
+           select(CVE_ENT, ENT, MUN, CVE_MUN, ENT_PAIS_RES_5A, MUN_RES_5A, CVE_MUN_TRABAJO15, 
                   ENT_PAIS_NAC, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
                   ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI, EDAD, SEXO, AFRODES, HLENGUA, QDIALECT_INALI, 
                   PERTE_INDIGENA, ALFABET, CAUSA_MIG, SITUA_CONYUGAL, HIJOS_NAC_VIVOS, 
@@ -181,10 +181,10 @@ mydata <- mydata %>%
             left_join(., ZM_2020 %>% select(-CVE_ENT), by = c("CVE_MUN")) %>%
             # Zonas Metropolitanas en el lugar de residencia hace 5 años
              left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>% 
-                           rename("CVE_ZM_RES15" = "CVE_ZM",
+                           rename("CVE_ZM_TRABAJO15" = "CVE_ZM",
                                   "ZM_RES15" = "NOM_ZM",
                                   "MC_RES15" = "MC",
-                                  "CF_RES15" = "CF"), by = c("CVE_MUN_RES15" = "CVE_MUN")) %>%
+                                  "CF_RES15" = "CF"), by = c("CVE_MUN_TRABAJO15" = "CVE_MUN")) %>%
              # Zonas Metropolitanas en el lugar de trabajo
               left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>%
                             rename("CVE_ZM_TRABAJO" = "CVE_ZM",
@@ -265,13 +265,26 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
-                  EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
-        mutate(I_ZM = case_when(.$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana",
-                                .$CVE_ZM != .$CVE_ZM_TRABAJO ~ "No pertenecen a la Zona Metropolitana")) %>%
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
+              EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_TRAB_ZM_2020 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Trabajan en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
+                                )) %>%
          filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios) %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+#MC %>%
+ #group_by(I_ZM) %>%
+  #summarise(Total = format(sum(FACTOR), big.mark   = " ", scientific = FALSE))
 
 saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/MC_municipal.RDS"))
 ```
@@ -372,14 +385,14 @@ rownames <- rownames(Migrantes) %>%
              as.data.frame() %>%
               rename("CVE_MUN" = ".") %>%
                left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
-                mutate(CVE_MUN = paste(.$CVE_MUN, .$NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>%
                  pull(CVE_MUN)
 
 colnames <- colnames(Migrantes) %>% 
              as.data.frame() %>%
               rename("CVE_MUN" = ".") %>%
                left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
-                mutate(CVE_MUN = paste(.$CVE_MUN, .$NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>%
                  pull(CVE_MUN)
 
 rownames(Migrantes) <- rownames
@@ -394,13 +407,18 @@ NOM_ZM <- stringr::str_wrap(nom_zm, 100)
 ZM_CF <- ZM_2020 %>%
           group_by(CVE_ZM) %>%
            summarise(Count = n()) %>%
-            filter(Count >= 3) %>%
+            filter(Count >= 0) %>%
              pull(CVE_ZM)
+
+NOM_ZM_CF <- ZM_2020 %>%
+              filter(CVE_ZM %in% ZM_CF) %>%
+               distinct(CVE_ZM, NOM_ZM)
+
 ZM <- lapply(1:length(ZM_CF), function(x){
                     ZM_2020 %>% 
                      select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
                       filter(CVE_ZM %in% ZM_CF[x])  %>% 
-                       mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>% 
+                       mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>% 
                         pull(NOM_MUN)
 })
 
@@ -431,10 +449,10 @@ Emigrantes <- lapply(1:length(ZM), function(x){
 })
 ################################## Filtro ######################################
 #p <- data.frame(ZM = ZM_CF,
- #               filtro_municipio = filtro_mig,
-  #              filtro_estado = filtro_out)
+#                filtro_municipio = tabla_municipios,
+ #               filtro_estado = tabla_estados)
 #write.table(p, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Filtro a nivel municipal.txt"),
-#            col.names = TRUE)
+ #           col.names = TRUE)
 #write.xlsx(p, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Filtro a nivel municipal.xlsx"), overwrite = TRUE)
 
 #### Filtro de municipios
@@ -446,16 +464,15 @@ filtro_out <- read.xlsx(paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
                pull(filtro_estado)
 
 ################################################################################
+################################################################################
 tabla1 <- lapply(1:length(ZM_CF), function(x){
                                     # filtro de municipios de la ZM
                                       filtro  <- Inmigrantes[[x]] %>%
                                                   full_join(., Emigrantes[[x]], by = c("rn" = "cn")) %>%
                                                     mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-                                                      filter(value > filtro_mig[x]) %>%   ## Cambia el filtro de los municipios de la Zonas Metropolitanas
-                                                       pull(rn)
+                                                     filter(value > filtro_mig[x]) %>%   ## Cambia el filtro de los municipios de la Zonas Metropolitanas
+                                                      pull(rn)
                                       
-                                   
-                                     
                                     # filtro de estados
                                      filtro_est <- Inmigrantes[[x]] %>%
                                                     full_join(., Emigrantes[[x]], by = c("rn" = "cn")) %>%
@@ -474,12 +491,12 @@ tabla1 <- lapply(1:length(ZM_CF), function(x){
                                          mutate_if(is.factor, as.character) %>%
                                           filter(.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]) %>%
                                            mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>% 
-                                            mutate(rn = case_when(.$rn %in% ZM[[x]] & .$rn %in% filtro  ~ .$rn,
+                                            mutate(rn = case_when(.$rn %in% ZM[[x]] & .$rn %in% filtro  ~ substr(.$rn, 2, nchar(.$rn)),
                                                                   .$rn %in% ZM[[x]] & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZM"), 30),
                                                                   .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 30),
                                                                   .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %nin% filtro_est ~ "Otros estados"),
                                                  
-                                                   cn = case_when(.$cn %in% ZM[[x]] & .$cn %in% filtro  ~ .$cn,
+                                                   cn = case_when(.$cn %in% ZM[[x]] & .$cn %in% filtro  ~ substr(.$cn, 2, nchar(.$cn)),
                                                                   .$cn %in% ZM[[x]] & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZM"), 30),
                                                                   .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 30),
                                                                   .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %nin% filtro_est ~ "Otros estados")) %>%
@@ -505,18 +522,24 @@ tabla_estados <- sapply(1:length(ZM_CF), function(i){
 
 ## Se sacan los flujos migratorios que pertencen a otros municipios
 tabla_municipios <- sapply(1:length(ZM_CF), function(i){
-                                             tabla1[[i]] %>%
-                                              as.data.frame() %>%
-                                               select(-c(`Otros estados`)) %>%
-                                                adorn_totals(c("row", "col"), 
+                              p <- tabla1[[i]] %>%
+                                    as.data.frame() %>%
+                                     select(-c(`Otros estados`)) %>%
+                                      slice(-nrow(.))
+                              if(sum(p) == 0) {
+                                return(0)
+                              } else {
+                                p %>% 
+                                 adorn_totals(c("row", "col"), 
                                                               fill = "-", 
                                                                na.rm = TRUE, 
                                                                 ,,,,contains(colnames(tabla1[[i]]))) %>% 
                                                   slice(nrow(.)) %>%
                                                    mutate(Total = .$Total/50) %>%
                                                     pull(Total)
+                              }
+                                           
 })
-
 
 ## Se guardan las matrices de movilidad laboral para analizarlos después. 
 wb <- createWorkbook()
@@ -539,39 +562,45 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 ```
 
 ```{r, eval = FALSE}
+paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
+
 tabla2 <- lapply(1:length(ZM_CF), function(x){
-                                    # Paleta de colores
-                                     groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))), option = "A"), 
-                                                             nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
-                                     circos.clear()
-                                      chordDiagram(x  = tabla1[[x]] %>% as.matrix(),
-                                                   grid.col = groupColors) %>%
-                                        pull(col)
+                    # Paleta de colores
+                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
+                        circos.clear()
+                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                       transparency = 0.4,
+                                        grid.col = groupColors)  %>%
+                          pull(col)
   }
 )
 ```
 
 ```{r, eval = FALSE, results='hide'}
-pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM.pdf"), width = 25, height = 25)
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM.pdf"), width = 7, height = 7, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
 for(i in 1:length(ZM_CF)){
-# Paletas de colores  
-groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))), option = "A"), 
-                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
-
 circos.clear()
 circos.par(start.degree = 90, 
-           gap.degree = 3, 
+           gap.degree = 2, 
            clock.wise = FALSE,
-           track.margin = c(-0.07, 0.1), 
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
 
+par(mar = rep(0, 4))
+
 # Paleta de colores
-groupColors <- viridis::viridis(max(c(ncol(tabla1[[i]]), nrow(tabla1[[i]]))), option = "A", end = 0.9, begin = 0.2)
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
                           
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-             #order = union(rownames(tabla1[[i]]), colnames(tabla1[[i]])),
+             #order = union(rownames(estados), colnames(estados)),
              keep.diagonal = FALSE,
              transparency =  0,
              directional = 1,
@@ -602,15 +631,15 @@ circos.trackPlotRegion(track.index = 1,
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(20),
-                                                               col = groupColors,
+                                                               cex = fontsize(7),
+                                                               col = "#170A3A",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
                                                                labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
                                                                major.tick.length = 0.5,
                                                                minor.ticks = 4, 
-                                                               labels.cex = fontsize(12),
+                                                               labels.cex = fontsize(5),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
@@ -1412,10 +1441,19 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
-                  EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
-        mutate(I_ZM = case_when(.$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana",
-                                .$CVE_ZM != .$CVE_ZM_TRABAJO ~ "No pertenecen a la Zona Metropolitana")) %>%
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
+              EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_TRAB_ZM_2020 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Trabajan en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
+                                )) %>%
          filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana") %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
@@ -1705,6 +1743,9 @@ for(i in 1:length(ZM)){
 
 
 ```{r}
+paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
+
 tabla2 <- lapply(1:length(ZM_CF), function(x){
                                     # Paleta de colores
                                      groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))), option = "A", end = 0.9, begin = 0.2), 
@@ -2522,10 +2563,19 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
               EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
-        mutate(I_ZM = case_when(.$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana",
-                                .$CVE_ZM != .$CVE_ZM_TRABAJO ~ "No pertenecen a la Zona Metropolitana")) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_TRAB_ZM_2020 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Trabajan en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
+                                )) %>%
          filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
@@ -2796,6 +2846,9 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 
 
 ```{r, results = FALSE, eval = FALSE}
+paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
+
 tabla2 <- lapply(1:length(ZM), function(x){
                        # Paleta de colores
                           groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))), option = "A"), 
@@ -3703,10 +3756,19 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
-                  EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
-        mutate(I_ZM = case_when(.$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana",
-                                .$CVE_ZM != .$CVE_ZM_TRABAJO ~ "No pertenecen a la Zona Metropolitana")) %>%
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
+              EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_TRAB_ZM_2020 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Trabajan en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
+                                )) %>%
          filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios) %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
@@ -4047,6 +4109,8 @@ for(i in 1:length(ZM)){
 
 
 ```{r}
+paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 tabla2 <- lapply(1:length(ZM), function(x){
                 # Paleta de colores 
                   groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))), option = "A"), 
