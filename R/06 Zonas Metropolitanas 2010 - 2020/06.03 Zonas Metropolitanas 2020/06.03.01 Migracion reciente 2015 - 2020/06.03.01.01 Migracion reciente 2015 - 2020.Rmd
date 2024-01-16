@@ -571,7 +571,7 @@ for(i in 1:length(ZM_CF)){
 circos.clear()
 circos.par(start.degree = 90, 
            gap.degree = 2, 
-           clock.wise = FALSE,
+           clock.wise = TRUE,
            #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
            track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
@@ -585,7 +585,7 @@ groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-             #order = union(rownames(estados), colnames(estados)),
+             order = union(rownames(tabla1[[i]]), colnames(tabla1[[i]])),
              keep.diagonal = FALSE,
              transparency =  0,
              directional = 1,
@@ -3050,6 +3050,7 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 ```{r, eval = FALSE}
 paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
 paleta <- c("#000C7D", "#00108D", "#02149C", "#1614A4", "#3012A6", "#5A0D9D", "#7A0895", "#910390", "#A7008A", "#BB0085", "#CE0080", "#DF047A", "#EE1774", "#FA2C6C", "#FD4364", "#FE595B", "#FF6F51", "#FF8445","#FF9636", "#FFA72B", "#FFB622")
+
 tabla2 <- lapply(1:length(ZM_CF), function(x){
                     # Paleta de colores
                        groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
@@ -3461,6 +3462,7 @@ tabla1 <- Migrantes %>%
 
 
 ```{r}
+# Grupo de colores
 groupColors <- paste0(rev(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1)))))), "7F")
 
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/ChordDiagram de MR5a de ZMVM (Intermunicipal).pdf"), 
@@ -4516,7 +4518,6 @@ dev.off()
 **Etiquetas**
 
 ```{r}
-x <- 1
 etiquetas  <- lapply(1:length(ZM_CF), function(x){
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
