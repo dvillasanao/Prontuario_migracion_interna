@@ -562,16 +562,19 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 ```
 
 ```{r, eval = FALSE}
-paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+#paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
+x <- 2
+union(rownames(tabla1[[x]]), colnames(tabla1[[x]]))
 tabla2 <- lapply(1:length(ZM_CF), function(x){
                     # Paleta de colores
                        groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
-                                               nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
                         circos.clear()
                          chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
                                        transparency = 0.4,
+                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
                                         grid.col = groupColors)  %>%
                           pull(col)
   }
@@ -579,10 +582,16 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
 ```
 
 ```{r, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM.pdf"), width = 7, height = 7, 
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM.pdf"), 
+          width = 7, height = 7, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
 for(i in 1:length(ZM_CF)){
+  
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
+
 circos.clear()
 circos.par(start.degree = 90, 
            gap.degree = 2, 
@@ -593,14 +602,10 @@ circos.par(start.degree = 90,
 
 par(mar = rep(0, 4))
 
-# Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
-                          
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-             #order = union(rownames(estados), colnames(estados)),
+             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
              keep.diagonal = FALSE,
              transparency =  0,
              directional = 1,
