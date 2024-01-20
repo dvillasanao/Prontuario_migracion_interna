@@ -4228,16 +4228,15 @@ for(i in 1:length(ZM)){
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
-x <- 2
 tabla2 <- lapply(1:length(ZM_CF), function(x){
                     # Paleta de colores
                        groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
                                                nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
                         circos.clear()
                          chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                      order = union(rownames(tabla1[[x]]), colnames(tabla1[[x]])),
                                        transparency = 0.4,
-                                        grid.col = groupColors)  %>%
+                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
+                                         grid.col = groupColors)  %>%
                           pull(col)
   }
 )
@@ -4265,7 +4264,7 @@ groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-             order = union(rownames(tabla1[[i]]), colnames(tabla1[[i]])),
+             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
              keep.diagonal = FALSE,
              transparency =  0,
              directional = 1,
