@@ -573,7 +573,7 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
                          chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
                                        transparency = 0.4,
                                         order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
-                                        grid.col = groupColors)  %>%
+                                        grid.col = groupColors)  %>% 
                           pull(col)
   }
 )
