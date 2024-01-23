@@ -2950,7 +2950,8 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
 
 
 ```{r, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM  (Intermunicipal).pdf"), width = 7, height = 7, 
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM  (Intermunicipal).pdf"), 
+          width = 7, height = 7, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
 for(i in 1:length(ZM_CF)){
@@ -4034,7 +4035,8 @@ tabla2 <- lapply(1, function(x){
 
 
 ```{r, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM (metropolitano).pdf"), width = 9, height = 9, 
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM (metropolitano).pdf"), 
+          width = 9, height = 9, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
 for(i in 1){
@@ -4235,7 +4237,7 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
                         circos.clear()
                          chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
                                        transparency = 0.4,
-                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
+                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
                                          grid.col = groupColors)  %>%
                           pull(col)
   }
@@ -4243,10 +4245,15 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
 ```
 
 ```{r, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MEst desagregado por ZM (metropolitano)_individual.pdf"), width = 9, height = 9, 
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MEst desagregado por ZM (metropolitano)_individual.pdf"), 
+          width = 7, height = 7, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
-for(i in 1:length(ZM)){
+
+for(i in 1:length(ZM_CF)){
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
 circos.clear()
 circos.par(start.degree = 90, 
            gap.degree = 2, 
@@ -4257,10 +4264,6 @@ circos.par(start.degree = 90,
 
 par(mar = rep(0, 4))
 
-# Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
-                          
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],

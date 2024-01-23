@@ -3447,7 +3447,7 @@ filtro_est <- Inmigrantes %>%
                   mutate(rn = substr(.$rn, 1, 3)) %>%
                    group_by(rn) %>%
                     summarise(value = sum(value)) %>%
-                     filter(value > 15000) %>%
+                     filter(value > 13000) %>%
                       pull(rn)
 
 ################################################################################
@@ -3484,15 +3484,17 @@ cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020
           family = "montserrat", onefile = TRUE)
 circos.clear()
 circos.par(start.degree = 90, 
+           gap.degree = 2, 
            clock.wise = TRUE,
-           gap.degree = 3, 
-           track.margin = c(-0.2, 0.2), 
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
 
-par(mar = rep(1.5, 4))
+par(mar = rep(0, 4))
+
 # Paleta de colores
 groupColors <- setNames(rev(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1)))))),
-                                               nm = unique(c(colnames(tabla1), rownames(tabla1))))
+                        nm = unique(c(colnames(tabla1), rownames(tabla1))))
 
 chordDiagram(x = tabla1 %>% as.matrix(), 
              grid.col = groupColors,
@@ -3689,7 +3691,7 @@ cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020
           family = "montserrat", onefile = TRUE)
 circos.clear()
 circos.par(start.degree = 90, 
-           clock.wise = TRUE,
+           clock.wise = FALSE,
            gap.degree = 3, 
            track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
@@ -4232,27 +4234,34 @@ tabla1 <- lapply(1, function(x){
 
 
 ```{r, eval = FALSE}
-paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
+#paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
 paleta <- c("#000C7D", "#00108D", "#02149C", "#1614A4", "#3012A6", "#5A0D9D", "#7A0895", "#910390", "#A7008A", "#BB0085", "#CE0080", "#DF047A", "#EE1774", "#FA2C6C", "#FD4364", "#FE595B", "#FF6F51", "#FF8445","#FF9636", "#FFA72B", "#FFB622")
+
 tabla2 <- lapply(1, function(x){
-                    # Paleta de colores
-                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
-                                               nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
-                        circos.clear()
-                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                       transparency = 0.4,
-                                        grid.col = groupColors)  %>%
-                          pull(col)
+                  # Paleta de colores
+                     groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                             nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
+                      circos.clear()
+                        chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                      transparency = 0.4,
+                                       order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
+                                        grid.col = groupColors)  %>% 
+                         pull(col)
   }
 )
 ```
 
 
 ```{r, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/ChordDiagram de MR5a desagregado por ZM (metropolitano).pdf"), width = 9, height = 9, 
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/ChordDiagram de MR5a desagregado por ZM (metropolitano).pdf"), 
+          width = 7, height = 7, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
-for(i in 1){
+
+for(i in 1:length(ZM_CF)){
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
 circos.clear()
 circos.par(start.degree = 90, 
            gap.degree = 2, 
@@ -4263,14 +4272,10 @@ circos.par(start.degree = 90,
 
 par(mar = rep(0, 4))
 
-# Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
-                          
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-             #order = union(rownames(estados), colnames(estados)),
+             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
              keep.diagonal = FALSE,
              transparency =  0,
              directional = 1,
@@ -4439,7 +4444,7 @@ for(i in 1:length(ZM)){
 
 
 ```{r, eval = FALSE}
-paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
+#paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
 paleta <- c("#000C7D", "#00108D", "#02149C", "#1614A4", "#3012A6", "#5A0D9D", "#7A0895", "#910390", "#A7008A", "#BB0085", "#CE0080", "#DF047A", "#EE1774", "#FA2C6C", "#FD4364", "#FE595B", "#FF6F51", "#FF8445","#FF9636", "#FFA72B", "#FFB622")
 
 tabla2 <- lapply(1:length(ZM_CF), function(x){
@@ -4449,18 +4454,23 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
                         circos.clear()
                          chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
                                        transparency = 0.4,
-                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
-                                        grid.col = groupColors)  %>% 
+                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
+                                         grid.col = groupColors)  %>%
                           pull(col)
   }
 )
 ```
 
 ```{r, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/ChordDiagram de MR5a desagregado por ZM (metropolitano)_individual.pdf"), width = 9, height = 9, 
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/ChordDiagram de MR5a desagregado por ZM (metropolitano)_individual.pdf"), 
+          width = 7, height = 7, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
-for(i in 1:length(ZM)){
+
+for(i in 1:length(ZM_CF)){
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
 circos.clear()
 circos.par(start.degree = 90, 
            gap.degree = 2, 
@@ -4471,10 +4481,6 @@ circos.par(start.degree = 90,
 
 par(mar = rep(0, 4))
 
-# Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
-                          
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
