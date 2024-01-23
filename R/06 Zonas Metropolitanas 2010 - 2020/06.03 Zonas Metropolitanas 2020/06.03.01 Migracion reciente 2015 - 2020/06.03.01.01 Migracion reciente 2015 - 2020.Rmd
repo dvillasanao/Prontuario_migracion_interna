@@ -517,7 +517,7 @@ tabla1 <- lapply(1:length(ZM_CF), function(x){
 #                                p %>% 
 #                                 adorn_totals(c("row", "col"), 
 #                                                              fill = "-", 
-#                                                               na.rm = TRUE, 
+#                                                               na.rm =  TRUE, 
 #                                                                ,,,,contains(colnames(tabla1[[i]]))) %>% 
 #                                                  slice(nrow(.)) %>%
 #                                                   mutate(Total = .$Total/50) %>%
@@ -1882,17 +1882,17 @@ tabla1 <- lapply(1:length(ZM), function(x){
 })
 
 ## Se sacan los flujos migratorios que pertencen a otros municipios
-tabla_municipios <- sapply(1:length(ZM), function(i){
-                                             tabla1[[i]] %>%
-                                              as.data.frame() %>%
-                                               adorn_totals(c("row", "col"), 
-                                                              fill = "-", 
-                                                               na.rm = TRUE, 
-                                                                ,,,,contains(colnames(tabla1[[i]]))) %>% 
-                                                  slice(nrow(.)) %>%
-                                                   mutate(Total = .$Total/50) %>%
-                                                    pull(Total)
-})
+#tabla_municipios <- sapply(1:length(ZM), function(i){
+#                                             tabla1[[i]] %>%
+#                                              as.data.frame() %>%
+#                                               adorn_totals(c("row", "col"), 
+#                                                              fill = "-", 
+#                                                               na.rm = TRUE, 
+#                                                                ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                                  slice(nrow(.)) %>%
+#                                                   mutate(Total = .$Total/50) %>%
+#                                                    pull(Total)
+#})
 
 ## Se guardan las matrices de Movilidad laboral para analizarlos después. 
 wb <- createWorkbook()
@@ -2191,7 +2191,7 @@ Emigrantes <- Migrantes %>%
 filtro  <- Inmigrantes %>%
             full_join(., Emigrantes, by = c("rn" = "cn")) %>%
              mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-              filter(value < 25000) %>% 
+              filter(value < 15000) %>% 
                pull(rn)
 
 ################################################################################
@@ -2224,7 +2224,7 @@ cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020
           family = "montserrat", onefile = TRUE)
 circos.clear()
 circos.par(start.degree = 90, 
-           clock.wise = TRUE,
+           clock.wise = FALSE,
            gap.degree = 3, 
            track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
@@ -2341,7 +2341,7 @@ Emigrantes <- Migrantes %>%
 filtro  <- Inmigrantes %>%
             full_join(., Emigrantes, by = c("rn" = "cn")) %>%
              mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-              filter(value < 25000) %>% 
+              filter(value < 15000) %>% 
                pull(rn)
 ################################################################################
 tabla <- Migrantes %>%
@@ -2405,7 +2405,7 @@ cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020
           family = "montserrat", onefile = TRUE)
 circos.clear()
 circos.par(start.degree = 90, 
-           clock.wise = TRUE,
+           clock.wise = FALSE,
            gap.degree = 3, 
            track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
@@ -3053,7 +3053,6 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
 paleta <- c("#000C7D", "#00108D", "#02149C", "#1614A4", "#3012A6", "#5A0D9D", "#7A0895", "#910390", "#A7008A", "#BB0085", "#CE0080", "#DF047A", "#EE1774", "#FA2C6C", "#FD4364", "#FE595B", "#FF6F51", "#FF8445","#FF9636", "#FFA72B", "#FFB622")
 
-x <- 12
 tabla2 <- lapply(1:length(ZM_CF), function(x){
                     # Paleta de colores
                        groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
