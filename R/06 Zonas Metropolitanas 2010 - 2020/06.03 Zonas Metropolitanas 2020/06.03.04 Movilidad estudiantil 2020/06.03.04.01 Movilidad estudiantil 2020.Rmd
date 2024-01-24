@@ -121,7 +121,7 @@ require(tidyr)
 require(reshape2)
 require(openxlsx)
 require(doMC)
-registerDoMC(cores = 15)
+registerDoMC(cores = 18)
 ```
 
 **Cuestionario Ampliado del Censo de Población y Vivienda 2020**
@@ -144,7 +144,7 @@ load(paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
 
 mydata <- data %>%
            select(CVE_ENT, ENT, MUN, CVE_MUN, ENT_PAIS_RES_5A, MUN_RES_5A, CVE_MUN_RES15, 
-                  ENT_PAIS_NAC, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO,  
+                  ENT_PAIS_NAC, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI,  
                   ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI, EDAD, SEXO, AFRODES, HLENGUA, QDIALECT_INALI, 
                   PERTE_INDIGENA, ALFABET, CAUSA_MIG, SITUA_CONYUGAL, HIJOS_NAC_VIVOS, 
                   CONACT, OCUPACION_C, SITTRA, VACACIONES, SERVICIO_MEDICO, INCAP_SUELDO, INGTRMEN, 
@@ -187,10 +187,10 @@ mydata <- mydata %>%
                                  "CF_RES15" = "CF"), by = c("CVE_MUN_RES15" = "CVE_MUN")) %>%
             # Zonas Metropolitanas en el lugar de trabajo
              left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>%
-                           rename("CVE_ZM_TRABAJO" = "CVE_ZM",
-                                  "ZM_TRABAJO" = "NOM_ZM",
+                           rename("CVE_ZM_ASI" = "CVE_ZM",
+                                  "ZM_ASI" = "NOM_ZM",
                                   "MC_TRABAJO" = "MC",
-                                  "CF_TRABAJO" = "CF"), by = c("CVE_MUN_TRABAJO" = "CVE_MUN")) %>%
+                                  "CF_TRABAJO" = "CF"), by = c("CVE_MUN_ASI" = "CVE_MUN")) %>%
              # Zonas Metropolitanas en el lugar de estudio
               left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>%
                             rename("CVE_ZM_ASI" = "CVE_ZM",
@@ -263,10 +263,19 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI,
-                  EDAD, CVE_ZM, NOM_ZM, CVE_ZM_ASI, ZM_ASI, FACTOR, ESTRATO, UPM) %>%
-        mutate(I_ZM = case_when(.$CVE_ZM == .$CVE_ZM_ASI ~ "Pertenecen a la Zona Metropolitana",
-                                .$CVE_ZM != .$CVE_ZM_ASI ~ "No pertenecen a la Zona Metropolitana")) %>%
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI,
+             EDAD, CVE_ZM, NOM_ZM, CVE_ZM_ASI, ZM_ASI, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_ASI_ZM_2020 = ifelse(is.na(.$CVE_ZM_ASI), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_ASI ~ 'Pertenecen a la Zona Metropolitana', #Estudian en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_ASI ~ "Pertenecen a la Zona Metropolitana", #Estudian en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_ASI ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '0' & .$I_ASI_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '0' & .$I_ASI_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Estudian en otro municipio que no es ZM y no residen en una ZM
+                                ))  %>%
          filter((EDAD >= 3 & EDAD <= 130)) %>%
           filter(CVE_MUN_ASI %in% municipios) %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
@@ -372,32 +381,41 @@ load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Mov
 rownames <- rownames(Migrantes) %>% 
              as.data.frame() %>%
               rename("CVE_MUN" = ".") %>%
-               left_join(., MUN %>% select(CVE_MUN, NOM_MUN), by = c("CVE_MUN")) %>%
-                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>%
                  pull(CVE_MUN)
 
 colnames <- colnames(Migrantes) %>% 
              as.data.frame() %>%
               rename("CVE_MUN" = ".") %>%
-               left_join(., MUN %>% select(CVE_MUN, NOM_MUN), by = c("CVE_MUN")) %>%
-                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>%
                  pull(CVE_MUN)
 
 rownames(Migrantes) <- rownames
 colnames(Migrantes) <- colnames
 
+
+# Nombre de las Zonas Metropolitanas
+NOM_ZM <- stringr::str_wrap(nom_zm, 100)
+
 ## Tomamos las Zonas Metropolitanas con más de 3 municipios que tienen flujos migratorios 
+#### Con filtro (CF)
 ZM_CF <- ZM_2020 %>%
           group_by(CVE_ZM) %>%
            summarise(Count = n()) %>%
-            filter(Count >= 3) %>%
+            filter(Count >= 0) %>%
              pull(CVE_ZM)
+
+NOM_ZM_CF <- ZM_2020 %>%
+              filter(CVE_ZM %in% ZM_CF) %>%
+               distinct(CVE_ZM, NOM_ZM)
 
 ZM <- lapply(1:length(ZM_CF), function(x){
                     ZM_2020 %>% 
                      select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
                       filter(CVE_ZM %in% ZM_CF[x])  %>% 
-                       mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>% 
+                       mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>% 
                         pull(NOM_MUN)
 })
 
@@ -427,6 +445,7 @@ Emigrantes <- lapply(1:length(ZM), function(x){
                                               summarise(Emigrantes = sum(value, na.rm = TRUE)) 
 })
 
+################################## Filtro ######################################
 ### Sacar el promedio de los flujos migratiorios para determinar como se van a grupar los estados 
 #### Es importante correr la tabla1[[x]] sin filtros para determinar el número promedio de flujos de migración
 #### Filtro <<<<< filter(value < 0) %>% 
@@ -1402,10 +1421,19 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI,
-                  EDAD, CVE_ZM, NOM_ZM, CVE_ZM_ASI, ZM_ASI, FACTOR, ESTRATO, UPM) %>%
-        mutate(I_ZM = case_when(.$CVE_ZM == .$CVE_ZM_ASI ~ "Pertenecen a la Zona Metropolitana",
-                                .$CVE_ZM != .$CVE_ZM_ASI ~ "No pertenecen a la Zona Metropolitana")) %>%
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI,
+             EDAD, CVE_ZM, NOM_ZM, CVE_ZM_ASI, ZM_ASI, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_ASI_ZM_2020 = ifelse(is.na(.$CVE_ZM_ASI), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_ASI ~ 'Pertenecen a la Zona Metropolitana', #Estudian en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_ASI ~ "Pertenecen a la Zona Metropolitana", #Estudian en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_ASI ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '0' & .$I_ASI_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '0' & .$I_ASI_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Estudian en otro municipio que no es ZM y no residen en una ZM
+                                ))  %>%
          filter((EDAD >= 3 & EDAD <= 130)) %>%
           filter(CVE_MUN_ASI %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana") %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
@@ -2503,10 +2531,19 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI,
-                  EDAD, CVE_ZM, NOM_ZM, CVE_ZM_ASI, ZM_ASI, FACTOR, ESTRATO, UPM) %>%
-        mutate(I_ZM = case_when(.$CVE_ZM == .$CVE_ZM_ASI ~ "Pertenecen a la Zona Metropolitana",
-                                .$CVE_ZM != .$CVE_ZM_ASI ~ "No pertenecen a la Zona Metropolitana")) %>%
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI,
+             EDAD, CVE_ZM, NOM_ZM, CVE_ZM_ASI, ZM_ASI, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_ASI_ZM_2020 = ifelse(is.na(.$CVE_ZM_ASI), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_ASI ~ 'Pertenecen a la Zona Metropolitana', #Estudian en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_ASI ~ "Pertenecen a la Zona Metropolitana", #Estudian en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_ASI ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '0' & .$I_ASI_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '0' & .$I_ASI_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Estudian en otro municipio que no es ZM y no residen en una ZM
+                                ))  %>%
          filter((EDAD >= 3 & EDAD <= 130)) %>%
           filter(CVE_MUN_ASI %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
@@ -3677,10 +3714,19 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI,
-                  EDAD, CVE_ZM, NOM_ZM, CVE_ZM_ASI, ZM_ASI, FACTOR, ESTRATO, UPM) %>%
-        mutate(I_ZM = case_when(.$CVE_ZM == .$CVE_ZM_ASI ~ "Pertenecen a la Zona Metropolitana",
-                                .$CVE_ZM != .$CVE_ZM_ASI ~ "No pertenecen a la Zona Metropolitana")) %>%
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI,
+             EDAD, CVE_ZM, NOM_ZM, CVE_ZM_ASI, ZM_ASI, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_ASI_ZM_2020 = ifelse(is.na(.$CVE_ZM_ASI), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_ASI ~ 'Pertenecen a la Zona Metropolitana', #Estudian en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_ASI ~ "Pertenecen a la Zona Metropolitana", #Estudian en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_ASI ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '1' & .$I_ASI_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '0' & .$I_ASI_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '0' & .$I_ASI_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Estudian en otro municipio que no es ZM y no residen en una ZM
+                                ))  %>%
          filter((EDAD >= 3 & EDAD <= 130)) %>%
           filter(CVE_MUN_ASI %in% municipios) %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
