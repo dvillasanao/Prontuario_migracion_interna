@@ -563,7 +563,15 @@ colores <- colorRampPalette(pals::ocean.matter(100))(50)
 colores <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
 #Paleta4 (estudinatil)
-colores <- colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)  
+colores <- colorRampPalette(wesanderson::wes_palette("Rushmore1"))(16)  
+colores <- "#E1BD6D" "#E3BD77" "#E5BD81" "#E8BD8C" "#DBB990" "#9FA682" "#649373" "#288065" "#106C5B" "#1B5756" "#274150" "#322C4B"
+[13] "#5A283E" "#8D2B2E" "#BF2D1E" "#F2300F"
+
+colorRampPalette(pals::ocean.solar(100))(16)
+colorRampPalette(pals::ocean.haline(100))(16)
+colores <- colorRampPalette(pals::kovesi.linear_bgy_10_95_c74(100))(16)
+
+colores <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
 #Paleta5
 colores <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
@@ -573,12 +581,6 @@ colores <- c("#000C7D", "#0B14A0","#2C12A7","#560D9E", "#780896","#8E0390","#AD0
 colores <- colorRampPalette(LaCroixColoR::lacroix_palette("PassionFruit", n = 50, type = "continuous"))(25)
 colores <- c("#C70E7B", "#D1207C", "#DC327D", "#E7467F", "#F25880", "#F86C7C", "#E58560", "#D49E46", "#C2B72A", "#B0D00F", "#9ADC0E", "#7CD332", "#60CA57", "#43C17B", "#25B99F", "#24ABAC", "#359CA8", "#468DA4", "#577DA1", "#686E9D", "#5D6093", "#4B5188", "#39437E", "#283573", "#172869")
 
-colores <- colorRampPalette(rcartocolor::carto_pal("ag_GrnYl", n = 11))(25)
-colores <- rev(colorRampPalette(rcartocolor::carto_pal("Teal", n = 11))(25))
-colores <- c("#E2E44E",  "#DBEA5F", "#CAE461", "#BAE063", "#A9DB66", "#99D569", "#8BD06D", "#7BCA70", "#6DC373", "#60BD76", "#52B779", "#45B17B", "#39AB7E", "#2DA37E", "#229C7E", "#19957F", "#128E7F", "#0D877E", "#0D807C", "#0D787A", "#117177", "#146A74", "#196370", "#1E5C6C", "#245668", "#2A5674", "#2E5D7A", "#326481", "#366B87", "#3A728E", "#3F7994", "#44819A", "#49889F", "#4E8FA5", "#5496AA", "#5A9CAE", "#61A3B3", "#68ABB8", "#6FB1BC", "#76B7C0", "#7DBDC4", "#85C3C8", "#8CC9CC", "#96CFD0", "#9FD4D4", "#A8DAD8", "#B2DFDC")
-
-colores <- colorRampPalette(pals::ocean.curl(50))(15) 
-colores <- c("#6064bf", "#5662A6", "#F2D22E", "#F27127", "#F23E2E")
 ```
 
 

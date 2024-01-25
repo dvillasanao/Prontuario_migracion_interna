@@ -451,10 +451,8 @@ Emigrantes <- lapply(1:length(ZM), function(x){
 #### Filtro <<<<< filter(value < 0) %>% 
 #### Filtro de estados <<<<< filter(value >= 100000000000) %>% 
 #p <- data.frame(ZM = ZM_CF,
- #               filtro_municipio = filtro_mig,
-  #              filtro_estado = filtro_out)
-#write.table(p, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Filtro a nivel municipal.txt"),
- #           col.names = TRUE)
+#                filtro_municipio = tabla_municipios,
+#                filtro_estado = tabla_estados)
 #write.xlsx(p, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Filtro a nivel municipal.xlsx"), overwrite = TRUE)
 
 #### Filtro de municipios
@@ -466,13 +464,14 @@ filtro_out <- read.xlsx(paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
                pull(filtro_estado)
 
 ################################################################################
+################################################################################
 tabla1 <- lapply(1:length(ZM_CF), function(x){
                                     # filtro de municipios de la ZM
                                       filtro  <- Inmigrantes[[x]] %>%
                                                   full_join(., Emigrantes[[x]], by = c("rn" = "cn")) %>%
                                                     mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-                                                      filter(value > filtro_mig[x]) %>%   ## Cambia el filtro de los municipios de la Zonas Metropolitanas
-                                                       pull(rn)
+                                                     filter(value > filtro_mig[x]) %>%   ## Cambia el filtro de los municipios de la Zonas Metropolitanas
+                                                      pull(rn)
                                       
                                     # filtro de estados
                                      filtro_est <- Inmigrantes[[x]] %>%
@@ -492,14 +491,14 @@ tabla1 <- lapply(1:length(ZM_CF), function(x){
                                          mutate_if(is.factor, as.character) %>%
                                           filter(.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]) %>%
                                            mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>% 
-                                            mutate(rn = case_when(.$rn %in% ZM[[x]] & .$rn %in% filtro  ~ .$rn,
-                                                                  .$rn %in% ZM[[x]] & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZMVM"), 20),
-                                                                  .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 20),
+                                            mutate(rn = case_when(.$rn %in% ZM[[x]] & .$rn %in% filtro  ~ substr(.$rn, 2, nchar(.$rn)),
+                                                                  .$rn %in% ZM[[x]] & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZM"), 30),
+                                                                  .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 30),
                                                                   .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %nin% filtro_est ~ "Otros estados"),
                                                  
-                                                   cn = case_when(.$cn %in% ZM[[x]] & .$cn %in% filtro  ~ .$cn,
-                                                                  .$cn %in% ZM[[x]] & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZMVM"), 20),
-                                                                  .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 20),
+                                                   cn = case_when(.$cn %in% ZM[[x]] & .$cn %in% filtro  ~ substr(.$cn, 2, nchar(.$cn)),
+                                                                  .$cn %in% ZM[[x]] & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZM"), 30),
+                                                                  .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 30),
                                                                   .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %nin% filtro_est ~ "Otros estados")) %>%
                                             filter(value > 0) %>%
                                              dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
@@ -508,33 +507,39 @@ tabla1 <- lapply(1:length(ZM_CF), function(x){
 )
 
 ## Se sacan los flujos migratorios que pertencen a otros estados
-tabla_estados <- sapply(1:length(ZM_CF), function(i){
-                                           tabla1[[i]] %>%
-                                            as.data.frame() %>%
-                                             adorn_totals(c("row", "col"), 
-                                                           fill = "-", 
-                                                            na.rm = TRUE, 
-                                                             ,,,,contains(colnames(tabla1[[i]]))) %>% 
-                                              select(`Otros estados`) %>%
-                                               slice(nrow(.)) %>%
-                                                mutate(`Otros estados` = .$`Otros estados`/4) %>%
-                                                 pull(`Otros estados`)
-})
+#tabla_estados <- sapply(1:length(ZM_CF), function(i){
+#                                           tabla1[[i]] %>%
+#                                            as.data.frame() %>%
+#                                             adorn_totals(c("row", "col"), 
+#                                                           fill = "-", 
+#                                                            na.rm = TRUE, 
+#                                                             ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                              select(`Otros estados`) %>%
+#                                               slice(nrow(.)) %>%
+#                                                mutate(`Otros estados` = .$`Otros estados`/4) %>%
+#                                                 pull(`Otros estados`)
+#})
 
 ## Se sacan los flujos migratorios que pertencen a otros municipios
-tabla_municipios <- sapply(1:length(ZM_CF), function(i){
-                                             tabla1[[i]] %>%
-                                              as.data.frame() %>%
-                                               select(-c(`Otros estados`)) %>%
-                                                adorn_totals(c("row", "col"), 
-                                                              fill = "-", 
-                                                               na.rm = TRUE, 
-                                                                ,,,,contains(colnames(tabla1[[i]]))) %>% 
-                                                  slice(nrow(.)) %>%
-                                                   mutate(Total = .$Total/50) %>%
-                                                    pull(Total)
-})
-
+#tabla_municipios <- sapply(1:length(ZM_CF), function(i){
+#                              p <- tabla1[[i]] %>%
+#                                    as.data.frame() %>%
+#                                     select(-c(`Otros estados`)) %>%
+#                                      slice(-nrow(.))
+#                              if(sum(p) == 0) {
+#                                return(0)
+#                              } else {
+#                                p %>% 
+#                                 adorn_totals(c("row", "col"), 
+#                                                              fill = "-", 
+#                                                               na.rm = TRUE, 
+#                                                                ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                                  slice(nrow(.)) %>%
+#                                                   mutate(Total = .$Total/50) %>%
+#                                                    pull(Total)
+#                              }
+ #                                          
+#})
 
 ## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
 wb <- createWorkbook()
@@ -558,39 +563,49 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 
 
 ```{r, eval = FALSE}
+#paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
+paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
+
 tabla2 <- lapply(1:length(ZM_CF), function(x){
-                                    # Paleta de colores
-                                     groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))), option = "A"), 
-                                                             nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
-                                     circos.clear()
-                                      chordDiagram(x  = tabla1[[x]] %>% as.matrix(),
-                                                   grid.col = groupColors) %>%
-                                        pull(col)
+                    # Paleta de colores
+                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
+                        circos.clear()
+                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                       transparency = 0.4,
+                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
+                                        grid.col = groupColors)  %>% 
+                          pull(col)
   }
 )
 ```
 
 
 ```{r, eval = FALSE, results='hide'}
-pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst desagregado por ZM (municipal).pdf"), width = 27, height = 25)
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst desagregado por ZM (municipal).pdf"), 
+          width = 7, height = 7, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
+
 for(i in 1:length(ZM_CF)){
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
+
 circos.clear()
 circos.par(start.degree = 90, 
-           gap.degree = 3, 
+           gap.degree = 2, 
            clock.wise = FALSE,
-           track.margin = c(-0.07, 0.1), 
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
 
-par(mar = rep(1.5, 4))
-
-# Paleta de colores  
-groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))), option = "A"), 
-                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
+par(mar = rep(0, 4))
 
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-             #order = union(rownames(tabla1[[i]]), colnames(tabla1[[i]])),
+             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
              keep.diagonal = FALSE,
              transparency =  0,
              directional = 1,
@@ -621,15 +636,15 @@ circos.trackPlotRegion(track.index = 1,
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(20),
-                                                               col = groupColors,
+                                                               cex = fontsize(7),
+                                                               col = "#106D5B",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
                                                                labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
                                                                major.tick.length = 0.5,
                                                                minor.ticks = 4, 
-                                                               labels.cex = fontsize(12),
+                                                               labels.cex = fontsize(5),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
@@ -639,36 +654,39 @@ circos.trackPlotRegion(track.index = 1,
 }
 dev.off()
 ```
+
 **Etiquetas**
 
 ```{r}
- etiquetas  <- lapply(1:length(ZM_CF), function(x){
+etiquetas  <- lapply(1:length(ZM_CF), function(x){
                         p <-  tabla1[[x]] %>% 
-                                  as.data.frame() %>%
-                                   tibble::rownames_to_column(var = "rn") %>%
-                                    melt(., id.vars = "rn", variable.name = "cn") %>%
-                                     as.data.frame() %>%
-                                      ggplot() + 
-                                       geom_bar(aes(x = value, fill = rn))  + 
-                                        geom_bar(aes(x = value, fill = cn))  + 
-                                         theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                               text = element_text(family = "montserrat"),
-                                               axis.text = element_blank(),
-                                               axis.title = element_blank(),
-                                               strip.text = element_text(size = 8, face = "bold", family = "montserrat"), 
-                                               legend.key.size = unit(0.3, "cm"),
-                                               legend.spacing.y = unit(0.2, "cm"),
-                                               legend.text = element_text(size = 6, family = "montserrat"),
-                                               legend.title = element_text(size = 8, family = "montserrat")) + 
-                                          scale_fill_viridis_d(option = "A") + 
-                                           guides(fill = guide_legend(ncol = 1)) + 
-                                            labs(fill = stringr::str_wrap(ZM_CF[x], 50),
-                                             color = stringr::str_wrap(ZM_CF[x], 50))
+                               as.data.frame() %>%
+                                tibble::rownames_to_column(var = "rn") %>%
+                                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                                  as.data.frame() %>% 
+                                   mutate(rn = str_wrap(.$rn, 100),
+                                          cn = str_wrap(.$cn, 100)) %>%
+                                    ggplot() + 
+                                     geom_bar(aes(x = value, fill = rn))  + 
+                                      geom_bar(aes(x = value, fill = cn))  + 
+                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                                             text = element_text(family = "montserrat"),
+                                             axis.text = element_blank(),
+                                             axis.title = element_blank(),
+                                             strip.text = element_text(size = 8, face = "bold", family = "montserrat"),  
+                                             legend.key.size = unit(0.3, "cm"), 
+                                             legend.spacing.y = unit(0.2, "cm"),
+                                             legend.text = element_text(size = 6, family = "montserrat"),
+                                             legend.title = element_text(size = 8, family = "montserrat")) + 
+                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                         guides(fill = guide_legend(ncol = 1)) + 
+                                          labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
+                                               color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
 path = paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Etiquetas ZM a nivel municipal.pdf")
-ggexport(etiquetas, width = 5, height = 5, dpi = 400, filename = path)
+ggexport(etiquetas, width = 5, height = 5, dpi = 400, filename = path, device = cairo_pdf)
 ```
 
 #### Gráfico Sankey
@@ -823,7 +841,7 @@ Emigrantes <- Migrantes %>%
 filtro  <- Inmigrantes %>%
             full_join(., Emigrantes, by = c("rn" = "cn")) %>%
              mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-              filter(value > 25000) %>% 
+              filter(value > 18000) %>% 
                pull(rn)
 
 filtro_est <- Inmigrantes %>%
@@ -833,7 +851,7 @@ filtro_est <- Inmigrantes %>%
                   mutate(rn = substr(.$rn, 1, 3)) %>%
                    group_by(rn) %>%
                     summarise(value = sum(value)) %>%
-                     filter(value >= 6810) %>% 
+                     filter(value >= 6000) %>% 
                       pull(rn)
 
 ################################################################################
@@ -844,14 +862,14 @@ tabla1 <- Migrantes %>%
               mutate_if(is.factor, as.character) %>%
               filter(.$rn %in% ZM | .$cn %in% ZM) %>%
                mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM| .$cn %in% ZM), value, 0)) %>% 
-                mutate(rn = case_when(.$rn %in% ZM & .$rn %in% filtro  ~ .$rn,
-                                      .$rn %in% ZM & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZMVM"), 30),
-                                      .$rn %nin% ZM & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 20),
+                mutate(rn = case_when(.$rn %in% ZM & .$rn %in% filtro  ~ substr(.$rn, 2, nchar(.$rn)),
+                                      .$rn %in% ZM & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZMVM"), 50),
+                                      .$rn %nin% ZM & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 50),
                                       .$rn %nin% ZM & substr(.$rn, 1, 3) %nin% filtro_est ~ "Otros estados"),
                                                  
-                       cn = case_when(.$cn %in% ZM & .$cn %in% filtro  ~ .$cn,
-                                      .$cn %in% ZM & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZMVM"), 30),
-                                      .$cn %nin% ZM & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 20),
+                       cn = case_when(.$cn %in% ZM & .$cn %in% filtro  ~ substr(.$cn, 2, nchar(.$cn)),
+                                      .$cn %in% ZM & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZMVM"), 50),
+                                      .$cn %nin% ZM & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 50),
                                       .$cn %nin% ZM & substr(.$cn, 1, 3) %nin% filtro_est ~ "Otros estados")) %>%
                  filter(value > 0) %>%
                   dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
@@ -862,65 +880,73 @@ tabla1 <- Migrantes %>%
 
 ```{r}
 # Paleta de colores
-groupColors <- viridis::viridis(max(ncol(tabla1), nrow(tabla1)), option = "A")
+groupColors <- paste0(rev(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1)))))), "7F")
 
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst de ZMVM (municipal).pdf"), 
+          width = 7, height = 7, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
 circos.clear()
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst de ZMVM (municipal).pdf"), width = 20, height = 18)
 circos.par(start.degree = 90, 
-           gap.degree = 3, 
-           track.margin = c(-0.1, 0.1), 
+           clock.wise = TRUE,
+           gap.degree = 2, 
+           track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
 
-par(mar = rep(0, 4))
+par(mar = rep(1.5, 4))
+# Paleta de colores
+groupColors <- setNames(rev(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1)))))),
+                                               nm = unique(c(colnames(tabla1), rownames(tabla1))))
 
-
-chordDiagram(x  = tabla1 %>% as.matrix(), 
+chordDiagram(x = tabla1 %>% as.matrix(), 
              grid.col = groupColors,
              order = union(rownames(tabla1), colnames(tabla1)),
              keep.diagonal = FALSE,
              symmetric = FALSE,
+             scale = FALSE, 
              transparency = 0.25,
              directional = 1,
              direction.type = c("arrows", "diffHeight"), 
              diffHeight  = -0.04,
              annotationTrack = "grid", 
-             annotationTrackHeight = mm_h(c(10)),
+             annotationTrackHeight = mm_h(c(3)), # ancho borde
              preAllocateTracks = 1, 
              big.gap = 40,
              link.arr.type = "big.arrow", 
              link.lwd = 0.5,
              link.visible = TRUE,
              link.largest.ontop = FALSE)
-
 # Add text and axis
 circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
                        bg.border = NA, 
                        panel.fun = function(x, y) {
                                                    xlim = get.cell.meta.data("xlim")
                                                    ylim = get.cell.meta.data("ylim")
                                                    sector.name = get.cell.meta.data("sector.index")
-                                                 # Add names to the sector. 
+                                                  # Add names to the sector. 
                                                    circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 0.5, 
+                                                               y = ylim[1] + 0.2, #Ajusta a las etiquetas del origen 
                                                                labels = sector.name, 
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(16),
-                                                               col = groupColors,
-                                                               font = 2)
+                                                               cex = fontsize(7),
+                                                               col = "#170A3A",
+                                                               font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
-                                                               labels = c(0, 20, 50, 70, 100, 500, 1000, 5000, 10000,30000,50000,100000, 200000),
-                                                               major.tick.length = 0.5,
-                                                               minor.ticks = 4, 
-                                                               labels.cex = fontsize(12),
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, 1000, seq(1000, 20000, by = 100000)),
+                                                               major.tick.length = 0.2,
+                                                               minor.ticks = 2, 
+                                                               labels.cex = fontsize(5),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
                                                                labels.pos.adjust = c(0, 0.8))
-                        }
-)
+                                                }
+  )
+
 dev.off()
 ```
 
@@ -979,7 +1005,7 @@ Emigrantes <- Migrantes %>%
 filtro  <- Inmigrantes %>%
             full_join(., Emigrantes, by = c("rn" = "cn")) %>%
              mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-              filter(value > 25000) %>% 
+              filter(value > 18000) %>% 
                pull(rn)
 
 filtro_est <- Inmigrantes %>%
@@ -989,7 +1015,7 @@ filtro_est <- Inmigrantes %>%
                   mutate(rn = substr(.$rn, 1, 3)) %>%
                    group_by(rn) %>%
                     summarise(value = sum(value)) %>%
-                     filter(value >= 6810) %>% 
+                     filter(value >= 6000) %>% 
                       pull(rn)
 
 ################################################################################
@@ -1000,40 +1026,43 @@ tabla <- Migrantes %>%
               mutate_if(is.factor, as.character) %>%
               filter(.$rn %in% ZM | .$cn %in% ZM) %>%
                mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM| .$cn %in% ZM), value, 0)) %>% 
-                mutate(rn = case_when(.$rn %in% ZM & .$rn %in% filtro  ~ .$rn,
-                                      .$rn %in% ZM & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZMVM"), 30),
-                                      .$rn %nin% ZM & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 20),
+                mutate(rn = case_when(.$rn %in% ZM & .$rn %in% filtro  ~ substr(.$rn, 2, nchar(.$rn)),
+                                      .$rn %in% ZM & .$rn %nin% filtro ~ str_wrap(paste(substr(estados[as.numeric(substr(.$rn, 1, 3))], 2, 3), "ZMVM"), 100),
+                                      .$rn %nin% ZM & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 100),
                                       .$rn %nin% ZM & substr(.$rn, 1, 3) %nin% filtro_est ~ "Otros estados"),
                                                  
-                       cn = case_when(.$cn %in% ZM & .$cn %in% filtro  ~ .$cn,
-                                      .$cn %in% ZM & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZMVM"), 30),
-                                      .$cn %nin% ZM & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 20),
+                       cn = case_when(.$cn %in% ZM & .$cn %in% filtro  ~ substr(.$cn, 2, nchar(.$cn)),
+                                      .$cn %in% ZM & .$cn %nin% filtro ~ str_wrap(paste(substr(estados[as.numeric(substr(.$cn, 1, 3))], 2, 3), "ZMVM"), 100),
+                                      .$cn %nin% ZM & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 100),
                                       .$cn %nin% ZM & substr(.$cn, 1, 3) %nin% filtro_est ~ "Otros estados")) %>%
                  filter(value > 0)  
+
 
 tabla1 <- tabla %>%
            dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
             column_to_rownames(., var = "rn") 
 
+
 # Grupo 1
 grupo1 <- tabla %>%
-           filter(substr(.$rn, 1, 3) == "009") %>%
+           filter(substr(.$rn, 1, 2) == "09") %>%
             pull(rn) %>%
              unique()
 # Grupo 2
 grupo2 <- tabla %>%
-           filter(substr(.$rn, 1, 3) == "015") %>%
+           filter(substr(.$rn, 1, 2) == "15") %>%
             pull(rn) %>%
              unique()
 
 # Grupo 3
 grupo3 <- tabla %>%
-           filter(substr(.$rn, 1, 3) == "013") %>%
+           filter(substr(.$rn, 1, 2) == "13") %>%
             pull(rn) %>%
              unique()
+
 # Grupo 4
 grupo4 <- tabla %>%
-           filter(substr(.$rn, 1, 3) %nin% c("009", "015", "013")) %>%
+           filter(substr(.$rn, 1, 2) %nin% c("09", "15", "13")) %>%
             pull(rn) %>%
              unique()
 
@@ -1055,64 +1084,73 @@ saveWorkbook(wb,
 
 ```{r}
 # Paleta de colores
-groupColors <- viridis::viridis(max(nrow(tabla1), ncol(tabla1)), option = "A")
+groupColors <- paste0(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))), "7F")
 
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst de ZMVM_grupos (municipal).pdf"),
+          width = 7, height = 7, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
 circos.clear()
-pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst de ZMVM_grupos (municipal).pdf"), width = 18, height = 15)
 circos.par(start.degree = 90, 
+           clock.wise = FALSE,
            gap.degree = 3, 
            track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
 
-par(mar = rep(0, 4))
+par(mar = rep(1.5, 4))
 
-chordDiagram(x  = tabla1 %>% as.matrix(), 
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))),
+                                               nm = unique(c(colnames(tabla1), rownames(tabla1))))
+
+chordDiagram(x = tabla1 %>% as.matrix(), 
              grid.col = groupColors,
              order = union(rownames(tabla1), colnames(tabla1)),
              keep.diagonal = FALSE,
              symmetric = FALSE,
+             scale = FALSE, 
              transparency = 0.25,
              directional = 1,
              direction.type = c("arrows", "diffHeight"), 
              diffHeight  = -0.04,
              annotationTrack = "grid", 
-             annotationTrackHeight = mm_h(c(10)),
+             annotationTrackHeight = mm_h(c(3)), # ancho borde
              preAllocateTracks = 1, 
              big.gap = 40,
              link.arr.type = "big.arrow", 
              link.lwd = 0.5,
              link.visible = TRUE,
              link.largest.ontop = FALSE)
-
 # Add text and axis
-circos.trackPlotRegion(track.index = 2,
+circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
                        bg.border = NA, 
                        panel.fun = function(x, y) {
                                                    xlim = get.cell.meta.data("xlim")
                                                    ylim = get.cell.meta.data("ylim")
                                                    sector.name = get.cell.meta.data("sector.index")
-                                                 # Add names to the sector. 
+                                                  # Add names to the sector. 
                                                    circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 5, 
+                                                               y = ylim[1] + 1, #Ajusta a las etiquetas del origen 
                                                                labels = sector.name, 
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(12),
-                                                               col = groupColors,
-                                                               font = 2)
-                                                 # Add graduation on axis
-                                                  circos.axis(h = "top",
-                                                              labels = c(0, 5, 10, 20, 50, 70, 100, 500, 1000, 5000, 10000,30000,50000,100000, 200000),
-                                                              major.tick.length = 0.5,
-                                                              minor.ticks = 4, 
-                                                              labels.cex = fontsize(12),
-                                                              sector.index = sector.name,
-                                                              track.index = 2,
-                                                              labels.niceFacing = TRUE,
-                                                              labels.pos.adjust = c(0, 0.8))
-                        }
-)
+                                                               cex = fontsize(7),
+                                                               col = "#170A3A",
+                                                               font = 1)
+                                                  # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, 1000, seq(1000, 20000, by = 100000)),
+                                                               major.tick.length = 0.2,
+                                                               minor.ticks = 2, 
+                                                               labels.cex = fontsize(5),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                }
+  )
 
 highlight.sector(grupo1, 
                  track.index = 1, 
@@ -1124,7 +1162,7 @@ highlight.sector(grupo1,
 
 highlight.sector(grupo2, 
                  track.index = 1, 
-                 col = groupColors[nrow(tabla1) - 5], 
+                 col = groupColors[15], 
                  text = "México", 
                  cex = 1.5, 
                  text.col = "white",
@@ -1142,7 +1180,7 @@ highlight.sector(grupo3,
 
 highlight.sector(grupo4, 
                  track.index = 1, 
-                 col = groupColors[nrow(tabla1) - 10], 
+                 col = groupColors[30], 
                  text = "Otro municipios", 
                  cex = 1.5, 
                  text.col = "white", 
@@ -1153,33 +1191,36 @@ dev.off()
 ```
 
 ```{r}
- etiquetas  <- lapply(1, function(x){
-                        p <-  tabla1 %>% 
-                               as.data.frame() %>%
-                                tibble::rownames_to_column(var = "rn") %>%
-                                 melt(., id.vars = "rn", variable.name = "cn") %>%
-                                  as.data.frame() %>%
+etiquetas  <- lapply(1, function(x){
+                        p <- tabla1 %>% 
+                              as.data.frame() %>%
+                               tibble::rownames_to_column(var = "rn") %>%
+                                melt(., id.vars = "rn", variable.name = "cn") %>%
+                                 as.data.frame() %>% 
+                                  mutate(rn = str_wrap(.$rn, 100),
+                                         cn = str_wrap(.$cn, 100)) %>%
                                    ggplot() + 
                                     geom_bar(aes(x = value, fill = rn))  + 
                                      geom_bar(aes(x = value, fill = cn))  + 
                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                             text = element_text(family = "montserrat"),
                                             axis.text = element_blank(),
-                                            axis.title = element_blank(), 
+                                            axis.title = element_blank(),
                                             strip.text = element_text(size = 8, face = "bold", family = "montserrat"), 
                                             legend.key.size = unit(0.3, "cm"),
                                             legend.spacing.y = unit(0.2, "cm"),
                                             legend.text = element_text(size = 6, family = "montserrat"),
                                             legend.title = element_text(size = 8, family = "montserrat")) + 
-                                       scale_fill_viridis_d(option = "A") + 
+                                       scale_fill_manual(values = colorRampPalette(paleta)(max(ncol(tabla1), nrow(tabla1)))) + 
+                                         guides(fill = guide_legend(ncol = 1)) + 
                                         guides(fill = guide_legend(ncol = 1)) + 
-                                         labs(fill = stringr::str_wrap(ZM_CF[x], 50),
-                                          color = stringr::str_wrap(ZM_CF[x], 50))
+                                         labs(fill = "ZM del Valle de México",
+                                          color = "ZM del Valle de México")
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
 path = paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Etiquetas ZMVM a nivel municipal.pdf")
-ggexport(etiquetas, width = 5, height = 5, dpi = 400, filename = path)
+ggexport(etiquetas, width = 5, height = 5, dpi = 400, filename = path, device = cairo_pdf)
 ```
 
 ##### Gráfico Sankey  
