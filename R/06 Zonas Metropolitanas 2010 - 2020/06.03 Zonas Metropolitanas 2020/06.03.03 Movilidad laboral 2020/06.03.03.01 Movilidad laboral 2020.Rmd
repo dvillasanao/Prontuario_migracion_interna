@@ -1818,7 +1818,7 @@ par(mar = rep(0, 4))
 
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))))
                           
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
