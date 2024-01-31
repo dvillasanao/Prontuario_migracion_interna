@@ -82,13 +82,12 @@ setwd(here::here())
 ```{r, echo=FALSE}
 #Font Stlye
 require(showtext)
+
 library(extrafont)
 # activar showtext
 showtext_auto()
 font_add_google("Montserrat", "montserrat")
 font_add_google("Raleway", "Raleway")
-#loadfonts(device = "win")
-#font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
 ```
 
 
@@ -563,6 +562,8 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 
 
 ```{r, eval = FALSE}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel municipal.RDS"))
+
 #paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
 paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
@@ -585,9 +586,11 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst desagregado por ZM (municipal).pdf"), 
           width = 7, height = 7, 
           fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
+          family = "montserrat", 
+          onefile = TRUE)
 
 for(i in 1:length(ZM_CF)){
+  
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
                         nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
@@ -637,7 +640,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(7),
-                                                               col = "#106D5B",
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
@@ -932,7 +935,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(7),
-                                                               col = "#170A3A",
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
@@ -1090,6 +1093,7 @@ cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020
           width = 7, height = 7, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
+
 circos.clear()
 circos.par(start.degree = 90, 
            clock.wise = FALSE,
@@ -1137,7 +1141,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(7),
-                                                               col = "#170A3A",
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
@@ -1704,7 +1708,6 @@ Emigrantes <- lapply(1:length(ZM), function(x){
                                               summarise(Emigrantes = sum(value, na.rm = TRUE)) 
 })
 
-
 ################################# Filtro #########################################
 ### Sacar el promedio de los flujos migratiorios para determinar como se van a grupar los estados 
 #### Es importante correr la tabla1[[x]] sin filtros para determinar el número promedio de flujos de migración
@@ -1803,6 +1806,7 @@ cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020
           width = 7, height = 7, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
+
 for(i in 1:length(ZM_CF)){
 circos.clear()
 circos.par(start.degree = 90, 
@@ -1816,7 +1820,7 @@ par(mar = rep(0, 4))
 
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))))
                           
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
@@ -1853,7 +1857,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(7),
-                                                               col = "#170A3A",
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
@@ -2091,19 +2095,19 @@ cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020
           family = "montserrat", onefile = TRUE)
 circos.clear()
 circos.par(start.degree = 90, 
-           clock.wise = FALSE,
-           gap.degree = 2, 
+           clock.wise = TRUE,
+           gap.degree = 3, 
            track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
 
 par(mar = rep(1.5, 4))
 # Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))),
-                                               nm = str_sort(unique(c(colnames(tabla1), rownames(tabla1)))))
+groupColors <- setNames(rev(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1)))))),
+                                               nm = unique(c(colnames(tabla1), rownames(tabla1))))
 
 chordDiagram(x = tabla1 %>% as.matrix(), 
              grid.col = groupColors,
-             order = str_sort(unique(c(colnames(tabla1), rownames(tabla1)))),
+             order = union(rownames(tabla1), colnames(tabla1)),
              keep.diagonal = FALSE,
              symmetric = FALSE,
              scale = FALSE, 
@@ -2135,7 +2139,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(7),
-                                                               col = "#170A3A",
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
@@ -2272,19 +2276,20 @@ cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020
           family = "montserrat", onefile = TRUE)
 circos.clear()
 circos.par(start.degree = 90, 
-           clock.wise = FALSE,
-           gap.degree = 2, 
+           clock.wise = TRUE,
+           gap.degree = 3, 
            track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
 
 par(mar = rep(1.5, 4))
+
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))),
-                                               nm = str_sort(unique(c(colnames(tabla1), rownames(tabla1)))))
+                                               nm = unique(c(colnames(tabla1), rownames(tabla1))))
 
 chordDiagram(x = tabla1 %>% as.matrix(), 
              grid.col = groupColors,
-             order = str_sort(unique(c(colnames(tabla1), rownames(tabla1)))),
+             order = union(rownames(tabla1), colnames(tabla1)),
              keep.diagonal = FALSE,
              symmetric = FALSE,
              scale = FALSE, 
@@ -2316,7 +2321,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(7),
-                                                               col = "#170A3A",
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
@@ -2815,7 +2820,6 @@ Emigrantes <- lapply(1:length(ZM), function(x){
                                               summarise(Emigrantes = sum(value, na.rm = TRUE)) 
 })
 
-
 ################################## Filtro ######################################
 ### Sacar el promedio de los flujos migratiorios para determinar como se van a grupar los estados 
 #### Es importante correr la tabla1[[x]] sin filtros para determinar el número promedio de flujos de migración
@@ -2914,7 +2918,6 @@ tabla1 <- lapply(1:length(ZM_CF), function(x){
 
 ## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
 wb <- createWorkbook()
-
 for(i in 1:length(ZM)){
      tabla <- tabla1[[i]] %>%
                 as.data.frame() %>%
@@ -2958,6 +2961,7 @@ cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020
           width = 7, height = 7, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
+
 for(i in 1:length(ZM_CF)){
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
@@ -3007,7 +3011,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
                                                                cex = fontsize(7),
-                                                               col = "#170A3A",
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
