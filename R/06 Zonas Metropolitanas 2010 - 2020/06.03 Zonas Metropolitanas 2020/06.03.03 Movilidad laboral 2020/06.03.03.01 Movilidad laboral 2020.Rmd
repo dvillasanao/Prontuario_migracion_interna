@@ -3937,7 +3937,6 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 
 **Matriz de Movilidad laboral hace 5 años a nivel municipal, 2015 - 2020**  
 
-
 <div style="height:500px;overflow:auto;">
 ```{r, echo = FALSE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de Movilidad laboral a nivel metropolitano 2020.RData"))
