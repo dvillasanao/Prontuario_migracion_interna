@@ -76,8 +76,13 @@ rm(list = ls())
 
 ```{r, echo=FALSE}
 setwd(here::here())
+#ttf_import('C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/')
+fonts()
+extrafont::loadfonts(device = "win")
+font_import()
+loadfonts(device = "win")
+windowsFonts()
 ```
-
 
 ```{r, echo=FALSE}
 #Font Stlye
@@ -85,13 +90,11 @@ require(showtext)
 library(extrafont)
 # activar showtext
 showtext_auto()
-font_add_google("Montserrat", "montserrat")
-font_add_google("Raleway", "Raleway")
-#loadfonts(device = "win")
-#font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+#font_add_google("Montserrat", "montserrat")
+#font_add_google("Raleway", "Raleway")
+loadfonts(device = "win")
+font_add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
 ```
-
-
 
 ```{r, echo = FALSE}
 # Librerías que se usaron en el documCVE_ENTo
@@ -385,14 +388,14 @@ rownames <- rownames(Migrantes) %>%
              as.data.frame() %>%
               rename("CVE_MUN" = ".") %>%
                left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
-                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
                  pull(CVE_MUN)
 
 colnames <- colnames(Migrantes) %>% 
              as.data.frame() %>%
               rename("CVE_MUN" = ".") %>%
                left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
-                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
                  pull(CVE_MUN)
 
 rownames(Migrantes) <- rownames
@@ -418,7 +421,7 @@ ZM <- lapply(1:length(ZM_CF), function(x){
                     ZM_2020 %>% 
                      select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
                       filter(CVE_ZM %in% ZM_CF[x])  %>% 
-                       mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>% 
+                       mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>% 
                         pull(NOM_MUN)
 })
 
@@ -492,13 +495,13 @@ tabla1 <- lapply(1:length(ZM_CF), function(x){
                                           filter(.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]) %>%
                                            mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>% 
                                             mutate(rn = case_when(.$rn %in% ZM[[x]] & .$rn %in% filtro  ~ substr(.$rn, 2, nchar(.$rn)),
-                                                                  .$rn %in% ZM[[x]] & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZM"), 30),
-                                                                  .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 30),
+                                                                  .$rn %in% ZM[[x]] & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZM"), 100),
+                                                                  .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 100),
                                                                   .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %nin% filtro_est ~ "Otros estados"),
                                                  
                                                    cn = case_when(.$cn %in% ZM[[x]] & .$cn %in% filtro  ~ substr(.$cn, 2, nchar(.$cn)),
-                                                                  .$cn %in% ZM[[x]] & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZM"), 30),
-                                                                  .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 30),
+                                                                  .$cn %in% ZM[[x]] & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZM"), 100),
+                                                                  .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 100),
                                                                   .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %nin% filtro_est ~ "Otros estados")) %>%
                                             filter(value > 0) %>%
                                              dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
@@ -541,7 +544,8 @@ tabla1 <- lapply(1:length(ZM_CF), function(x){
  #                                          
 #})
 
-## Se guardan las matrices de movilidad laboral para analizarlos después. 
+## Se guardan las matrices de movilidad laboral par
+ a analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:length(ZM)){
      tabla <- tabla1[[i]] %>%
@@ -562,30 +566,32 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 ```
 
 ```{r, eval = FALSE}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel municipal.RDS"))
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
 tabla2 <- lapply(1:length(ZM_CF), function(x){
                     # Paleta de colores
-                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
-                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
-                        circos.clear()
-                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                       transparency = 0.4,
-                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
+                      groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                              nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
+                       circos.clear()
+                        chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                      transparency = 0.4,
+                                       order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
                                         grid.col = groupColors)  %>% 
-                          pull(col)
+                         pull(col)
   }
 )
 ```
+
 
 ```{r, eval = FALSE, results='hide'}
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM.pdf"), 
           width = 7, height = 7, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
+
 for(i in 1:length(ZM_CF)){
-  
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
                         nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
@@ -669,14 +675,14 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                      geom_bar(aes(x = value, fill = rn))  + 
                                       geom_bar(aes(x = value, fill = cn))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                             text = element_text(family = "montserrat"),
+                                             text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
                                              axis.title = element_blank(),
-                                             strip.text = element_text(size = 8, face = "bold", family = "montserrat"),  
+                                             strip.text = element_text(size = 8, face = "bold", family = "Montserrat Medium"),  
                                              legend.key.size = unit(0.3, "cm"), 
                                              legend.spacing.y = unit(0.2, "cm"),
-                                             legend.text = element_text(size = 6, family = "montserrat"),
-                                             legend.title = element_text(size = 8, family = "montserrat")) + 
+                                             legend.text = element_text(size = 6, family = "Montserrat Medium"),
+                                             legend.title = element_text(size = 8, family = "Montserrat Medium")) + 
                                         scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
@@ -684,8 +690,15 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
-path = paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas a nivel municipal.pdf")
-ggexport(etiquetas, width = 5, height = 7, dpi = 400, filename = path, device = cairo_pdf)
+
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas a nivel municipal.pdf"), 
+          width = 7, height = 7, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
+for(i in 1:length(ZM_CF)){
+  print(etiquetas[i])
+}
+dev.off()
 ```
 
 
