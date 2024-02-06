@@ -1901,7 +1901,7 @@ dev.off()
 
 **Etiquetas**
 
-```{r etiquetas_intamunicipal}
+```{r etiquetas intramunicipal}
 etiquetas  <- lapply(1:length(ZM_CF), function(x){
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
@@ -1931,45 +1931,6 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
  })
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel intramunicipal.pdf"), 
           width = 7, height = 8, 
-          fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
-for(i in 1:length(ZM_CF)){
-  print(etiquetas[i])
-}
-dev.off()
-```
-
-```{r etiquetas_municipal}
-etiquetas  <- lapply(1:length(ZM_CF), function(x){
-                        p <-  tabla1[[x]] %>% 
-                               as.data.frame() %>%
-                                tibble::rownames_to_column(var = "rn") %>%
-                                 melt(., id.vars = "rn", variable.name = "cn") %>%
-                                  as.data.frame() %>% 
-                                   mutate(rn = str_wrap(.$rn, 100),
-                                          cn = str_wrap(.$cn, 100)) %>%
-                                    ggplot() + 
-                                     geom_bar(aes(x = value, fill = rn))  + 
-                                      geom_bar(aes(x = value, fill = cn))  + 
-                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                             text = element_text(family = "Montserrat Medium"),
-                                             axis.text = element_blank(),
-                                             axis.title = element_blank(),
-                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
-                                             legend.key.size = unit(0.4, "cm"), 
-                                             legend.spacing.y = unit(0.4, "cm"),
-                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
-                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
-                                         guides(fill = guide_legend(ncol = 1)) + 
-                                          labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
-                                               color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
-                         leg <- get_legend(p)
-                         as_ggplot(leg)
- })
-
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas a nivel municipal.pdf"), 
-          width = 5, height = 5, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
 for(i in 1:length(ZM_CF)){
@@ -2161,8 +2122,10 @@ groupColors <- paste0(rev(colorRampPalette(paleta)(length(unique(c(colnames(tabl
 
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab de ZMVM (Intramunicipal).pdf"), 
           width = 7, height = 7, 
+          family = "Montserrat Medium",
           fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
+          onefile = TRUE)
+
 circos.clear()
 circos.par(start.degree = 90, 
            clock.wise = TRUE,
@@ -2171,6 +2134,7 @@ circos.par(start.degree = 90,
            points.overflow.warning = FALSE)
 
 par(mar = rep(1.5, 4))
+
 # Paleta de colores
 groupColors <- setNames(rev(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1)))))),
                                                nm = unique(c(colnames(tabla1), rownames(tabla1))))
@@ -2341,9 +2305,11 @@ saveWorkbook(wb,
 groupColors <- paste0(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))), "7F")
 
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab de ZMVM_grupos (Intramunicipal).pdf"), 
-          width = 7, height = 7, 
+          width = 10, height = 10, 
+          family = "Montserrat Medium",
           fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
+          onefile = TRUE)
+ 
 circos.clear()
 circos.par(start.degree = 90, 
            clock.wise = TRUE,
@@ -2351,7 +2317,7 @@ circos.par(start.degree = 90,
            track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
 
-par(mar = rep(1.5, 4))
+par(mar = rep(0, 4))
 
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))),
@@ -2390,7 +2356,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(7),
+                                                               cex = fontsize(9),
                                                                col = "#170A3A",
                                                                font = 1)
                                                   # Add graduation on axis
@@ -2398,7 +2364,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, 1000, seq(1000, 20000, by = 100000)),
                                                                major.tick.length = 0.2,
                                                                minor.ticks = 2, 
-                                                               labels.cex = fontsize(5),
+                                                               labels.cex = fontsize(7),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
@@ -2449,14 +2415,14 @@ etiquetas  <- lapply(1, function(x){
                                     geom_bar(aes(x = value, fill = rn))  + 
                                      geom_bar(aes(x = value, fill = cn))  + 
                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                            text = element_text(family = "montserrat"),
-                                            axis.text = element_blank(),
-                                            axis.title = element_blank(),
-                                            strip.text = element_text(size = 8, face = "bold", family = "montserrat"), 
-                                            legend.key.size = unit(0.3, "cm"),
-                                            legend.spacing.y = unit(0.2, "cm"),
-                                            legend.text = element_text(size = 6, family = "montserrat"),
-                                            legend.title = element_text(size = 8, family = "montserrat")) + 
+                                             text = element_text(family = "Montserrat Medium"),
+                                             axis.text = element_blank(),
+                                             axis.title = element_blank(),
+                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
+                                             legend.key.size = unit(0.4, "cm"), 
+                                             legend.spacing.y = unit(0.4, "cm"),
+                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
+                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
                                        scale_fill_manual(values = colorRampPalette(paleta)(max(ncol(tabla1), nrow(tabla1)))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                         guides(fill = guide_legend(ncol = 1)) + 
@@ -2465,8 +2431,15 @@ etiquetas  <- lapply(1, function(x){
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
-path = paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZMVM a nivel intramunicipal.pdf")
-ggexport(etiquetas, width = 5, height = 6, dpi = 400, filename = path, device = cairo_pdf)
+
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZMVM a nivel intramunicipal.pdf"), 
+          width = 7, height = 8, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
+for(i in 1){
+  print(etiquetas[i])
+}
+dev.off()
 ```
 
 ##### Gráfico Sankey  
@@ -3002,6 +2975,7 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 
 ```{r, results = FALSE, eval = FALSE}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel intermunicipal.RDS"))
+
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
@@ -3021,15 +2995,18 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
 
 
 
-```{r, eval = FALSE, results='hide'}
+```{r grafico intermunicipal, eval = FALSE, results='hide'}
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM  (Intermunicipal).pdf"), 
-          width = 7, height = 7, 
+          width = 15,
+          height = 10, 
+          family = "Montserrat Medium",
           fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
+          onefile = TRUE)
 for(i in 1:length(ZM_CF)){
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
                         nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
+
 circos.clear()
 circos.par(start.degree = 90, 
            gap.degree = 2, 
@@ -3074,7 +3051,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(7),
+                                                               cex = fontsize(9),
                                                                col = "#170A3A",
                                                                font = 1)
                                                   # Add graduation on axis
@@ -3082,7 +3059,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
                                                                major.tick.length = 0.5,
                                                                minor.ticks = 4, 
-                                                               labels.cex = fontsize(5),
+                                                               labels.cex = fontsize(6),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
@@ -3095,7 +3072,7 @@ dev.off()
 
 **Etiquetas**
 
-```{r}
+```{r etiquetas_intermunicipal}
 etiquetas  <- lapply(1:length(ZM_CF), function(x){
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
@@ -3108,14 +3085,14 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                      geom_bar(aes(x = value, fill = rn))  + 
                                       geom_bar(aes(x = value, fill = cn))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                             text = element_text(family = "montserrat"),
+                                             text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
                                              axis.title = element_blank(),
-                                             strip.text = element_text(size = 8, face = "bold", family = "montserrat"),  
-                                             legend.key.size = unit(0.3, "cm"), 
-                                             legend.spacing.y = unit(0.2, "cm"),
-                                             legend.text = element_text(size = 6, family = "montserrat"),
-                                             legend.title = element_text(size = 8, family = "montserrat")) + 
+                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
+                                             legend.key.size = unit(0.4, "cm"), 
+                                             legend.spacing.y = unit(0.4, "cm"),
+                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
+                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
                                         scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
@@ -3123,13 +3100,17 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
-path = paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel intermunicipal.pdf")
-ggexport(etiquetas, width = 5, height = 7, dpi = 400, filename = path, device = cairo_pdf)
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel intermunicipal.pdf"), 
+          width = 7, height = 8, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
+for(i in 1:length(ZM_CF)){
+  print(etiquetas[i])
+}
+dev.off()
 ```
 
-
 #### Gráfico Sankey
-
 
 ```{r, eval = FALSE}
 ## Tomamos las Zonas Metropolitanas con más de 3 municipios con flujos migratorios 
@@ -3299,7 +3280,7 @@ filtro_est <- Inmigrantes %>%
                   mutate(rn = substr(.$rn, 1, 3)) %>%
                    group_by(rn) %>%
                     summarise(value = sum(value)) %>%
-                     filter(value > 3000) %>%
+                     filter(value > 4000) %>%
                       pull(rn)
 
 ################################################################################
@@ -3332,16 +3313,19 @@ groupColors <- paste0(rev(colorRampPalette(paleta)(length(unique(c(colnames(tabl
 
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab de ZMVM (Intermunicipal).pdf"), 
           width = 7, height = 7, 
+          family = "Montserrat Medium",
           fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
+          onefile = TRUE)
+
 circos.clear()
 circos.par(start.degree = 90, 
-           clock.wise = FALSE,
+           clock.wise = TRUE,
            gap.degree = 3, 
            track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
 
 par(mar = rep(1.5, 4))
+
 # Paleta de colores
 groupColors <- setNames(rev(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1)))))),
                                                nm = unique(c(colnames(tabla1), rownames(tabla1))))
@@ -3465,7 +3449,7 @@ filtro_est <- Inmigrantes %>%
                   mutate(rn = substr(.$rn, 1, 3)) %>%
                    group_by(rn) %>%
                     summarise(value = sum(value)) %>%
-                     filter(value > 3000) %>%
+                     filter(value > 4000) %>%
                       pull(rn)
 
 ################################################################################
@@ -3536,17 +3520,19 @@ saveWorkbook(wb,
 groupColors <- paste0(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))), "7F")
 
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab de ZMVM_grupos (Intermunicipal).pdf"), 
-          width = 7, height = 7, 
+          width = 10, height = 10, 
+          family = "Montserrat Medium",
           fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
+          onefile = TRUE)
+ 
 circos.clear()
 circos.par(start.degree = 90, 
-           clock.wise = FALSE,
+           clock.wise = TRUE,
            gap.degree = 3, 
            track.margin = c(-0.2, 0.2), 
            points.overflow.warning = FALSE)
 
-par(mar = rep(1.5, 4))
+par(mar = rep(0, 4))
 
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))),
@@ -3585,7 +3571,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(7),
+                                                               cex = fontsize(9),
                                                                col = "#170A3A",
                                                                font = 1)
                                                   # Add graduation on axis
@@ -3593,7 +3579,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, 1000, seq(1000, 20000, by = 100000)),
                                                                major.tick.length = 0.2,
                                                                minor.ticks = 2, 
-                                                               labels.cex = fontsize(5),
+                                                               labels.cex = fontsize(7),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
@@ -3642,7 +3628,7 @@ dev.off()
 **Etiquetas**
 
 ```{r}
- etiquetas  <- lapply(1, function(x){
+etiquetas  <- lapply(1, function(x){
                         p <- tabla1 %>% 
                               as.data.frame() %>%
                                tibble::rownames_to_column(var = "rn") %>%
@@ -3654,14 +3640,14 @@ dev.off()
                                     geom_bar(aes(x = value, fill = rn))  + 
                                      geom_bar(aes(x = value, fill = cn))  + 
                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                            text = element_text(family = "montserrat"),
-                                            axis.text = element_blank(),
-                                            axis.title = element_blank(),
-                                            strip.text = element_text(size = 8, face = "bold", family = "montserrat"), 
-                                            legend.key.size = unit(0.3, "cm"),
-                                            legend.spacing.y = unit(0.2, "cm"),
-                                            legend.text = element_text(size = 6, family = "montserrat"),
-                                            legend.title = element_text(size = 8, family = "montserrat")) + 
+                                             text = element_text(family = "Montserrat Medium"),
+                                             axis.text = element_blank(),
+                                             axis.title = element_blank(),
+                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
+                                             legend.key.size = unit(0.4, "cm"), 
+                                             legend.spacing.y = unit(0.4, "cm"),
+                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
+                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
                                        scale_fill_manual(values = colorRampPalette(paleta)(max(ncol(tabla1), nrow(tabla1)))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                         guides(fill = guide_legend(ncol = 1)) + 
@@ -3670,8 +3656,15 @@ dev.off()
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
-path = paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZMVM a nivel intermunicipal.pdf")
-ggexport(etiquetas, width = 5, height = 7, dpi = 400, filename = path, device = cairo_pdf)
+
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZMVM a nivel intermunicipal.pdf"),
+          width = 7, height = 9, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
+for(i in 1){
+  print(etiquetas[i])
+}
+dev.off()
 ```
 
 ##### Gráfico Sankey  
@@ -4107,9 +4100,11 @@ tabla2 <- lapply(1, function(x){
 
 ```{r, eval = FALSE, results='hide'}
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM (metropolitano).pdf"), 
-          width = 9, height = 9, 
+          width = 10, height = 10, 
+          family = "Montserrat Medium",
           fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
+          onefile = TRUE)
+
 for(i in 1){
 circos.clear()
 circos.par(start.degree = 90, 
@@ -4294,10 +4289,13 @@ for(i in 1:length(ZM)){
                   file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz MTrab a nivel metropolitano_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
+saveRDS(tabla1, paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz MTrab a nivel metropolitano.RDS"))
 ```
 
 
 ```{r}
+tabla1 <- readRDS(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz MTrab a nivel metropolitano.RDS"))
+
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
@@ -4315,12 +4313,13 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
 )
 ```
 
-```{r, eval = FALSE, results='hide'}
+```{r grafico metropolitano, eval = FALSE, results='hide'}
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MEst desagregado por ZM (metropolitano)_individual.pdf"), 
-          width = 7, height = 7, 
+          width = 8,
+          height = 8, 
+          family = "Montserrat Medium",
           fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
-
+          onefile = TRUE)
 for(i in 1:length(ZM_CF)){
 # Paleta de colores
 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
@@ -4391,7 +4390,7 @@ dev.off()
 
 **Etiquetas**
 
-```{r}
+```{r etiquetas metropolitano}
 etiquetas  <- lapply(1:length(ZM_CF), function(x){
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
@@ -4404,14 +4403,14 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                      geom_bar(aes(x = value, fill = rn))  + 
                                       geom_bar(aes(x = value, fill = cn))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                             text = element_text(family = "montserrat"),
+                                             text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
                                              axis.title = element_blank(),
-                                             strip.text = element_text(size = 8, face = "bold", family = "montserrat"),  
-                                             legend.key.size = unit(0.3, "cm"), 
-                                             legend.spacing.y = unit(0.2, "cm"),
-                                             legend.text = element_text(size = 6, family = "montserrat"),
-                                             legend.title = element_text(size = 8, family = "montserrat")) + 
+                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
+                                             legend.key.size = unit(0.4, "cm"), 
+                                             legend.spacing.y = unit(0.4, "cm"),
+                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
+                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
                                         scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
@@ -4419,8 +4418,14 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
-path = paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel metropolitano.pdf")
-ggexport(etiquetas, width = 5, height = 5, dpi = 400, filename = path, device = cairo_pdf)
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel metropolitano.pdf"), 
+          width = 7, height = 8, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
+for(i in 1:length(ZM_CF)){
+  print(etiquetas[i])
+}
+dev.off()
 ```
 
 # Referencias
