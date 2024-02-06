@@ -580,7 +580,7 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
 )
 ```
 
-```{r, eval = FALSE, results='hide'}
+```{r grafico municipal, eval = FALSE, results='hide'}
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM.pdf"), 
           width = 15,
           height = 10, 
@@ -1824,7 +1824,7 @@ tabla2 <- lapply(1:length(ZM_CF), function(x){
 ```
 
 
-```{r, eval = FALSE, results='hide'}
+```{r grafico intramunicipal, eval = FALSE, results='hide'}
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM  (Intramunicipal).pdf"), 
           width = 15,
           height = 10, 
@@ -1969,7 +1969,7 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
  })
 
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas a nivel municipal.pdf"), 
-          width = 7, height = 8, 
+          width = 5, height = 5, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
 for(i in 1:length(ZM_CF)){
