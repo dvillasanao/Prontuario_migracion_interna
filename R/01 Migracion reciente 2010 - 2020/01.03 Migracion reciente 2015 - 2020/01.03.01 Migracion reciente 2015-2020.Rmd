@@ -602,7 +602,7 @@ colores <- c("#C70E7B", "#D1207C", "#DC327D", "#E7467F", "#F25880", "#F86C7C", "
 ```
 
 
-```{r, eval = FALSE, results='hide'}
+```{r grafico estatal, eval = FALSE, results='hide'}
 cairo_pdf(paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2020/ChordDiagram de MR5a desagregado por estado.pdf"), 
           width = 8,
           height = 8, 
@@ -681,7 +681,45 @@ dev.off()
 
 **Etiquetas**
 
-```{r}
+```{r etiquetas_estatal}
+etiquetas  <- lapply(1:length(estados), function(x){
+                        p <-  tabla1[[x]] %>% 
+                               as.data.frame() %>%
+                                tibble::rownames_to_column(var = "rn") %>%
+                                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                                  as.data.frame() %>% 
+                                   mutate(rn = str_wrap(.$rn, 100),
+                                          cn = str_wrap(.$cn, 100)) %>%
+                                    ggplot() + 
+                                     geom_bar(aes(x = value, fill = rn))  + 
+                                      geom_bar(aes(x = value, fill = cn))  + 
+                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                                             text = element_text(family = "Montserrat Medium"),
+                                             axis.text = element_blank(),
+                                             axis.title = element_blank(),
+                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
+                                             legend.key.size = unit(0.4, "cm"), 
+                                             legend.spacing.y = unit(0.4, "cm"),
+                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
+                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
+                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                         guides(fill = guide_legend(ncol = 1)) + 
+                                          labs(fill = stringr::str_wrap(paste(estado[x]), 100),
+                                               color = stringr::str_wrap(paste(estado[x]), 100))
+                         leg <- get_legend(p)
+                         as_ggplot(leg)
+ })
+
+cairo_pdf(paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2020/Etiquetas a nivel estatal.pdf"), 
+          width = 7, height = 8, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
+for(i in 1:length(estados)){
+  print(etiquetas[i])
+}
+dev.off()
+```
+
  etiquetas  <- lapply(1:32, function(x){
                         p <- tabla1[[x]] %>% 
                               as.data.frame() %>%
