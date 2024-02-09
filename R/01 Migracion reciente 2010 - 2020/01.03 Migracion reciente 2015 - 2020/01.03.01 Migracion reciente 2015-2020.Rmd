@@ -1268,19 +1268,20 @@ tabla <- Migrantes %>%
           as.data.frame() %>%
            sna::diag.remove(remove.val = 0) %>%
             melt(., id.vars = "rn", variable.name = "cn") %>%
-             rename("rn" = "Var1", 
-                    "cn" = "Var2") %>%
-              filter(value > 0)
+             mutate(Var1 = str_pad(.$Var1, width = 6, side = c("left"), pad = "0"),
+                    Var2 = str_pad(.$Var2, width = 6, side = c("left"), pad = "0")) %>%
+              rename("rn" = "Var1", 
+                     "cn" = "Var2") %>%
+               filter(value > 0)
 
 ## Se generan los filtros correspondientes a la matriz cuadrada por estados 
-x <- 1
-tabla1 <-  lapply(1, function(x){
+tabla1 <-  lapply(1:32, function(x){
                          # filtro de municipios
-                          filtro <- filtro %>%
-                                     filter(substr(.$rn, 1, 3) == estados[x]) %>%
-                                      filter(value < filtro_mig[x]) %>%
-                                       pull(rn)
-                          
+                         filtro <- filtro %>%
+                                    filter(substr(.$rn, 1, 3) == estados[x]) %>%
+                                     filter(value < filtro_mig[x]) %>%
+                                      pull(rn)
+                         
                          # filtro de estados
                          filtro_rn  <- filtro_est %>%
                                         mutate(value = ifelse(substr(.$rn, 1, 3) == estados[x] | substr(.$cn, 1, 3) == estados[x], value, 0)) %>%
@@ -1295,12 +1296,11 @@ tabla1 <-  lapply(1, function(x){
                                            summarise(Emg = sum(value, na.rm = TRUE))
 
                          filtro_estados <- filtro_rn %>%
-                                                full_join(., filtro_cn, by = c("rn" = "cn")) %>%
-                                                 mutate(value = sum_row(.$Inm, .$Emg, na.rm = TRUE)) %>%
-                                                  mutate(mean = mean(value, na.rm = TRUE)) %>%
-                                                  filter(value > filtro_out[x] & rn != estados[x]) %>%
-                                                   pull(rn)
-                         p <- tabla %>%
+                                            full_join(., filtro_cn, by = c("rn" = "cn")) %>%
+                                             mutate(value = sum_row(.$Inm, .$Emg, na.rm = TRUE)) %>%
+                                              filter(value > filtro_out[x] & rn != estado[x]) %>%
+                                               pull(rn)
+                         tabla %>%
                          # Se reestructura la clave de municipios y se seleccionan solo los municipios que superan el filtro de municipios
                            # Se reestructuran a los municipios que superan al filtro de estados
                           mutate(rn = case_when(.$rn %in% filtro ~ paste0(estados[x], " Otros municipios"), 
@@ -1316,37 +1316,36 @@ tabla1 <-  lapply(1, function(x){
                             filter(value > 0) %>%
                              dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
                               column_to_rownames(., var = "rn") 
-}
+  }
 )
-
 ## Se sacan los flujos migratorios que pertencen a otros estados
-tabla_estados <- sapply(1:32, function(i){
-                         tabla1[[i]] %>%
-                          as.data.frame() %>%
-                           adorn_totals(c("row", "col"), 
-                                         fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(colnames(tabla1[[i]]))) %>% 
-                            select(`Otros estados`) %>%
-                             slice(nrow(.)) %>%
-                              mutate(`Otros estados` = .$`Otros estados`/30) %>%
-                               pull(`Otros estados`)
-}
-)
+#tabla_estados <- sapply(1:32, function(i){
+#                         tabla1[[i]] %>%
+#                          as.data.frame() %>%
+#                           adorn_totals(c("row", "col"), 
+#                                         fill = "-", 
+#                                          na.rm = TRUE, 
+#                                           ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                            select(`Otros estados`) %>%
+#                             slice(nrow(.)) %>%
+#                              mutate(`Otros estados` = .$`Otros estados`/30) %>%
+#                               pull(`Otros estados`)
+#  }
+#)
 
 ## Se sacan los flujos migratorios que pertencen a otros municipios
-tabla_municipios <- sapply(1:32, function(i){
-                               tabla1[[i]] %>%
-                                as.data.frame() %>%
-                                 select(-c(`Otros estados`)) %>%
-                                  adorn_totals(c("row", "col"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE, 
-                                                  ,,,,contains(colnames(tabla1[[i]]))) %>% 
-                                    slice(nrow(.)) %>%
-                                     mutate(Total = .$Total/50) %>%
-                                      pull(Total)
-})
+#tabla_municipios <- sapply(1:32, function(i){
+#                               tabla1[[i]] %>%
+#                                as.data.frame() %>%
+#                                 select(-c(`Otros estados`)) %>%
+#                                  adorn_totals(c("row", "col"), 
+#                                                fill = "-", 
+#                                                 na.rm = TRUE, 
+#                                                  ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                    slice(nrow(.)) %>%
+#                                     mutate(Total = .$Total/50) %>%
+#                                      pull(Total)
+#})
 
 ## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
 wb <- createWorkbook()
@@ -1453,7 +1452,7 @@ circos.trackPlotRegion(track.index = 1,
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
-                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 200000, by = 1000)),
                                                                major.tick.length = 0.5,
                                                                minor.ticks = 4, 
                                                                labels.cex = fontsize(6),

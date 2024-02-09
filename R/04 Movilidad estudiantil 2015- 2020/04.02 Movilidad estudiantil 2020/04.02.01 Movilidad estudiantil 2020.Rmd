@@ -1177,7 +1177,7 @@ tabla1 <-  lapply(1:32, function(x){
                             filter(value > 0) %>%
                              dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
                               column_to_rownames(., var = "rn") 
-}
+  }
 )
 ## Se sacan los flujos migratorios que pertencen a otros estados
 tabla_estados <- sapply(1:32, function(i){
