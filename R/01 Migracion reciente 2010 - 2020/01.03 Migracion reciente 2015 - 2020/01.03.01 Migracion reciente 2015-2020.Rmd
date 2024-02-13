@@ -1469,7 +1469,7 @@ dev.off()
 **Etiquetas**
 
 ```{r}
-etiquetas  <- lapply(1:32, function(x){
+etiquetas  <- lapply(1:length(estados), function(x){
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
                                 tibble::rownames_to_column(var = "rn") %>%
@@ -1491,17 +1491,17 @@ etiquetas  <- lapply(1:32, function(x){
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
                                         scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
-                                          labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
-                                               color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
+                                          labs(fill = stringr::str_wrap(paste(estado[x]), 100),
+                                               color = stringr::str_wrap(paste(estado[x]), 100))
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
 
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2020/Etiquetas a nivel municipal.pdf"), 
-          width = 7, height = 8, 
+          width = 7, height = 10, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
-for(i in 1:length(ZM_CF)){
+for(i in 1:length(estados)){
   print(etiquetas[i])
 }
 dev.off()
