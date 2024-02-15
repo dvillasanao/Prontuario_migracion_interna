@@ -1399,8 +1399,6 @@ Residentes <- Migrantes %>%
 
 ################################################################################
 ############################### Inmigrantes ####################################
-
-## Población que sale de su entidad de residencia y entra a otra demarcación por motivos de estudios
 Inmigrantes <- Migrantes %>% 
                 as.data.frame() %>%
                  tibble::rownames_to_column(var = "CVE_MUN") %>%

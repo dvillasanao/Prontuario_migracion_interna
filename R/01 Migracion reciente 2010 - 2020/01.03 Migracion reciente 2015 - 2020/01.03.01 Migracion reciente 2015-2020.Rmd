@@ -1206,6 +1206,9 @@ colnames(Migrantes) <- colnames
 estados <- str_pad(rep(1:32), width = 3, pad = "0")
 
 # Clave de los municipios 
+### Municipios que no pertenecen en la muestra
+municipios_nomuestra <- c("004012", "007125", "029048")
+
 municipios <- MUN %>% 
                filter(CVE_MUN %nin% municipios_nomuestra) %>%
                 mutate(municipios = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
@@ -1498,7 +1501,7 @@ etiquetas  <- lapply(1:length(estados), function(x){
  })
 
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2020/Etiquetas a nivel municipal.pdf"), 
-          width = 7, height = 10, 
+          width = 7, height = 8, 
           fallback_resolution = 400,
           family = "montserrat", onefile = TRUE)
 for(i in 1:length(estados)){
@@ -1542,6 +1545,8 @@ Pob.5ymas <- mydata %>%
 
 ################################################################################
 ########################### Residentes #########################################
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2020/Matriz de movilidad estudiantil a nivel municipal 2020.RData"))
+
 Residentes <- Migrantes %>%
                rownames_to_column() %>% 
                 gather(CVE_MUN, Value, -rowname)%>%
@@ -1760,11 +1765,35 @@ Se filtran los flujos migratorios que son exclusivos de los estados y que visual
 # Matriz cuadrada a nivel municipal 
 load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Matriz de migracion reciente a nivel intramunicipal 2020.RData"))
 
-tabla <- Migrantes %>%
-          as.data.frame() %>%
-           tibble::rownames_to_column(var = "rn") %>%
-            melt(., id.vars = "rn", variable.name = "cn") %>%
-             mutate_if(is.factor, as.character)
+rownames <- rownames(Migrantes) %>% 
+             as.data.frame() %>%
+              rename("CVE_MUN" = ".") %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                 pull(CVE_MUN)
+
+colnames <- colnames(Migrantes) %>% 
+             as.data.frame() %>%
+              rename("CVE_MUN" = ".") %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                 pull(CVE_MUN)
+
+rownames(Migrantes) <- rownames
+colnames(Migrantes) <- colnames
+
+# Nombre de los estados 
+estados <- str_pad(rep(1:32), width = 3, pad = "0")
+
+# Clave de los municipios 
+### Municipios que no pertenecen en la muestra
+municipios_nomuestra <- c("004012", "007125", "029048")
+
+municipios <- MUN %>% 
+               filter(CVE_MUN %nin% municipios_nomuestra) %>%
+                mutate(municipios = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                 pull(municipios)
+
 
 ################################################################################
 ################################## Filtro ######################################
@@ -1803,6 +1832,13 @@ filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Municipio/01_Migracion reci
 ################################################################################
 
 ## Se generan los filtros correspondientes a la matriz cuadrada por estados 
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character) %>%
+              filter(value > 0)
+
 tabla1 <-  lapply(1:32, function(x){
                    filtro  <- Inmigrantes %>%
                                full_join(., Emigrantes, by = c("rn" = "cn")) %>%
@@ -1823,20 +1859,21 @@ tabla1 <-  lapply(1:32, function(x){
   }
 )
 
+## Se generan los filtros correspondientes a la matriz cuadrada por estados 
 ## Se sacan los flujos migratorios que pertencen a otros municipios
-tabla_municipios <- sapply(1:32, function(i){
-                                  tabla1[[i]] %>%
-                                   as.data.frame() %>%
-                                    adorn_totals(c("row", "col"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE, 
-                                                    ,,,,contains(colnames(tabla1[[i]]))) %>% 
-                                    select(Total) %>%
-                                     slice(nrow(.)) %>%
-                                      mutate(Total = .$Total/100) %>%
-                                       pull(Total)
-}
-)
+#tabla_municipios <- sapply(1:32, function(i){
+#                                  tabla1[[i]] %>%
+#                                   as.data.frame() %>%
+#                                    adorn_totals(c("row", "col"), 
+#                                                  fill = "-", 
+#                                                   na.rm = TRUE, 
+#                                                    ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                    select(Total) %>%
+#                                     slice(nrow(.)) %>%
+#                                      mutate(Total = .$Total/100) %>%
+#                                       pull(Total)
+#}
+#)
 
 ## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
 wb <- createWorkbook()
@@ -1874,24 +1911,53 @@ tabla2 <- lapply(1:32, function(x){
 )
 ```
 
+```{r, eval = FALSE}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MTrab a nivel intramunicipal.RDS"))
+
+## Genera una lista de vectores con los colores a nivel municipal 
+#paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
+paleta <- c("#000C7D", "#00108D", "#02149C", "#1614A4", "#3012A6", "#5A0D9D", "#7A0895", "#910390", "#A7008A", "#BB0085", "#CE0080", "#DF047A", "#EE1774", "#FA2C6C", "#FD4364", "#FE595B", "#FF6F51", "#FF8445","#FF9636", "#FFA72B", "#FFB622")
+
+tabla2 <- lapply(1:length(estados), function(x){
+                    # Paleta de colores
+                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
+                        circos.clear()
+                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                       transparency = 0.4,
+                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
+                                        grid.col = groupColors)  %>% 
+                          pull(col)
+  }
+)
+```
 
 ```{r}
-pdf(paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2020/ChordDiagram de MR5a desagregado a nivel intramunicipal.pdf"), width = 20, height = 20)
-for(i in 1:32){
+cairo_pdf(paste0(here::here(), "/Graficos/Municipio/01_Migracion reciente/2020/ChordDiagram de MR5a desagregado a nivel intramunicipal.pdf"),
+          width = 15,
+          height = 10, 
+          family = "Montserrat Medium",
+          fallback_resolution = 400,
+          onefile = TRUE)
+for(i in 1:length(estados)){
 # Paleta de colores
-groupColors <- setNames(viridis::viridis(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))), option = "A"), 
-                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
 
 circos.clear()
 circos.par(start.degree = 90, 
            gap.degree = 2, 
            clock.wise = FALSE,
-           track.margin = c(-0.07, 0.1), 
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
+
+par(mar = rep(0, 4))
 
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
+             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
              keep.diagonal = FALSE,
              transparency =  0,
              directional = 1,
@@ -1921,16 +1987,16 @@ circos.trackPlotRegion(track.index = 1,
                                                                labels = sector.name, 
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
-                                                               adj = c(-0.05, 0), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(20),
-                                                               col = groupColors,
+                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(9),
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
-                                                               labels = c(0, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 200000, by = 1000)),
                                                                major.tick.length = 0.5,
                                                                minor.ticks = 4, 
-                                                               labels.cex = fontsize(12),
+                                                               labels.cex = fontsize(6),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
