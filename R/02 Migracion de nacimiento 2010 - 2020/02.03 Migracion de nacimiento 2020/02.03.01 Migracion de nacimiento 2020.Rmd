@@ -78,16 +78,18 @@ setwd(here::here())
 ```
 
 
+
 ```{r, echo=FALSE}
 #Font Stlye
 require(showtext)
 library(extrafont)
 # activar showtext
-showtext_auto()
-font_add_google("Montserrat", "montserrat")
-font_add_google("Raleway", "Raleway")
-#loadfonts(device = "win")
-#font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+# SE cargan las funtes del sitema Windows (Pero tarda en correr)
+#ttf_import('C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/')
+#fonts()
+#extrafont::loadfonts(device = "win")
+#font_import()
+windowsFonts()
 ```
 
 ```{r, echo = FALSE}
@@ -191,9 +193,6 @@ levels(mydata$NOM_ENT) <- estados
 Se identifica a la población total dentro del cuestionario ampliado.
 
 ```{r}
-# Clave de los estados
-tablas <- str_pad(rep(1:32), width = 3, pad = "0")
-
 Pob.total <- mydata %>%
               as.data.frame() %>%
                summarise(Pob_Total = sum(.$FACTOR))
@@ -223,7 +222,7 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       filter(ENT_PAIS_NAC %in% tablas) %>%
+       filter(ENT_PAIS_NAC %in% estados) %>%
         svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 saveRDS(MC, file = paste0(here::here(), "/Output/Estado/02_Lugar de nacimiento/2020/MC_estado.RDS"))
 ```
@@ -236,6 +235,7 @@ Se genera una matriz cruzada del lugar de de nacimiento a nivel estatal, utiliza
 
 ```{r}
 MC <- readRDS(paste0(here::here(), "/Output/Estado/02_Lugar de nacimiento/2020/MC_estado.RDS"))
+
 Migrantes <- svytable(~CVE_ENT + ENT_PAIS_NAC, design = MC)
 ```
 
@@ -249,12 +249,10 @@ Migrantes <- Migrantes %>%
                expss::cross_cases(CVE_ENT, ENT_PAIS_NAC, weight = Freq) %>%
                 as.data.frame() %>%
                  slice(-33) %>% 
-                  select(-row_labels) #%>%
-                   #mutate(across(where(is.numeric), ~ prettyNum(., big.mark = " ", preserve.width = "none"))) %>%
-                    #sna::diag.remove(remove.val = 0) 
+                  select(-row_labels)
 
-rownames(Migrantes)<- stringr::str_wrap(estados, 50)
-colnames(Migrantes) <- stringr::str_wrap(estados, 50)
+rownames(Migrantes)<- nom_estados
+colnames(Migrantes) <- nom_estados
 
 wb <- createWorkbook()
 addWorksheet(wb, "MNac. 2020")
@@ -307,10 +305,11 @@ tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
 
 # Paleta de colores
-groupColors <- viridis::viridis(32, option = "A")
+#paleta <- colorRampPalette(LaCroixColoR::lacroix_palette("PassionFruit", n = 50, type = "continuous"))(25)
+paleta <- c("#C70E7B", "#D1207C", "#DC327D", "#E7467F", "#F25880", "#F86C7C", "#E58560", "#D49E46", "#C2B72A", "#B0D00F", "#9ADC0E", "#7CD332", "#60CA57", "#43C17B", "#25B99F", "#24ABAC", "#359CA8", "#468DA4", "#577DA1", "#686E9D", "#5D6093", "#4B5188", "#39437E", "#283573", "#172869")
 
 p <- chorddiag(tabla, 
-               groupColors = groupColors, 
+               groupColors = paleta, 
                groupnamePadding = 10, 
                height = 500, 
                width = 500,
@@ -323,6 +322,7 @@ p <- chorddiag(tabla,
                showTicks = TRUE)
 
 p
+
 require(htmlwidgets)
 htmlwidgets::saveWidget(p, paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"), selfcontained = TRUE)
 #require(webshot)
@@ -348,63 +348,87 @@ colnames(tabla) <- stringr::str_wrap(nom_estados, 30)
 
 ```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
 # Paleta de colores
-groupColors <- viridis::viridis(32, option = "A")
+#paleta <- colorRampPalette(LaCroixColoR::lacroix_palette("PassionFruit", n = 50, type = "continuous"))(25)
+paleta <- c("#C70E7B", "#D1207C", "#DC327D", "#E7467F", "#F25880", "#F86C7C", "#E58560", "#D49E46", "#C2B72A", "#B0D00F", "#9ADC0E", "#7CD332", "#60CA57", "#43C17B", "#25B99F", "#24ABAC", "#359CA8", "#468DA4", "#577DA1", "#686E9D", "#5D6093", "#4B5188", "#39437E", "#283573", "#172869")
+
+load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0)  
+
+rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
+
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla), rownames(tabla))))),
+                         nm = str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))
 
 circos.clear()
-cairo_pdf(paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/ChordDiagram de MNac a nivel estatal.pdf"), width = 20, height = 20)
+#svglite::svglite(paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2020/ChordDiagram de MR5a a nivel estatal.svg"), width = 20, height = 20)
+cairo_pdf(paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/ChordDiagram de MNac a nivel estatal.pdf"), 
+          width = 7, height = 7, 
+          family = "Montserrat Medium",
+          fallback_resolution = 400,
+          onefile = TRUE)
+
+circos.clear()
 circos.par(start.degree = 90, 
-           gap.degree = 3, 
-           track.margin = c(-0.1, 0.1), 
+           gap.degree = 2, 
+           clock.wise = FALSE,
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
 
 par(mar = rep(0, 4))
 
 chordDiagram(x  = tabla, 
              grid.col = groupColors,
-             order = union(rownames(estados), colnames(estados)),
+             order = str_sort(unique(c(colnames(tabla), rownames(tabla)))),
              keep.diagonal = FALSE,
-             transparency = 0.25,
+             transparency =  0.4,
              directional = 1,
              direction.type = c("arrows", "diffHeight"), 
-             diffHeight  = -0.04,
+             diffHeight  = -0.04, # adjust the starting end of the link
              annotationTrack = "grid", 
-             annotationTrackHeight = mm_h(c(10)),
+             annotationTrackHeight = c(0.05, 0.1),
              preAllocateTracks = 1, 
-             big.gap = 40,
+             big.gap = 40, # Gap between row sectors and column sectors.
              link.arr.type = "big.arrow", 
-             link.lwd = 0.5,
+             link.lwd = 3,    # Line width width for link borders
+             link.lty = 1,
              link.visible = TRUE,
-             link.largest.ontop = FALSE)
+             link.largest.ontop = TRUE)
 
 # Add text and axis
 circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
                        bg.border = NA, 
                        panel.fun = function(x, y) {
                                                    xlim = get.cell.meta.data("xlim")
                                                    ylim = get.cell.meta.data("ylim")
                                                    sector.name = get.cell.meta.data("sector.index")
-                                                   # Add names to the sector. 
+                                                  # Add names to the sector. 
                                                    circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 0.5, 
+                                                               y = ylim[1] + 0.1, 
                                                                labels = sector.name, 
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
-                                                               adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(20),
-                                                               col = groupColors,
-                                                              font = 2)
-                                                   # Add graduation on axis
-                                                    circos.axis(h = "top",
-                                                                labels = c(0, 20, 50, 70, 100, 500, 1000, 5000, 10000,30000,50000,100000, 200000),
-                                                                major.tick.length = 0.5,
-                                                                minor.ticks = 4, 
-                                                                labels.cex = fontsize(12),
-                                                                sector.index = sector.name,
-                                                                track.index = 2,
-                                                                labels.niceFacing = TRUE,
-                                                                labels.pos.adjust = c(0, 0.8))
-                                                    }
-)
+                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(9),
+                                                               col = "#172869",
+                                                               font = 1)
+                                                  # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               major.tick.length = 0.5,
+                                                               minor.ticks = 4, 
+                                                               labels.cex = fontsize(6),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                }
+  )
 dev.off()
 ```
 
@@ -418,14 +442,14 @@ load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matr
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
 
-rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
-colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
+rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
 
 
 # Nombre de los estados 
-estado <- stringr::str_wrap(nom_estados, 50)
+estado <- stringr::str_wrap(nom_estados, 100)
 
-filtro_est <- tabla %>%
+filtro_est <- Migrantes %>%
                as.data.frame() %>%
                 tibble::rownames_to_column(var = "rn") %>% 
                  melt(., id.vars = "rn", variable.name = "cn") %>%
@@ -435,7 +459,7 @@ filtro_est <- tabla %>%
 #### Es importante correr la tabla1[[x]] sin filtros para determinar el número promedio de flujos de migración
 #### Filtro <<<<< filter(value > 0 & rn != estado[x]) %>%
 #filtro_mig <- sapply(1:32, function(x)
-                      mean(tail(sort(tabla1[[x]]), 1), na.rm = TRUE))
+#                      mean(tail(sort(tabla1[[x]]), 1), na.rm = TRUE))
 #p <- data.frame(estados = est,
  #               filtro_estados = filtro_mig,
   #               NUM = 1:32)
@@ -496,38 +520,56 @@ for(i in 1:32){
 }
 ```
 
-```{r}
-tabla2 <- lapply(1:32, function(x){
-                          # Paleta de colores 
-                           groupColors <- viridis::viridis(max(nrow(tabla1[[x]]), ncol(tabla1[[x]])), option = "A")
-                          
-                            circos.clear()
-                             chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                          grid.col = groupColors)  %>%
-                              pull(col)
+```{r, eval = FALSE}
+# Paleta de colores
+#paleta <- colorRampPalette(LaCroixColoR::lacroix_palette("PassionFruit", n = 50, type = "continuous"))(25)
+paleta <- c("#C70E7B", "#D1207C", "#DC327D", "#E7467F", "#F25880", "#F86C7C", "#E58560", "#D49E46", "#C2B72A", "#B0D00F", "#9ADC0E", "#7CD332", "#60CA57", "#43C17B", "#25B99F", "#24ABAC", "#359CA8", "#468DA4", "#577DA1", "#686E9D", "#5D6093", "#4B5188", "#39437E", "#283573", "#172869")
+
+tabla2 <- lapply(1:length(estados), function(x){
+                    # Paleta de colores
+                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
+                        circos.clear()
+                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                       transparency = 0.4,
+                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
+                                         grid.col = groupColors)  %>% 
+                          pull(col)
   }
 )
 ```
 
-```{r, eval = FALSE}
-pdf(paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/ChordDiagram de MNac para cada estado.pdf"), width = 20, height = 20)
-for(i in 1:32){
-# Paleta de colores 
-groupColors <- viridis::viridis(max(nrow(tabla1[[i]]), ncol(tabla1[[i]])), option = "A")
 
-circos.clear()  
+```{r grafico estatal, eval = FALSE, results='hide'}
+cairo_pdf(paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/ChordDiagram de MNac para cada estado.pdf"),
+          width = 8,
+          height = 8, 
+          family = "Montserrat Medium",
+          fallback_resolution = 400,
+          onefile = TRUE)
+
+for(i in 1:length(estados)){
+  
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
+
+circos.clear()
 circos.par(start.degree = 90, 
-           gap.degree = 3, 
+           gap.degree = 2, 
            clock.wise = FALSE,
-           track.margin = c(-0.07, 0.1), 
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
+
+par(mar = rep(0, 4))
 
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-             #order = union(rownames(estados), colnames(estados)),
+             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
              keep.diagonal = FALSE,
-             transparency =  0.5,
+             transparency =  0,
              directional = 1,
              direction.type = c("arrows", "diffHeight"), 
              diffHeight  = -0.04, # adjust the starting end of the link
@@ -538,7 +580,7 @@ chordDiagram(x  =  tabla1[[i]] %>% as.matrix(),
              link.arr.type = "big.arrow", 
              link.lwd = 3,    # Line width width for link borders
              link.lty = 1,
-             link.visible = tabla1[[i]] > 0,
+             link.visible = TRUE,
              link.largest.ontop = TRUE)
 
 # Add text and axis
@@ -556,15 +598,15 @@ circos.trackPlotRegion(track.index = 1,
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(20),
-                                                               col = groupColors,
+                                                               cex = fontsize(9),
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
-                                                               labels = c(0, 5, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
                                                                major.tick.length = 0.5,
                                                                minor.ticks = 4, 
-                                                               labels.cex = fontsize(12),
+                                                               labels.cex = fontsize(6),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
