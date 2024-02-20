@@ -568,7 +568,7 @@ tabla2 <- lapply(1:length(estados), function(x){
 #require(wesanderson)
 require(pals)
 #Paleta1
-colores <- colorRampPalette(pals::kovesi.linear_blue_5_95_c73(50))(32)
+colores <- colorRampPalette(pals::kovesi.linear_blue_5_95_c73(50))(50)
 colores <- c("#00014E", "#0D02A4", "#171CE4", "#2E59FB", "#2D7CFD", "#4782E2", "#64A0E2", "#80ADDF", "#91B9E5", "#8CB5DC", "#909ECA",  "#8C91C3", "#8C7CB9", "#8B68AF","#88459F","#84258B","#7F0E7A", "#6E096A", "#660762", "#5D045A", "#550252", "#4D004B", "#561655")
 
 #Paleta2
@@ -577,8 +577,8 @@ colores <- c("#00014E", "#072789", "#224BC6",  "#036CDE", "#107CD6", "#0E8DD1","
 
 #Paleta3
 colores <- colorRampPalette(pals::inferno(100))(50)
-colores <- colorRampPalette(pals::ocean.matter(100))(50)
-colores <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
+colores <- colorRampPalette(pals::ocean.matter(100))(100)
+colores <- c("#170A3A", "#10082E", "#2F0F3E", "#3F1247", "#4D004B", "#501551", "#550252", "#660762", "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#DE5435", "#E45B2F", "#E86328", "#ED6B21", "#ED8861", "#F4A472", "#EBB969", "#E8B94B", "#D4A432")
 
 #Paleta4 (estudinatil)
 colores <- colorRampPalette(wesanderson::wes_palette("Rushmore1"))(16)  
