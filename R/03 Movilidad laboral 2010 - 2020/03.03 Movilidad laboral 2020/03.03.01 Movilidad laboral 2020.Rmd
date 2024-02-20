@@ -83,11 +83,12 @@ setwd(here::here())
 require(showtext)
 library(extrafont)
 # activar showtext
-showtext_auto()
-font_add_google("Montserrat", "montserrat")
-font_add_google("Raleway", "Raleway")
-#loadfonts(device = "win")
-#font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+# SE cargan las funtes del sitema Windows (Pero tarda en correr)
+#ttf_import('C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/')
+#fonts()
+#extrafont::loadfonts(device = "win")
+#font_import()
+windowsFonts()
 ```
 
 ```{r, echo = FALSE}
@@ -381,10 +382,11 @@ tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
 
 # Paleta de colores
-groupColors <- viridis::viridis(32, option = "A")
+#paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- rev(c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B"))
 
 p <- chorddiag(tabla, 
-               groupColors = groupColors, 
+               groupColors = paleta, 
                groupnamePadding = 10, 
                height = 500, 
                width = 500,
@@ -397,6 +399,7 @@ p <- chorddiag(tabla,
                showTicks = TRUE)
 
 p
+
 require(htmlwidgets)
 htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/03_Movilidad laboral/2020/MTrab a nivel estatal 2020.html"), selfcontained = TRUE)
 #require(webshot)
@@ -415,8 +418,8 @@ load(file = paste0(here::here(), "/Bases/Estado/03_Movilidad laboral/2020/Matriz
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0)  
 
-rownames(tabla) <- stringr::str_wrap(nom_estados, 15)
-colnames(tabla) <- stringr::str_wrap(nom_estados, 15)
+rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
 ```
 
 
