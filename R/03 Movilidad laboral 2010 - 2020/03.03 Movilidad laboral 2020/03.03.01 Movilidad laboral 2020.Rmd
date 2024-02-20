@@ -412,17 +412,6 @@ htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/03_Movilidad l
 
 ### ChordDiagram 
 
-```{r, eval = FALSE}
-load(file = paste0(here::here(), "/Bases/Estado/03_Movilidad laboral/2020/Matriz de MTrab a nivel estatal 2020.RData"))
-
-tabla <- Migrantes %>%
-          sna::diag.remove(remove.val = 0)  
-
-rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
-colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
-```
-
-
 ```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
 # Paleta de colores
 groupColors <- viridis::viridis(32, option = "A")
