@@ -77,17 +77,17 @@ rm(list = ls())
 setwd(here::here())
 ```
 
-
 ```{r, echo=FALSE}
 #Font Stlye
 require(showtext)
 library(extrafont)
 # activar showtext
-showtext_auto()
-font_add_google("Montserrat", "montserrat")
-font_add_google("Raleway", "Raleway")
-#loadfonts(device = "win")
-#font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+# SE cargan las funtes del sitema Windows (Pero tarda en correr)
+#ttf_import('C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/')
+#fonts()
+#extrafont::loadfonts(device = "win")
+#font_import()
+windowsFonts()
 ```
 
 ```{r, echo = FALSE}
@@ -118,8 +118,9 @@ require(tidyr)
 require(reshape2)
 require(openxlsx)
 require(doMC)
-registerDoMC(cores = 15)
+registerDoMC(cores = 18)
 ```
+
 
 **Cuestionario Ampliado del Censo de Población y Vivienda 2020**
 
@@ -331,10 +332,11 @@ tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
 
 # Paleta de colores
-groupColors <- viridis::viridis(32, option = "A")
+#paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
 p <- chorddiag(tabla, 
-               groupColors = groupColors, 
+               groupColors = paleta, 
                groupnamePadding = 10, 
                height = 500, 
                width = 500,
@@ -346,7 +348,8 @@ p <- chorddiag(tabla,
                chordedgeColor = "#D0D0CF", 
                showTicks = TRUE)
 
-p 
+p
+
 require(htmlwidgets)
 htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/MEst a nivel estatal 2020.html"), selfcontained = TRUE)
 #require(webshot)
@@ -360,75 +363,88 @@ htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/04_Movilidad e
 ### ChordDiagram
 
 ```{r, eval = FALSE}
+#paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
+
 load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2020/Matriz de MEst a nivel estatal 2020.RData"))
 
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0)  
 
-rownames(tabla) <- stringr::str_wrap(nom_estados, 30)
-colnames(tabla) <- stringr::str_wrap(nom_estados, 30)
+rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
+
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla), rownames(tabla))))),
+                         nm = str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))
 ```
 
 ```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
-# Paleta de colores
-groupColors <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(max(ncol(tabla), nrow(tabla))))
+#svglite::svglite(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst a nivel estatal.svg"), width = 20, height = 20)
+cairo_pdf(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst a nivel estatal.pdf"),
+          width = 7, height = 7, 
+          family = "Montserrat Medium",
+          fallback_resolution = 400,
+          onefile = TRUE)
 
 circos.clear()
-#svglite::svglite(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst a nivel estatal.svg"), width = 20, height = 20)
-cairo_pdf(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst a nivel estatal.pdf"), width = 20, height = 20, family = "montserrat", bg = "transparent", fallback_resolution = 400)
 circos.par(start.degree = 90, 
-           gap.degree = 3, 
-           track.margin = c(-0.1, 0.1), 
+           gap.degree = 2, 
+           clock.wise = FALSE,
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
 
 par(mar = rep(0, 4))
 
 chordDiagram(x  = tabla, 
              grid.col = groupColors,
-             order = union(rownames(estados), colnames(estados)),
+             order = str_sort(unique(c(colnames(tabla), rownames(tabla)))),
              keep.diagonal = FALSE,
-             transparency = 0.25,
+             transparency =  0.4,
              directional = 1,
              direction.type = c("arrows", "diffHeight"), 
-             diffHeight  = -0.04,
+             diffHeight  = -0.04, # adjust the starting end of the link
              annotationTrack = "grid", 
-             annotationTrackHeight = mm_h(c(10)),
+             annotationTrackHeight = c(0.05, 0.1),
              preAllocateTracks = 1, 
-             big.gap = 40,
+             big.gap = 40, # Gap between row sectors and column sectors.
              link.arr.type = "big.arrow", 
-             link.lwd = 0.5,
+             link.lwd = 3,    # Line width width for link borders
+             link.lty = 1,
              link.visible = TRUE,
-             link.largest.ontop = FALSE)
+             link.largest.ontop = TRUE)
 
 # Add text and axis
 circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
                        bg.border = NA, 
                        panel.fun = function(x, y) {
                                                    xlim = get.cell.meta.data("xlim")
                                                    ylim = get.cell.meta.data("ylim")
                                                    sector.name = get.cell.meta.data("sector.index")
-                                                   # Add names to the sector. 
+                                                  # Add names to the sector. 
                                                    circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 0.5, 
+                                                               y = ylim[1] + 0.1, 
                                                                labels = sector.name, 
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
-                                                               adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(20),
-                                                               col = "#2E334D",
-                                                               font = 2)
-                                                   # Add graduation on axis
-                                                    circos.axis(h = "top",
-                                                                labels = c(0, 20, 50, 70, 100, 500, 1000, 5000, 10000,30000,50000,100000, 200000),
-                                                                major.tick.length = 0.5,
-                                                                minor.ticks = 4, 
-                                                                labels.cex = fontsize(12),
-                                                                sector.index = sector.name,
-                                                                track.index = 2,
-                                                                labels.niceFacing = TRUE,
-                                                                labels.pos.adjust = c(0, 1.5))
-                                                    }
-)
+                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(9),
+                                                               col = "#000C7D",
+                                                               font = 1)
+                                                  # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               major.tick.length = 0.5,
+                                                               minor.ticks = 4, 
+                                                               labels.cex = fontsize(6),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                }
+  )
 dev.off()
 ```
 

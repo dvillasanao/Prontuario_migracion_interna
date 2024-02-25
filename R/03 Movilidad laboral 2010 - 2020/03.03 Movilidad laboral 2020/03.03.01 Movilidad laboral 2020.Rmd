@@ -232,7 +232,6 @@ Pob.ocupada <- mydata %>%
 
 **Población ocupada de 12 años y más** 
 
-
 ```{r, echo = FALSE}
 # Población ocupada de 12 años y más
 tabla <- mydata %>%
@@ -257,7 +256,6 @@ as.integer(tabla) %>%
 ```
 
 **Población economicámente activa de 12 años y más** 
-
 
 ```{r, echo = FALSE}
 # Población economicámente activa de 12 años y más
