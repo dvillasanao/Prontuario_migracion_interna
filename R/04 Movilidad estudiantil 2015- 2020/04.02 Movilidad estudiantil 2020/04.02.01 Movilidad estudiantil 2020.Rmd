@@ -458,15 +458,14 @@ load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2020/Ma
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
 
-rownames(tabla) <- stringr::str_wrap(nom_estados, 20)
-colnames(tabla) <- stringr::str_wrap(nom_estados, 20)
-rownames(tabla) == colnames(tabla)
+rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
+
 
 # Nombre de los estados 
-estado <- stringr::str_wrap(nom_estados, 20)
+estado <- stringr::str_wrap(nom_estados, 100)
 
-################################## Filtro  #####################################
-filtro_est <- tabla %>%
+filtro_est <- Migrantes %>%
                as.data.frame() %>%
                 tibble::rownames_to_column(var = "rn") %>% 
                  melt(., id.vars = "rn", variable.name = "cn") %>%
@@ -519,7 +518,6 @@ tabla1 <- lapply(1:32, function(x){
   }
 )
 
-
 ## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:32){
@@ -536,34 +534,52 @@ for(i in 1:32){
                   file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2020/Matriz MEst por estados_2020_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2020/Tabla MEst por estados.RDS"))
 ```
 
 ```{r}
-tabla2 <- lapply(1:32, function(x){
-             paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))))
-             groupColors <- setNames(paleta,  
-                                      nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
-             circos.clear()
-              chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                            transparency = 0.4,
-                             grid.col = groupColors)  %>%
-                pull(col)
-})
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2020/Tabla MEst por estados.RDS"))
+
+# Paleta de colores
+#paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
+paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
+
+tabla2 <- lapply(1:length(estados), function(x){ 
+                    # Paleta de colores
+                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
+                        circos.clear()
+                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                       transparency = 0.4,
+                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
+                                         grid.col = groupColors)  %>% 
+                          pull(col)
+  }
+)
 ```
 
 
-```{r, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst para cada estado.pdf"), width = 7, height = 7, 
-          family = "montserrat", onefile = TRUE)
-for(i in 1:32){
-# Paleta de colores 
-groupColors <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(max(ncol(tabla1[[i]]), nrow(tabla1[[i]]))))   
-          
+```{r grafico estatal, eval = FALSE, results='hide'}
+
+cairo_pdf(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst para cada estado.pdf"),
+          width = 8,
+          height = 8, 
+          family = "Montserrat Medium",
+          fallback_resolution = 400,
+          onefile = TRUE)
+
+for(i in 1:length(estados)){
+  
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
+
 circos.clear()
 circos.par(start.degree = 90, 
-           gap.degree = 3, 
+           gap.degree = 2, 
            clock.wise = FALSE,
-           track.margin = c(-0.07, 0.1), 
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
 
 par(mar = rep(0, 4))
@@ -571,7 +587,7 @@ par(mar = rep(0, 4))
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-            # order = union(rownames(tabla1[[i]]), colnames(tabla1[[i]])),
+             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
              keep.diagonal = FALSE,
              transparency =  0,
              directional = 1,
@@ -602,15 +618,15 @@ circos.trackPlotRegion(track.index = 1,
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(7),
-                                                               col = "#4F2841",
+                                                               cex = fontsize(9),
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
-                                                               labels = c(0, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
                                                                major.tick.length = 0.5,
                                                                minor.ticks = 4, 
-                                                               labels.cex = fontsize(5),
+                                                               labels.cex = fontsize(6),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
