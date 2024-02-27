@@ -560,7 +560,6 @@ tabla2 <- lapply(1:length(estados), function(x){
 
 
 ```{r grafico estatal, eval = FALSE, results='hide'}
-
 cairo_pdf(paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst para cada estado.pdf"),
           width = 8,
           height = 8, 
