@@ -124,6 +124,7 @@ registerDoMC(cores = 18)
 ```
 
 
+
 **Cuestionario Ampliado del Censo de Población y Vivienda 2020**
 
 El cuestionario ampliado se guarda en un un archivo `.RData`. 
@@ -230,15 +231,13 @@ Se genera un vector con las abreviaturas de las entidades llamado `ent` para fin
 ```{r}
 # Claves de los estados
 estados <- sjlabelled::get_labels(mydata$CVE_ENT)
-nom_estados <- sjlabelled::get_labels(mydata$ENT)
-
-est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO", "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", "TAMS", "TLX", "VER", "YUC", "ZAC")
-
-nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza", "Colima", 
-                  "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",    
-                  "México", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", 
-                  "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", 
-                  "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas")
+nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza",
+                  "Colima", "Chiapas", "Chihuahua", "Ciudad de México", "Durango", 
+                  "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",  "México", 
+                  "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", 
+                  "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", 
+                  "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala","Veracruz de Ignacio de la Llave", 
+                  "Yucatán", "Zacatecas")
 est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO",
          "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", 
          "TAMS", "TLX", "VER", "YUC", "ZAC")
@@ -258,17 +257,17 @@ Se identifica a la población de retorno de 5 años y más.
 # Clave de los estados
 tablas <- str_pad(rep(1:32), width = 3, pad = "0")
 
-Pob.Retorno <- mydata %>%
-                as.data.frame() %>%
-                 mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset(EDAD >= 5 & EDAD <= 130) %>%
-                   filter(CVE_ENT %in% tablas & I_Migrante_Retorno %in% "Migrante de retorno")  # Filtro de migrantes de retorno.
+tabla <- mydata %>%
+          as.data.frame() %>%
+           mutate(EDAD = as.numeric(.$EDAD)) %>%
+            subset(EDAD >= 5 & EDAD <= 130) %>%
+             filter(CVE_ENT %in% tablas & I_Migrante_Retorno %in% "Migrante de retorno")  # Filtro de migrantes de retorno.
 ```
 
 
 ```{r, echo = FALSE}
 # Población de retorno de 5 años y más
-tabla <- Pob.Retorno %>%
+tabla <- tabla %>%
           summarise(Pob.retorno = sum(.$FACTOR))
 
 as.integer(tabla) %>%  
@@ -293,8 +292,12 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 ```{r}
 options(survey.lonely.psu = "adjust")
 
-MC <- Pob.Retorno %>%
-       svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+MC <- mydata %>%
+       as.data.frame() %>%
+        mutate(EDAD = as.numeric(.$EDAD)) %>%
+         subset(EDAD >= 5 & EDAD <= 130) %>%
+          filter(CVE_ENT %in% estados & I_Migrante_Retorno %in% "Migrante de retorno") %>% # Filtro de migrantes de retorno.
+           svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
 saveRDS(MC, file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/MC_estado.RDS"))
 ```
@@ -322,12 +325,12 @@ Migrantes <- Migrantes %>%
                  slice(-33) %>% 
                   select(-row_labels) #%>%
 
-rownames(Migrantes)<- stringr::str_wrap(estados, 50)
-colnames(Migrantes) <- stringr::str_wrap(estados, 50)
+rownames(Migrantes)<- nom_estados
+colnames(Migrantes) <- nom_estados
 
 wb <- createWorkbook()
 addWorksheet(wb, "MRt. 2020")
-writeData(wb, 1, tabla, colNames = TRUE, rowNames = TRUE)
+writeData(wb, 1, Migrantes, colNames = TRUE, rowNames = TRUE)
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Matriz de MRt a nivel estatal 2020.xlsx"), overwrite = TRUE)
 
 save(Migrantes, file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Matriz de MRt a nivel estatal 2020.RData"))
@@ -381,7 +384,7 @@ tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
 
 # Paleta de colores
-groupColors <- viridis::viridis(32, option = "A")
+groupColors <- colorRampPalette(pals::parula(100))(50)
 
 p <- chorddiag(tabla, 
                groupColors = groupColors, 
@@ -410,76 +413,86 @@ htmlwidgets::saveWidget(p, paste0(here::here(),"/Graficos/Estado/05_Migracion de
 
 ### ChordDiagram 
 
-```{r, eval = FALSE}
-load(file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Matriz de MRt a nivel estatal 2020.RData"))
-
-tabla <- Migrantes %>%
-          sna::diag.remove(remove.val = 0)  
-
-rownames(tabla) <- stringr::str_wrap(nom_estados, 30)
-colnames(tabla) <- stringr::str_wrap(nom_estados, 30)
-```
-
 
 ```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
 # Paleta de colores
-groupColors <- viridis::viridis(32, option = "A")
+paleta <- colorRampPalette(pals::parula(100))(50)
+
+
+load(file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Matriz de MRt a nivel estatal 2020.RData"))
+
+rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
+
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla), rownames(tabla))))),
+                         nm = str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))
 
 circos.clear()
-cairo_pdf(paste0(here::here(),"/Graficos/Estado/05_Migracion de retorno/2020/ChordDiagram de MRt a nivel estatal.pdf"), width = 20, height = 20)
+cairo_pdf(paste0(here::here(),"/Graficos/Estado/05_Migracion de retorno/2020/ChordDiagram de MRt a nivel estatal.pdf"), 
+          width = 7, height = 7, 
+          family = "Montserrat Medium",
+          fallback_resolution = 400,
+          onefile = TRUE)
+
+circos.clear()
 circos.par(start.degree = 90, 
-           gap.degree = 3, 
-           track.margin = c(-0.1, 0.1), 
+           gap.degree = 2, 
+           clock.wise = FALSE,
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
 
 par(mar = rep(0, 4))
 
 chordDiagram(x  = tabla, 
              grid.col = groupColors,
-             order = union(rownames(estados), colnames(estados)),
+             order = str_sort(unique(c(colnames(tabla), rownames(tabla)))),
              keep.diagonal = FALSE,
-             transparency = 0.25,
+             transparency =  0.4,
              directional = 1,
              direction.type = c("arrows", "diffHeight"), 
-             diffHeight  = -0.04,
+             diffHeight  = -0.04, # adjust the starting end of the link
              annotationTrack = "grid", 
-             annotationTrackHeight = mm_h(c(10)),
+             annotationTrackHeight = c(0.05, 0.1),
              preAllocateTracks = 1, 
-             big.gap = 40,
+             big.gap = 40, # Gap between row sectors and column sectors.
              link.arr.type = "big.arrow", 
-             link.lwd = 0.5,
+             link.lwd = 3,    # Line width width for link borders
+             link.lty = 1,
              link.visible = TRUE,
-             link.largest.ontop = FALSE)
+             link.largest.ontop = TRUE)
 
 # Add text and axis
 circos.trackPlotRegion(track.index = 1,
+                       track.height = 0.05,
                        bg.border = NA, 
                        panel.fun = function(x, y) {
                                                    xlim = get.cell.meta.data("xlim")
                                                    ylim = get.cell.meta.data("ylim")
                                                    sector.name = get.cell.meta.data("sector.index")
-                                                   # Add names to the sector. 
+                                                  # Add names to the sector. 
                                                    circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 0.5, 
+                                                               y = ylim[1] + 0.1, 
                                                                labels = sector.name, 
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
-                                                               adj = c(-0.01, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(20),
-                                                               col = groupColors,
-                                                              font = 2)
-                                                   # Add graduation on axis
-                                                    circos.axis(h = "top",
-                                                                labels = c(0, 20, 50, 70, 100, 500, 1000, 5000, 10000,30000,50000,100000, 200000),
-                                                                major.tick.length = 0.5,
-                                                                minor.ticks = 4, 
-                                                                labels.cex = fontsize(12),
-                                                                sector.index = sector.name,
-                                                                track.index = 2,
-                                                                labels.niceFacing = TRUE,
-                                                                labels.pos.adjust = c(0, 0.8))
-                                                    }
-)
+                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                                                               cex = fontsize(9),
+                                                               col = "#000C7D",
+                                                               font = 1)
+                                                  # Add graduation on axis
+                                                   circos.axis(h = "top",
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               major.tick.length = 0.5,
+                                                               minor.ticks = 4, 
+                                                               labels.cex = fontsize(6),
+                                                               sector.index = sector.name,
+                                                               track.index = 2,
+                                                               labels.niceFacing = TRUE,
+                                                               labels.pos.adjust = c(0, 0.8))
+                                                }
+  )
 dev.off()
 ```
 
@@ -493,14 +506,14 @@ load(file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Mat
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
 
-rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
-colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
+rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
 
 
 # Nombre de los estados 
-estado <- stringr::str_wrap(nom_estados, 50)
+estado <- stringr::str_wrap(nom_estados, 100)
 
-filtro_est <- tabla %>%
+filtro_est <- Migrantes %>%
                as.data.frame() %>%
                 tibble::rownames_to_column(var = "rn") %>% 
                  melt(., id.vars = "rn", variable.name = "cn") %>%
@@ -514,7 +527,7 @@ filtro_est <- tabla %>%
 
 #p <- data.frame(estados = est,
  #               filtro_estados = filtro_mig,
-                 NUM = 1:32)
+                 #NUM = 1:32)
 #write.xlsx(p, file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Filtro a nivel estatal.xlsx"))
 
 filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Filtro a nivel estatal.xlsx"), colNames = TRUE) %>% 
@@ -574,37 +587,52 @@ save(tabla1, file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno
 ```
 
 ```{r}
-tabla2 <- lapply(1:32, function(x){
-                          # Paleta de colores 
-                           groupColors <- viridis::viridis(max(nrow(tabla1[[x]]), ncol(tabla1[[x]])), option = "A")
-                          
-                            circos.clear()
-                             chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                          grid.col = groupColors)  %>%
-                              pull(col)
+paleta <- c("#352A87", "#3436A2", "#2A45BC", "#1556D5", "#0963DC", "#066FDD", "#0E78D9", "#1180D5", "#1089D2", "#0995D1", "#069DCB", "#06A5C5", "#0AAABC", "#17B0B0", "#27B4A5", "#3DB999", "#55BC8C", "#6EBE7F", "#87BE75", "#9CBE6C", "#B0BC64", "#C3BB5C", "#D5B955", "#E7B94C", "#F5BB40", "#FBC434", "#FACF2A")
+
+tabla2 <- lapply(1:length(estados), function(x){
+                    # Paleta de colores
+                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
+                        circos.clear()
+                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
+                                       transparency = 0.4,
+                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
+                                         grid.col = groupColors)  %>% 
+                          pull(col)
   }
 )
 ```
 
 ```{r, eval = FALSE}
-pdf(paste0(here::here(),"/Graficos/Estado/05_Migracion de retorno/2020/ChordDiagram de MRt para cada estado.pdf"), width = 20, height = 20)
-for(i in 1:32){
-# Paleta de colores 
-groupColors <- viridis::viridis(max(nrow(tabla1[[i]]), ncol(tabla1[[i]])), option = "A")
+cairo_pdf(paste0(here::here(),"/Graficos/Estado/05_Migracion de retorno/2020/ChordDiagram de MRt para cada estado.pdf"), 
+          width = 8,
+          height = 8, 
+          family = "Montserrat Medium",
+          fallback_resolution = 400,
+          onefile = TRUE)
 
-circos.clear()  
+for(i in 1:length(estados)){
+  
+# Paleta de colores
+groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
+
+circos.clear()
 circos.par(start.degree = 90, 
-           gap.degree = 3, 
+           gap.degree = 2, 
            clock.wise = FALSE,
-           track.margin = c(-0.07, 0.1), 
+           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
+           track.margin = c(-0.07, 0.1),
            points.overflow.warning = FALSE)
+
+par(mar = rep(0, 4))
 
 chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
              grid.col = groupColors,
              col = tabla2[[i]],
-             #order = union(rownames(estados), colnames(estados)),
+             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
              keep.diagonal = FALSE,
-             transparency =  0.5,
+             transparency =  0,
              directional = 1,
              direction.type = c("arrows", "diffHeight"), 
              diffHeight  = -0.04, # adjust the starting end of the link
@@ -615,7 +643,7 @@ chordDiagram(x  =  tabla1[[i]] %>% as.matrix(),
              link.arr.type = "big.arrow", 
              link.lwd = 3,    # Line width width for link borders
              link.lty = 1,
-             link.visible = tabla1[[i]] > 0,
+             link.visible = TRUE,
              link.largest.ontop = TRUE)
 
 # Add text and axis
@@ -633,15 +661,15 @@ circos.trackPlotRegion(track.index = 1,
                                                                facing = "clockwise",
                                                                niceFacing = TRUE, 
                                                                adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(20),
-                                                               col = groupColors,
+                                                               cex = fontsize(9),
+                                                               col = "#000C7D",
                                                                font = 1)
                                                   # Add graduation on axis
                                                    circos.axis(h = "top",
-                                                               labels = c(0, 5, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
                                                                major.tick.length = 0.5,
                                                                minor.ticks = 4, 
-                                                               labels.cex = fontsize(12),
+                                                               labels.cex = fontsize(6),
                                                                sector.index = sector.name,
                                                                track.index = 2,
                                                                labels.niceFacing = TRUE,
@@ -656,33 +684,91 @@ dev.off()
 **Etiquetas**
 
 ```{r}
- etiquetas  <- lapply(1:32, function(x){
-                        p <- tabla1[[x]] %>% 
-                              as.data.frame() %>%
-                               tibble::rownames_to_column(var = "rn") %>%
-                                melt(., id.vars = "rn", variable.name = "cn") %>%
-                                 as_tibble() %>%
-                                  ggplot() + 
-                                   geom_bar(aes(x = value, fill = rn))  + 
-                                    geom_bar(aes(x = value, fill = cn))  + 
-                                     theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                            text = element_text(family = "montserrat"),
+tabla <- lapply(1:length(estados), function(x){
+                Mig <- tabla1[[x]] %>%
+                        as.data.frame() %>%
+                         adorn_totals(c("row", "col"), 
+                                       fill = "-", 
+                                        na.rm = TRUE, 
+                  ,,,,contains(colnames(tabla1[[x]])))
+                
+                #Se agrupan los totales
+                 full_join(
+                           Mig %>%
+                            slice(nrow(.)) %>% 
+                             t() %>%
+                              as.data.frame()%>%
+                               rownames_to_column(var = "name")  %>% 
+                                rename("Total_Filas" = "1"),
+                           Mig %>%
+                            rownames_to_column(var = "name") %>%
+                             select(name, Total) %>%
+                              mutate(name = str_replace(.$name, "1", "Total")), 
+                           by = c("name")
+                           ) %>%
+                   rename("CVE_ENT" = "name",
+                          "Entidad de residencia 5a" = "Total_Filas",
+                          "Migrantes de retorno" = "Total")
+                                   
+                                   
+  }
+)
+
+
+row_values <- tabla[[1]] %>%
+               slice(nrow(.)) %>% 
+                t() %>%
+                 as.data.frame()%>%
+                  rownames_to_column(var = "name") %>% 
+                   rename("Total_Filas")
+col_values <- tabla[[1]] %>%
+               rownames_to_column(var = "name") %>%
+                select(name, Total) %>%
+                 mutate(name = str_replace(.$name, "1", "Total"))
+
+p <- row_values %>%
+      full_join(., col_values, by = c("name"))
+                
+```
+
+
+```{r etiquetas_estatal}
+etiquetas  <- lapply(1:length(estados), function(x){
+                        p <-  tabla1[[x]] %>% 
+                               as.data.frame() %>%
+                                tibble::rownames_to_column(var = "rn") %>%
+                                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                                  as.data.frame() %>% 
+                                   mutate(rn = str_wrap(.$rn, 100),
+                                          cn = str_wrap(.$cn, 100)) %>%
+                                    ggplot() + 
+                                     geom_bar(aes(x = value, fill = rn))  + 
+                                      geom_bar(aes(x = value, fill = cn))  + 
+                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                                             text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
-                                              axis.title = element_blank(),
-                                               strip.text = element_text(size = 8, face = "bold", family = "montserrat"),
-                                                legend.key.size = unit(0.3, "cm"),
-                                                 legend.spacing.y = unit(0.2, "cm"),
-                                                  legend.text = element_text(size = 6, family = "montserrat"),
-                                                   legend.title = element_text(size = 8, family = "montserrat")) + 
-                                       scale_fill_viridis_d(option = "A") + 
-                                        guides(fill = guide_legend(ncol = 1)) + 
-                                         labs(fill = stringr::str_wrap(nom_estados[x], 50),
-                                              color = stringr::str_wrap(nom_estados[x], 50))
+                                             axis.title = element_blank(),
+                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
+                                             legend.key.size = unit(0.4, "cm"), 
+                                             legend.spacing.y = unit(0.4, "cm"),
+                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
+                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
+                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                         guides(fill = guide_legend(ncol = 1)) + 
+                                          labs(fill = stringr::str_wrap(paste(estado[x]), 100),
+                                               color = stringr::str_wrap(paste(estado[x]), 100))
                          leg <- get_legend(p)
-                          as_ggplot(leg)
+                         as_ggplot(leg)
  })
-path = paste0(here::here(), "/Graficos/Estado/05_Migracion de retorno/2020/Etiquetas a nivel estatal.pdf")
-ggexport(etiquetas, width = 5, height = 5, dpi = 400, filename = path)
+
+cairo_pdf(paste0(here::here(), "/Graficos/Estado/05_Migracion de retorno/2020/Etiquetas a nivel estatal.pdf"),
+          width = 7, height = 8, 
+          fallback_resolution = 400,
+          family = "montserrat", onefile = TRUE)
+for(i in 1:length(estados)){
+  print(etiquetas[i])
+}
+dev.off()
 ```
 
 
@@ -852,8 +938,6 @@ p <- lapply(1:32, function(x){
 path = paste0(here::here(),"/Graficos/Estado/05_Migracion de retorno/2020/GSankey de MRt desagregado por estados_Absolutos.pdf")
 ggexport(list = p, width = 14, height = 10, dpi = 400, filename = path)
 ```
-
-
 
 
 ## Indicadores {.tabset .tabset-pills}  
