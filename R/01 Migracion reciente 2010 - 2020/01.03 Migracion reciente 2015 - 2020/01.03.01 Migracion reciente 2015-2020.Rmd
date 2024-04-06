@@ -1344,7 +1344,7 @@ tabla1 <-  lapply(1:32, function(x){
 #                                  adorn_totals(c("row", "col"), 
 #                                                fill = "-", 
 #                                                 na.rm = TRUE, 
-#                                                  ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                                  ,,,,contains(colnames(tabla1[[i]])))  N%>% 
 #                                    slice(nrow(.)) %>%
 #                                     mutate(Total = .$Total/50) %>%
 #                                      pull(Total)
@@ -1369,6 +1369,93 @@ for(i in 1:32){
 
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MR5a a nivel municipal.RDS"))
 ```
+
+```{r, tablas de matrices}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MR5a a nivel municipal.RDS"))
+
+totales <- lapply(1:length(estados), function(x){
+                #Se agrupan los totales
+                 full_join(
+                           tabla1[[x]] %>%
+                            as.data.frame() %>%
+                             adorn_totals(c("row", "col"), 
+                                          fill = "-", 
+                                          na.rm = TRUE, 
+                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                              slice(nrow(.)) %>% 
+                               t() %>%
+                                as.data.frame()%>%
+                                 rownames_to_column(var = "name")  %>% 
+                                  rename("Total_Filas" = "1"),
+                           tabla1[[x]] %>%
+                            as.data.frame() %>%
+                             adorn_totals(c("row", "col"), 
+                                          fill = "-", 
+                                          na.rm = TRUE, 
+                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                              rownames_to_column(var = "name") %>%
+                               select(name, Total) %>%
+                                mutate(name = str_replace(.$name, "1$", "Total")), 
+                           by = c("name")
+                           ) %>%
+                           rename("CVE_MUN" = "name",
+                                  "Emigrantes" = "Total_Filas",
+                                  "Inmigrantes" = "Total") %>%
+                            select(Inmigrantes, CVE_MUN, Emigrantes)
+  }
+)
+porcentajes <- lapply(1:length(estados), function(x){
+                           #Se agrupan los porcentajes
+                           full_join(
+                                     tabla1[[x]] %>%
+                                      as.data.frame() %>%
+                                       adorn_totals(c("col", "row"), 
+                                                    fill = "0", 
+                                                    na.rm = TRUE, 
+                                                    name = "Total",
+                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                                        adorn_percentages("col",
+                                                          na.rm = TRUE) %>% 
+                                         rownames_to_column(var = "name") %>%
+                                          select(name, Total) %>%
+                                           mutate(name = str_replace(.$name, "1$", "Total")),
+                                     tabla1[[x]] %>%
+                                      as.data.frame() %>%
+                                       adorn_totals(c("row"), 
+                                                    fill = "0", 
+                                                    na.rm = TRUE, 
+                                                    name = "Total", 
+                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                                        adorn_percentages("row", 
+                                                          na.rm = TRUE, 
+                                                         ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                                         slice(nrow(.)) %>% 
+                                          t() %>%
+                                           as.data.frame()%>%
+                                            rownames_to_column(var = "name")  %>% 
+                                             rename("Total_Filas" = "1"), 
+                                     by = c("name")
+                                          ) %>%
+                                      rename("CVE_MUN" = "name",
+                                             "Emigrantes%" = "Total_Filas",
+                                             "Inmigrantes%" = "Total") %>%
+                                      select(`Inmigrantes%`, CVE_MUN, `Emigrantes%`)
+                                   
+  }
+)
+
+# Se guardan los totales de las matrices reducidas 
+wb <- createWorkbook()
+for(i in 1:32){
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, totales[[i]], colNames = TRUE, startCol = 1)
+     writeData(wb, i, porcentajes[[i]], colNames = TRUE, startCol = 5)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Matriz MR5a nivel municipal_Reduccion_Totales.xlsx"), 
+               overwrite = TRUE)
+}
+```
+
 
 **Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
 
