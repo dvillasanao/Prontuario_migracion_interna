@@ -543,7 +543,7 @@ for(i in 1:32){
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2020/Tabla MR5a a por estados.RDS"))
 ```
 
-```{r, tablas de matrices}
+```{r tablas de matrices}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2020/Tabla MR5a a por estados.RDS"))
 
 totales <- lapply(1:length(estados), function(x){
@@ -1457,7 +1457,7 @@ for(i in 1:32){
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MR5a a nivel municipal.RDS"))
 ```
 
-```{r, tablas de matrices}
+```{r tablas de matrices}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MR5a a nivel municipal.RDS"))
 
 totales <- lapply(1:length(estados), function(x){
@@ -2069,7 +2069,7 @@ for(i in 1:32){
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MTrab a nivel intramunicipal.RDS"))
 ```
 
-```{r, tablas de matrices}
+```{r tablas de matrices}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MTrab a nivel intramunicipal.RDS"))
 
 totales <- lapply(1:length(estados), function(x){
@@ -2835,7 +2835,7 @@ for(i in 1:32){
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MR5a a nivel intermunicipal.RDS"))
 ```
 
-```{r, tablas de matrices}
+```{r tablas de matrices}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Tabla MR5a a nivel intermunicipal.RDS"))
 
 totales <- lapply(1:length(estados), function(x){

@@ -586,7 +586,7 @@ for(i in 1:32){
 save(tabla1, file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Tabla MRt a nivel estatal.RDS"))
 ```
 
-```{r, tablas de matrices}
+```{r tablas de matrices}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Tabla MRt a nivel estatal.RDS"))
 
 totales <- lapply(1:length(estados), function(x){
