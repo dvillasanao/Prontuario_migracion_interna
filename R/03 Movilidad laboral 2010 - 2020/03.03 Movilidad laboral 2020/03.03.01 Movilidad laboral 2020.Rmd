@@ -614,9 +614,9 @@ totales <- lapply(1:length(estados), function(x){
                            by = c("name")
                            ) %>%
                            rename("CVE_ENT" = "name",
-                                  "Emigrantes" = "Total_Filas",
-                                  "Inmigrantes" = "Total") %>%
-                            select(Inmigrantes, CVE_ENT, Emigrantes)
+                                  "Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
+                                  "Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+                            select(`Entran por trabajo`, CVE_ENT, `Salen por trabajo`)
   }
 )
 porcentajes <- lapply(1:length(estados), function(x){
@@ -652,9 +652,9 @@ porcentajes <- lapply(1:length(estados), function(x){
                                      by = c("name")
                                           ) %>%
                                       rename("CVE_ENT" = "name",
-                                             "Emigrantes%" = "Total_Filas",
-                                             "Inmigrantes%" = "Total") %>%
-                                      select(`Inmigrantes%`, CVE_ENT, `Emigrantes%`)
+                                             "Entran por trabajo%" = "Total_Filas", # Población que entra a la entidad para trabajar
+                                             "Salen por trabajo%" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+                                       select(`Entran por trabajo%`, CVE_ENT, `Salen por trabajo%`)
                                    
   }
 )
@@ -1463,9 +1463,9 @@ totales <- lapply(1:length(estados), function(x){
                            by = c("name")
                            ) %>%
                            rename("CVE_MUN" = "name",
-                                  "Emigrantes" = "Total_Filas",
-                                  "Inmigrantes" = "Total") %>%
-                            select(Inmigrantes, CVE_MUN, Emigrantes)
+                                  "Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
+                                  "Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+                            select(`Entran por trabajo`, CVE_MUN, `Salen por trabajo`)
   }
 )
 porcentajes <- lapply(1:length(estados), function(x){
@@ -1500,10 +1500,10 @@ porcentajes <- lapply(1:length(estados), function(x){
                                              rename("Total_Filas" = "1"), 
                                      by = c("name")
                                           ) %>%
-                                      rename("CVE_MUN" = "name",
-                                             "Emigrantes%" = "Total_Filas",
-                                             "Inmigrantes%" = "Total") %>%
-                                      select(`Inmigrantes%`, CVE_MUN, `Emigrantes%`)
+                                     rename("CVE_MUN" = "name",
+                                            "Entran por trabajo%" = "Total_Filas", # Población que entra a la entidad para trabajar
+                                            "Salen por trabajo%" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+                                      select(`Entran por trabajo%`, CVE_MUN, `Salen por trabajo%`)
                                    
   }
 )
@@ -2079,9 +2079,9 @@ totales <- lapply(1:length(estados), function(x){
                            by = c("name")
                            ) %>%
                            rename("CVE_MUN" = "name",
-                                  "Emigrantes" = "Total_Filas",
-                                  "Inmigrantes" = "Total") %>%
-                            select(Inmigrantes, CVE_MUN, Emigrantes)
+                                  "Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
+                                  "Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+                            select(`Entran por trabajo`, CVE_MUN, `Salen por trabajo`)
   }
 )
 porcentajes <- lapply(1:length(estados), function(x){
@@ -2116,10 +2116,10 @@ porcentajes <- lapply(1:length(estados), function(x){
                                              rename("Total_Filas" = "1"), 
                                      by = c("name")
                                           ) %>%
-                                      rename("CVE_MUN" = "name",
-                                             "Emigrantes%" = "Total_Filas",
-                                             "Inmigrantes%" = "Total") %>%
-                                      select(`Inmigrantes%`, CVE_MUN, `Emigrantes%`)
+                                     rename("CVE_MUN" = "name",
+                                            "Entran por trabajo%" = "Total_Filas", # Población que entra a la entidad para trabajar
+                                            "Salen por trabajo%" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+                                      select(`Entran por trabajo%`, CVE_MUN, `Salen por trabajo%`)
                                    
   }
 )
@@ -2866,10 +2866,10 @@ totales <- lapply(1:length(estados), function(x){
                                 mutate(name = str_replace(.$name, "1$", "Total")), 
                            by = c("name")
                            ) %>%
-                           rename("CVE_MUN" = "name",
-                                  "Emigrantes" = "Total_Filas",
-                                  "Inmigrantes" = "Total") %>%
-                            select(Inmigrantes, CVE_MUN, Emigrantes)
+                            rename("CVE_MUN" = "name",
+                                   "Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
+                                   "Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+                             select(`Entran por trabajo`, CVE_MUN, `Salen por trabajo`)
   }
 )
 porcentajes <- lapply(1:length(estados), function(x){
@@ -2904,10 +2904,10 @@ porcentajes <- lapply(1:length(estados), function(x){
                                              rename("Total_Filas" = "1"), 
                                      by = c("name")
                                           ) %>%
-                                      rename("CVE_MUN" = "name",
-                                             "Emigrantes%" = "Total_Filas",
-                                             "Inmigrantes%" = "Total") %>%
-                                      select(`Inmigrantes%`, CVE_MUN, `Emigrantes%`)
+                                     rename("CVE_MUN" = "name",
+                                            "Entran por trabajo%" = "Total_Filas", # Población que entra a la entidad para trabajar
+                                            "Salen por trabajo%" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+                                      select(`Entran por trabajo%`, CVE_MUN, `Salen por trabajo%`)
                                    
   }
 )
