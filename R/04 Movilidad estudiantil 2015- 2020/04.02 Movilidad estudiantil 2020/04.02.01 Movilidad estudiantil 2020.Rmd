@@ -333,7 +333,11 @@ tabla <- Migrantes %>%
 
 # Paleta de colores
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
-paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
+#paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
+
+paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#9ADC0E",  "#B0D00F", "#C2B72A",  "#D49E46", "#E58560", "#F86C7C", "#F25880", "#E7467F", "#DC327D", "#D1207C", "#C70E7B","#CA0081", "#AD0088","#8E0390", "#780896","#560D9E")
+
+
 
 p <- chorddiag(tabla, 
                groupColors = paleta, 
@@ -2862,7 +2866,7 @@ tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad es
 
 # Paleta de colores
 #paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
-paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
+paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
 
 tabla2 <- lapply(1:length(estados), function(x){ 
                     # Paleta de colores

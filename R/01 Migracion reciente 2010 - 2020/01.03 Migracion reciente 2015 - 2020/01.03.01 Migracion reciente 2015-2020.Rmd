@@ -675,7 +675,6 @@ colores <- "#E1BD6D" "#E3BD77" "#E5BD81" "#E8BD8C" "#DBB990" "#9FA682" "#649373"
 colorRampPalette(pals::ocean.solar(100))(16)
 colorRampPalette(pals::ocean.haline(100))(16)
 colores <- colorRampPalette(pals::kovesi.linear_bgy_10_95_c74(100))(16)
-
 colores <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
 #Paleta5
