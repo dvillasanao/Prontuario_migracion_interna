@@ -730,6 +730,7 @@ dev.off()
 
 ```{r}
 etiquetas  <- lapply(1:length(estados), function(x){
+                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
                                 tibble::rownames_to_column(var = "rn") %>%
@@ -738,8 +739,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = value, fill = rn))  + 
-                                      geom_bar(aes(x = value, fill = cn))  + 
+                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
+                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
