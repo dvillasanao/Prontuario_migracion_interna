@@ -631,6 +631,8 @@ for(i in 1:32){
 
 
 ```{r, eval = FALSE}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2020/Tabla MR5a a por estados.RDS"))
+
 #paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
 paleta <- c("#000C7D", "#00108D", "#02149C", "#1614A4", "#3012A6", "#5A0D9D", "#7A0895", "#910390", "#A7008A", "#BB0085", "#CE0080", "#DF047A", "#EE1774", "#FA2C6C", "#FD4364", "#FE595B", "#FF6F51", "#FF8445","#FF9636")
 
@@ -649,7 +651,7 @@ tabla2 <- lapply(1:length(estados), function(x){
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 #require(rlist)
 #require(colorBlindness)
 #require(wesanderson)
