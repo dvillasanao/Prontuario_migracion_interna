@@ -583,7 +583,8 @@ for(i in 1:32){
                   file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Matriz MRt por estados_2020_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
-save(tabla1, file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Tabla MRt a nivel estatal.RDS"))
+
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Tabla MRt a nivel estatal.RDS"))
 ```
 
 ```{r tablas de matrices}
@@ -674,6 +675,8 @@ for(i in 1:32){
 
 
 ```{r}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Tabla MRt a nivel estatal.RDS"))
+
 paleta <- c("#352A87", "#3436A2", "#2A45BC", "#1556D5", "#0963DC", "#066FDD", "#0E78D9", "#1180D5", "#1089D2", "#0995D1", "#069DCB", "#06A5C5", "#0AAABC", "#17B0B0", "#27B4A5", "#3DB999", "#55BC8C", "#6EBE7F", "#87BE75", "#9CBE6C", "#B0BC64", "#C3BB5C", "#D5B955", "#E7B94C", "#F5BB40", "#FBC434", "#FACF2A")
 
 tabla2 <- lapply(1:length(estados), function(x){
@@ -771,6 +774,7 @@ dev.off()
 
 ```{r etiquetas_estatal}
 etiquetas  <- lapply(1:length(estados), function(x){
+                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
                                 tibble::rownames_to_column(var = "rn") %>%
@@ -779,8 +783,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = value, fill = rn))  + 
-                                      geom_bar(aes(x = value, fill = cn))  + 
+                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
+                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
