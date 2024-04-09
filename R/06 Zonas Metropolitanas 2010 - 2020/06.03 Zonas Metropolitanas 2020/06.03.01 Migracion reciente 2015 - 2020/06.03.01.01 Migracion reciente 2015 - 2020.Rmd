@@ -727,13 +727,13 @@ circos.trackPlotRegion(track.index = 1,
   )
 }
 dev.off()
-paleta[1]
 ```
 
 **Etiquetas**
 
 ```{r etiquetas_municipal}
 etiquetas  <- lapply(1:length(ZM_CF), function(x){
+                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
                                 tibble::rownames_to_column(var = "rn") %>%
@@ -742,8 +742,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = value, fill = rn))  + 
-                                      geom_bar(aes(x = value, fill = cn))  + 
+                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
+                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -1257,7 +1257,7 @@ tabla <- tabla1 %>%
            adorn_totals(c("row", "col"),  
                          fill = "-", 
                          na.rm = TRUE, 
-          ,,,,contains(colnames(tabla1)))
+          ,,,,contains(str_sort(unique(c(colnames(tabla1), rownames(tabla1))), numeric = TRUE)))
 
 wb <- createWorkbook()
 addWorksheet(wb, "ZMVM")
@@ -1382,16 +1382,17 @@ dev.off()
 
 ```{r}
 etiquetas  <- lapply(1, function(x){
-                        p <- tabla1 %>% 
-                              as.data.frame() %>%
-                               tibble::rownames_to_column(var = "rn") %>%
-                                melt(., id.vars = "rn", variable.name = "cn") %>%
-                                 as.data.frame() %>% 
-                                  mutate(rn = str_wrap(.$rn, 100),
-                                         cn = str_wrap(.$cn, 100)) %>%
-                                   ggplot() + 
-                                    geom_bar(aes(x = value, fill = rn))  + 
-                                     geom_bar(aes(x = value, fill = cn))  + 
+                        orden <- str_sort(unique(c(colnames(tabla1), rownames(tabla1))), numeric = TRUE)
+                        p <-  tabla1 %>% 
+                               as.data.frame() %>%
+                                tibble::rownames_to_column(var = "rn") %>%
+                                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                                  as.data.frame() %>% 
+                                   mutate(rn = str_wrap(.$rn, 100),
+                                          cn = str_wrap(.$cn, 100)) %>%
+                                    ggplot() + 
+                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
+                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -2214,6 +2215,7 @@ dev.off()
 
 ```{r etiquetas intramunicipal}
 etiquetas  <- lapply(1:length(ZM_CF), function(x){
+                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
                                 tibble::rownames_to_column(var = "rn") %>%
@@ -2222,8 +2224,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = value, fill = rn))  + 
-                                      geom_bar(aes(x = value, fill = cn))  + 
+                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
+                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -2713,16 +2715,17 @@ dev.off()
 
 ```{r}
 etiquetas  <- lapply(1, function(x){
-                        p <- tabla1 %>% 
-                              as.data.frame() %>%
-                               tibble::rownames_to_column(var = "rn") %>%
-                                melt(., id.vars = "rn", variable.name = "cn") %>%
-                                 as.data.frame() %>% 
-                                  mutate(rn = str_wrap(.$rn, 100),
-                                         cn = str_wrap(.$cn, 100)) %>%
-                                   ggplot() + 
-                                    geom_bar(aes(x = value, fill = rn))  + 
-                                     geom_bar(aes(x = value, fill = cn))  + 
+                        orden <- str_sort(unique(c(colnames(tabla1), rownames(tabla1))), numeric = TRUE)
+                        p <-  tabla1 %>% 
+                               as.data.frame() %>%
+                                tibble::rownames_to_column(var = "rn") %>%
+                                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                                  as.data.frame() %>% 
+                                   mutate(rn = str_wrap(.$rn, 100),
+                                          cn = str_wrap(.$cn, 100)) %>%
+                                    ggplot() + 
+                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
+                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -3458,6 +3461,7 @@ dev.off()
 
 ```{r etiquetas intermunicipal}
 etiquetas  <- lapply(1:length(ZM_CF), function(x){
+                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
                                 tibble::rownames_to_column(var = "rn") %>%
@@ -3466,8 +3470,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = value, fill = rn))  + 
-                                      geom_bar(aes(x = value, fill = cn))  + 
+                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
+                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -4106,16 +4110,17 @@ dev.off()
 
 ```{r}
 etiquetas  <- lapply(1, function(x){
-                        p <- tabla1 %>% 
-                              as.data.frame() %>%
-                               tibble::rownames_to_column(var = "rn") %>%
-                                melt(., id.vars = "rn", variable.name = "cn") %>%
-                                 as.data.frame() %>% 
-                                  mutate(rn = str_wrap(.$rn, 100),
-                                         cn = str_wrap(.$cn, 100)) %>%
-                                   ggplot() + 
-                                    geom_bar(aes(x = value, fill = rn))  + 
-                                     geom_bar(aes(x = value, fill = cn))  + 
+                        orden <- str_sort(unique(c(colnames(tabla1), rownames(tabla1))), numeric = TRUE)
+                        p <-  tabla1 %>% 
+                               as.data.frame() %>%
+                                tibble::rownames_to_column(var = "rn") %>%
+                                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                                  as.data.frame() %>% 
+                                   mutate(rn = str_wrap(.$rn, 100),
+                                          cn = str_wrap(.$cn, 100)) %>%
+                                    ggplot() + 
+                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
+                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -4950,6 +4955,7 @@ dev.off()
 
 ```{r etiquetas metropolitano}
 etiquetas  <- lapply(1:length(ZM_CF), function(x){
+                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
                         p <-  tabla1[[x]] %>% 
                                as.data.frame() %>%
                                 tibble::rownames_to_column(var = "rn") %>%
@@ -4958,8 +4964,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = value, fill = rn))  + 
-                                      geom_bar(aes(x = value, fill = cn))  + 
+                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
+                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
