@@ -3900,8 +3900,8 @@ etiquetas  <- lapply(1, function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  +  
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  +  
                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -4749,8 +4749,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
