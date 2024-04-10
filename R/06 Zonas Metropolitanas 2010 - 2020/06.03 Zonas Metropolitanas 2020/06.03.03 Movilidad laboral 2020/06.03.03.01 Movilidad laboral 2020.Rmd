@@ -754,8 +754,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  +  
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  +  
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -1309,8 +1309,8 @@ etiquetas  <- lapply(1, function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -1978,7 +1978,7 @@ for(i in 1:length(ZM)){
 ```
 
 ```{r, eval = FALSE}
-tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel intramunicipal.RDS"))
+ tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel intramunicipal.RDS"))
 
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
@@ -2086,8 +2086,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  +  
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -2588,8 +2588,8 @@ etiquetas  <- lapply(1, function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -3344,8 +3344,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  +  
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
