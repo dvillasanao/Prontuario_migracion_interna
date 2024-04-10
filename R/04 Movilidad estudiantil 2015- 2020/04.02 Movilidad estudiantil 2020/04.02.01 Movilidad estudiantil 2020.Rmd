@@ -739,8 +739,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -1581,8 +1581,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -1594,8 +1594,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
                                         scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
-                                          labs(fill = stringr::str_wrap(paste(estado[x]), 100),
-                                               color = stringr::str_wrap(paste(estado[x]), 100))
+                                          labs(fill = stringr::str_wrap(paste(nom_estados[x]), 100),
+                                               color = stringr::str_wrap(paste(nom_estados[x]), 100))
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
@@ -2186,8 +2186,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -2199,8 +2199,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
                                         scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
-                                          labs(fill = stringr::str_wrap(paste(estado[x]), 100),
-                                               color = stringr::str_wrap(paste(estado[x]), 100))
+                                          labs(fill = stringr::str_wrap(paste(nom_estados[x]), 100),
+                                               color = stringr::str_wrap(paste(nom_estados[x]), 100))
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
@@ -2974,8 +2974,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                    mutate(rn = str_wrap(.$rn, 100),
                                           cn = str_wrap(.$cn, 100)) %>%
                                     ggplot() + 
-                                     geom_bar(aes(x = as.character(value, orden), fill = rn))  + 
-                                      geom_bar(aes(x = as.character(value, orden), fill = cn))  + 
+                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
+                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
                                        theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                              text = element_text(family = "Montserrat Medium"),
                                              axis.text = element_blank(),
@@ -2987,8 +2987,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
                                         scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
-                                          labs(fill = stringr::str_wrap(paste(estado[x]), 100),
-                                               color = stringr::str_wrap(paste(estado[x]), 100))
+                                          labs(fill = stringr::str_wrap(paste(nom_estados[x]), 100),
+                                               color = stringr::str_wrap(paste(nom_estados[x]), 100))
                          leg <- get_legend(p)
                          as_ggplot(leg)
  })
