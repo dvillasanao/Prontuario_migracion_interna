@@ -281,6 +281,8 @@ MC <- mydata %>%
           filter(CVE_MUN_ASI %in% municipios) %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
+table(MC$I_ZM)
+
 saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/MC_municipal.RDS"))
 ```
 
