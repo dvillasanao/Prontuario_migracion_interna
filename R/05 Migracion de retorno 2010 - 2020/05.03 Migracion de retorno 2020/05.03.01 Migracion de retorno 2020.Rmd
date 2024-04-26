@@ -381,7 +381,8 @@ require(chorddiag)
 load(file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Matriz de MRt a nivel estatal 2020.RData"))
 
 tabla <- Migrantes %>%
-          sna::diag.remove(remove.val = 0) 
+          sna::diag.remove(remove.val = 0) %>%
+           t()
 
 # Paleta de colores
 groupColors <- colorRampPalette(pals::parula(100))(50)
@@ -418,8 +419,10 @@ htmlwidgets::saveWidget(p, paste0(here::here(),"/Graficos/Estado/05_Migracion de
 # Paleta de colores
 paleta <- colorRampPalette(pals::parula(100))(50)
 
-
 load(file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Matriz de MRt a nivel estatal 2020.RData"))
+
+tabla <- Migrantes %>%
+          t()
 
 rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
 colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
@@ -504,7 +507,8 @@ Se filtran los flujos migratorios que son exclusivos de los estados y que visual
 load(file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Matriz de MRt a nivel estatal 2020.RData"))
 
 tabla <- Migrantes %>%
-          sna::diag.remove(remove.val = 0) 
+          sna::diag.remove(remove.val = 0) %>%
+           t()
 
 rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
 colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
