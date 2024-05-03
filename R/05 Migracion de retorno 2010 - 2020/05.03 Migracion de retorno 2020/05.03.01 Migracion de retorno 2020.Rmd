@@ -620,8 +620,8 @@ totales <- lapply(1:length(estados), function(x){
                            by = c("name")
                            ) %>%
                            rename("CVE_ENT" = "name",
-                                  "Entidad de residencia 5a" = "Total_Filas",
-                                  "Migrantes de retorno" = "Total") %>%
+                                  "Migrantes de retorno" = "Total_Filas",
+                                  "Entidad de residencia 5a" = "Total") %>%
                             select(`Migrantes de retorno`, CVE_ENT, `Entidad de residencia 5a`)
   }
 )
@@ -657,9 +657,9 @@ porcentajes <- lapply(1:length(estados), function(x){
                                              rename("Total_Filas" = "1"), 
                                      by = c("name")
                                           ) %>%
-                                      rename("CVE_ENT" = "name",
-                                             "Entidad de residencia 5a%" = "Total_Filas",
-                                             "Migrantes de retorno%" = "Total") %>%
+                                       rename("CVE_ENT" = "name",
+                                              "Migrantes de retorno%" = "Total_Filas",
+                                              "Entidad de residencia 5a%" = "Total") %>%
                                       select(`Migrantes de retorno%`, CVE_ENT, `Entidad de residencia 5a%`)
                                    
   }
@@ -798,7 +798,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                              legend.spacing.y = unit(0.4, "cm"),
                                              legend.text = element_text(size = 7, family = "Montserrat Medium"),
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                        scale_fill_manual(values = setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                        nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(nom_estados[x]), 100),
                                                color = stringr::str_wrap(paste(nom_estados[x]), 100))
