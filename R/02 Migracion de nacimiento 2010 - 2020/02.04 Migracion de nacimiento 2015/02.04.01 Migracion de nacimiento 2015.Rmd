@@ -83,19 +83,20 @@ setwd(here::here())
 require(showtext)
 library(extrafont)
 # activar showtext
-showtext_auto()
-font_add_google("Montserrat", "montserrat")
-font_add_google("Raleway", "Raleway")
-#loadfonts(device = "win")
-#font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+# SE cargan las funtes del sitema Windows (Pero tarda en correr)
+#ttf_import('C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/')
+#fonts()
+#extrafont::loadfonts(device = "win")
+#font_import()
+windowsFonts()
 ```
-
 
 
 ```{r, echo = FALSE}
 # Librerías que se usaron en el documCVE_ENTo
 require(chorddiag)
 require(circlize)
+require(Cairo)
 require(haven)
 require(Hmisc) # %nin%
 require(dplyr)
@@ -113,14 +114,14 @@ require(ggpubr)
 require(ggalluvial)
 require(ggsankey)
 require(ggrepel)
+require(janitor)
 require(tibble)
 require(tidyr)
 require(reshape2)
 require(openxlsx)
 require(doMC)
-registerDoMC(cores = 15)
+registerDoMC(cores = 18)
 ```
-
 
 **Encuesta Intercensal 2015**
 
