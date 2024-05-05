@@ -524,7 +524,7 @@ tabla1 <- lapply(1:32, function(x){
   }
 )
 
-## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+## Se guardan las matrices de migración reciente para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:32){
      tabla <- tabla1[[i]] %>%
@@ -1439,7 +1439,7 @@ tabla1 <-  lapply(1:32, function(x){
 #                                      pull(Total)
 #})
 
-## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+## Se guardan las matrices de migración reciente para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:32){
      tabla <- tabla1[[i]] %>%
@@ -1722,7 +1722,7 @@ Pob.5ymas <- mydata %>%
 
 ################################################################################
 ########################### Residentes #########################################
-load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2020/Matriz de movilidad estudiantil a nivel municipal 2020.RData"))
+load(paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/Matriz de migracion reciente a nivel municipal.RData"))
 
 Residentes <- Migrantes %>%
                rownames_to_column() %>% 
@@ -2052,7 +2052,7 @@ tabla1 <-  lapply(1:32, function(x){
 #}
 #)
 
-## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+## Se guardan las matrices de migración reciente para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:32){
      tabla <- tabla1[[i]] %>%
@@ -2819,7 +2819,7 @@ tabla1 <-  lapply(1:32, function(x){
 #                                      pull(Total)
 #})
 
-## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+## Se guardan las matrices de migración reciente para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:32){
      tabla <- tabla1[[i]] %>%
