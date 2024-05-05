@@ -165,6 +165,8 @@ mydata <- data %>%
 save(mydata, file = paste0(here::here(),"/Bases/02_Migracion de lugar de nacimiento_2015.RData"))
 ```
 
+✔️A partir de aquí se pueden correr los códidos 👇.
+Se carga el archivo `Migracion interna_2015.RData`.
 
 ```{r, echo = FALSE}
 load(paste0(here::here(), "/Bases/02_Migracion de lugar de nacimiento_2015.RData"))
