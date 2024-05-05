@@ -224,6 +224,7 @@ options(survey.lonely.psu = "adjust")
 MC <- mydata %>%
        filter(ENT_PAIS_NAC %in% estados) %>%
         svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
 saveRDS(MC, file = paste0(here::here(), "/Output/Estado/02_Lugar de nacimiento/2020/MC_estado.RDS"))
 ```
 
@@ -332,6 +333,7 @@ htmlwidgets::saveWidget(p, paste0(here::here(),"/Graficos/Estado/02_Lugar de nac
  #         file = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.png"),
   #                cliprect = "viewport")
 ```
+
 
 ## Gráficos migración de nacimiento {.tabset .tabset-pills}
 
