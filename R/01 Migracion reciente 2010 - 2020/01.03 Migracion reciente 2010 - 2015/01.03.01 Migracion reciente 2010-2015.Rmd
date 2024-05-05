@@ -1961,15 +1961,15 @@ for(i in 1:32){
      addWorksheet(wb, paste(est[i]))
      writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
      saveWorkbook(wb, 
-                  file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz MTrab nivel intramunicipal_Reduccion.xlsx"), 
+                  file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz MR5a nivel intramunicipal_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
  
-saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Tabla MTrab a nivel intramunicipal.RDS"))
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Tabla MR5a a nivel intramunicipal.RDS"))
 ```
 
 ```{r tablas de matrices}
-tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Tabla MTrab a nivel intramunicipal.RDS"))
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Tabla MR5a a nivel intramunicipal.RDS"))
 
 totales <- lapply(1:length(estados), function(x){
                 #Se agrupan los totales
@@ -2049,7 +2049,7 @@ for(i in 1:32){
      writeData(wb, i, totales[[i]], colNames = TRUE, startCol = 1)
      writeData(wb, i, porcentajes[[i]], colNames = TRUE, startCol = 5)
      saveWorkbook(wb, 
-                  file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz MTrab nivel intramunicipal_Reduccion_Totales.xlsx"), 
+                  file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz MR5a nivel intramunicipal_Reduccion_Totales.xlsx"), 
                overwrite = TRUE)
 }
 ```
@@ -2058,7 +2058,7 @@ for(i in 1:32){
 **Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
 
 ```{r, eval = FALSE}
-tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Tabla MTrab a nivel intramunicipal.RDS"))
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Tabla MR5a a nivel intramunicipal.RDS"))
 
 ## Genera una lista de vectores con los colores a nivel municipal 
 #paleta <- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)
@@ -2719,7 +2719,7 @@ for(i in 1:32){
      addWorksheet(wb, paste(est[i]))
      writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
      saveWorkbook(wb, 
-                  file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz MTrab a nivel intermunicipal_Reduccion.xlsx"), 
+                  file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz MR5a a nivel intermunicipal_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
 
@@ -2807,7 +2807,7 @@ for(i in 1:32){
      writeData(wb, i, totales[[i]], colNames = TRUE, startCol = 1)
      writeData(wb, i, porcentajes[[i]], colNames = TRUE, startCol = 5)
      saveWorkbook(wb, 
-                  file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz MTrab a nivel intermunicipal_Reduccion_Totales.xlsx"), 
+                  file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/Matriz MR5a a nivel intermunicipal_Reduccion_Totales.xlsx"), 
                overwrite = TRUE)
 }
 ```
