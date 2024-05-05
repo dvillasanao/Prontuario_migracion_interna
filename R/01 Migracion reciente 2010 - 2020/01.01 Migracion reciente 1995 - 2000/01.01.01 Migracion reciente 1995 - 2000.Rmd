@@ -291,19 +291,19 @@ Migrantes <- Migrantes %>%
 rownames(Migrantes)<- nom_estados
 colnames(Migrantes) <- nom_estados
 
-save(Migrantes, file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 2005-2000.RData"))
+save(Migrantes, file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 1995-2000.RData"))
 
 wb <- createWorkbook()
-addWorksheet(wb, "MREst. 2005-2000")
+addWorksheet(wb, "MREst. 1995-2000")
 writeData(wb, 1, Migrantes, colNames = TRUE, rowNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 2005-2000.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 1995-2000.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de migración reciente hace 5 años a nivel estatal, 2005 - 2000**
+**Matriz de migración reciente hace 5 años a nivel estatal, 1995-2000**
 
 ::: {style="height:500px;overflow:auto;"}
 ```{r, echo = FALSE}
-load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 2005-2000.RData"))
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 1995-2000.RData"))
 
 tabla <- Migrantes %>%
           as.data.frame() %>%
@@ -311,7 +311,7 @@ tabla <- Migrantes %>%
 
 tabla %>%  
  gt() %>% 
-  tab_header(title = "Matriz de migración reciente 2005 - 2000", 
+  tab_header(title = "Matriz de migración reciente 1995-2000", 
              subtitle = "Nivel estatal") %>%
    tab_options(heading.title.font.size = 12, 
                heading.align = "center",
@@ -338,7 +338,7 @@ Gráfico dinámico de migración reciente a nivel estatal.
 #devtools::install_github("mattflor/chorddiag")
 require(chorddiag)
 
-load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 2005-2000.RData"))
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 1995-2000.RData"))
 
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
@@ -362,10 +362,10 @@ p <- chorddiag(tabla,
 
 p
 require(htmlwidgets)
-htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2000/MR5a a nivel estatal 2005 - 2000.html"), selfcontained = TRUE)
+htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2000/MR5a a nivel estatal 1995-2000.html"), selfcontained = TRUE)
 #require(webshot)
-#webshot(url = paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2000/MR5a a nivel estatal 2005 - 2000.html"),
- #         file = paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2000/MR5a a nivel estatal 2005 - 2000.png"),
+#webshot(url = paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2000/MR5a a nivel estatal 1995-2000.html"),
+ #         file = paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2000/MR5a a nivel estatal 1995-2000.png"),
   #                cliprect = "viewport")
 ```
 
@@ -377,7 +377,7 @@ htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/01_Migracion r
 paleta <- c("#000C7D", "#00108D", "#02149C", "#1614A4", "#3012A6", "#5A0D9D", "#7A0895", "#910390", "#A7008A", "#BB0085", "#CE0080", "#DF047A", "#EE1774", "#FA2C6C", "#FD4364", "#FE595B", "#FF6F51", "#FF8445","#FF9636", "#FFA72B", "#FFB622")
 
 
-load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 2005-2000.RData"))
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 1995-2000.RData"))
 
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0)  
@@ -462,7 +462,7 @@ dev.off()
 Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
 
 ```{r, results = FALSE, eval = FALSE}
-load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 2005-2000.RData"))
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 1995-2000.RData"))
 
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
@@ -540,7 +540,7 @@ for(i in 1:32){
      addWorksheet(wb, paste(est[i]))
      writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
      saveWorkbook(wb, 
-                  file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2000/Matriz MR5a por estados_2005-2000_Reduccion.xlsx"), 
+                  file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2000/Matriz MR5a por estados_1995-2000_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2000/Tabla MR5a a por estados.RDS"))
@@ -627,7 +627,7 @@ for(i in 1:32){
      writeData(wb, i, totales[[i]], colNames = TRUE, startCol = 1)
      writeData(wb, i, porcentajes[[i]], colNames = TRUE, startCol = 5)
      saveWorkbook(wb, 
-                  file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2000/Matriz MR5a por estados_2005-2000_Reduccion_Totales.xlsx"), 
+                  file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2000/Matriz MR5a por estados_1995-2000_Reduccion_Totales.xlsx"), 
                overwrite = TRUE)
 }
 ```
@@ -777,7 +777,7 @@ dev.off()
 ### Gráfico Sankey
 
 ```{r, eval = FALSE}
-load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 2005-2000.RData"))
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 1995-2000.RData"))
 
 Migrantes <- Migrantes %>%
               sna::diag.remove(remove.val = 0)  
@@ -860,7 +860,7 @@ ggexport(p, width = 14, height = 10, dpi = 400, filename = path)
 **Desagregado por estados**
 
 ```{r, eval = FALSE}
-load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 2005-2000.RData"))
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 1995-2000.RData"))
 
 # Se cambian las equiquetas de los estados 
 estados <- est 
@@ -979,7 +979,7 @@ Pob.5ymas <- mydata %>%
 
 ################################################################################
 ########################### Residentes #########################################
-load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 2005-2000.RData"))
+load(file = paste0(here::here(), "/Bases/Estado/01_Migracion reciente/2000/Matriz de migracion reciente a nivel estatal 1995-2000.RData"))
 
 rownames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
 colnames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
@@ -1031,12 +1031,12 @@ tabla <- Pob.Total %>%
                   Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
                   Eficacia = Mig.Neta - Mig.Bruta)
 
-write.xlsx(tabla, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2000/Indicadores de MR5a por estado 2005 - 2000.xlsx"), overwrite = TRUE)
-save(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de MR5a por estado 2005 - 2000.RData"))
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2000/Indicadores de MR5a por estado 1995-2000.xlsx"), overwrite = TRUE)
+save(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de MR5a por estado 1995-2000.RData"))
 ```
 
 ```{r, echo = FALSE}
-load(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de MR5a por estado 2005 - 2000.RData"))
+load(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de MR5a por estado 1995-2000.RData"))
 
 tabla %>%  
  as.data.frame() %>%
@@ -1145,7 +1145,7 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/01_Migracion reciente/2000/Matriz de migracion reciente a nivel municipal.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de migración reciente hace 5 años a nivel municipal, 2005 - 2000**
+**Matriz de migración reciente hace 5 años a nivel municipal, 1995-2000**
 
 <div style="height:500px;overflow:auto;">
 
@@ -1159,7 +1159,7 @@ tabla <- Migrantes %>%
 
 tabla[1:30, 1:30] %>%  
  gt() %>% 
-  tab_header(title = "Matriz de migración reciente 2005 - 2000", 
+  tab_header(title = "Matriz de migración reciente 1995-2000", 
              subtitle = "Nivel municipal") %>%
    tab_options(heading.title.font.size = 12, 
                heading.align = "center",
@@ -1675,13 +1675,13 @@ tabla <- Pob.Total %>%
                    Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
                    Eficacia = Mig.Neta - Mig.Bruta)
 
-write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de migracion reciente a nivel municipal 2005 - 2000.xlsx"), overwrite = TRUE)
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de migracion reciente a nivel municipal 1995-2000.xlsx"), overwrite = TRUE)
 
-save(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de migracion reciente a nivel municipal 2005 - 2000.RData"))
+save(tabla, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de migracion reciente a nivel municipal 1995-2000.RData"))
 ```
 
 ```{r, echo = FALSE}
-load(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de migracion reciente a nivel municipal 2005 - 2000.RData"))
+load(file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2000/Indicadores de migracion reciente a nivel municipal 1995-2000.RData"))
 
 tabla[1:20,] %>%  
  as.data.frame() %>%
@@ -1796,7 +1796,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/01_Migracion reci
 ```
 
 
-**Matriz de migración reciente hace 5 años a nivel municipal, 2005 - 2000**  
+**Matriz de migración reciente hace 5 años a nivel municipal, 1995-2000**  
 
 
 <div style="height:500px;overflow:auto;">
@@ -2506,7 +2506,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/01_Migracion reci
 ```
 
 
-**Matriz de migración reciente hace 5 años a nivel municipal, 2005 - 2000**  
+**Matriz de migración reciente hace 5 años a nivel municipal, 1995-2000**  
 
 
 <div style="height:500px;overflow:auto;">
