@@ -173,7 +173,6 @@ save(mydata, file = paste0(here::here(),"/Bases/02_Migracion de lugar de nacimie
 ✔️A partir de aquí se pueden correr los códidos 👇.
 Se carga el archivo `Migracion interna_2010.RData`.
 
-
 ```{r, echo = FALSE}
 load(paste0(here::here(), "/Bases/02_Migracion de lugar de nacimiento_2010.RData"))
 
