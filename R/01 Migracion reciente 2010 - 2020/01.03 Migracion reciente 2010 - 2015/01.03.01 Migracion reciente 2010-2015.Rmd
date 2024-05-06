@@ -90,7 +90,6 @@ library(extrafont)
 windowsFonts()
 ```
 
-
 ```{r, echo = FALSE}
 # Librerías que se usaron en el documCVE_ENTo
 require(chorddiag)
