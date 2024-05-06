@@ -179,7 +179,7 @@ mydata <- mydata %>%
             left_join(., ZM_2020 %>% select(-CVE_ENT), by = c("CVE_MUN")) %>%
             # Zonas Metropolitanas en el lugar de residencia hace 5 años
              left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>% 
-                           rename("CVE_ZM_TRABAJO15" = "CVE_ZM",
+                           rename("CVE_ZM_RES15" = "CVE_ZM",
                                   "ZM_RES15" = "NOM_ZM",
                                   "MC_RES15" = "MC",
                                   "CF_RES15" = "CF"), by = c("CVE_MUN_TRABAJO15" = "CVE_MUN")) %>%
@@ -191,7 +191,7 @@ mydata <- mydata %>%
                                    "CF_TRABAJO" = "CF"), by = c("CVE_MUN_TRABAJO" = "CVE_MUN")) %>%
               # Zonas Metropolitanas en el lugar de trabajo
                left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>%
-                             rename("CVE_ZM_TRABAJO" = "CVE_ZM",
+                             rename("CVE_ZM_ASI" = "CVE_ZM",
                                     "ZM_ASI" = "NOM_ZM",
                                     "MC_ASI" = "MC",
                                     "CF_ASI" = "CF"), by = c("CVE_MUN_ASI" = "CVE_MUN"))
@@ -272,7 +272,7 @@ MC <- mydata %>%
         mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Trabajan en el mismo municipio
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
-                                .$CVE_MUN != .$CVE_MUN_TRABAJO &20) .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
                                 )) %>%
