@@ -753,7 +753,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                              legend.spacing.y = unit(0.4, "cm"),
                                              legend.text = element_text(size = 7, family = "Montserrat Medium"),
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                        scale_fill_manual(values = setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
                                                color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
@@ -2235,7 +2236,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                              legend.spacing.y = unit(0.4, "cm"),
                                              legend.text = element_text(size = 7, family = "Montserrat Medium"),
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                        scale_fill_manual(values = setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
                                                color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
@@ -3481,7 +3483,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                              legend.spacing.y = unit(0.4, "cm"),
                                              legend.text = element_text(size = 7, family = "Montserrat Medium"),
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                        scale_fill_manual(values = setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
                                                color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
@@ -4975,7 +4978,8 @@ etiquetas  <- lapply(1:length(ZM_CF), function(x){
                                              legend.spacing.y = unit(0.4, "cm"),
                                              legend.text = element_text(size = 7, family = "Montserrat Medium"),
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                        scale_fill_manual(values = setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
                                                color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
