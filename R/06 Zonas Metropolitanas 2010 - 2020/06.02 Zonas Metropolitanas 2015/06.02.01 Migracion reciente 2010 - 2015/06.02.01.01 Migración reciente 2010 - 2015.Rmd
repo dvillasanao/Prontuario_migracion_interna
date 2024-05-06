@@ -3755,7 +3755,7 @@ filtro  <- Inmigrantes %>%
             full_join(., Emigrantes, by = c("rn" = "cn")) %>%
              filter(rn %in% ZM) %>%
               mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-               filter(value > 11000) %>% 
+               filter(value > 8000) %>% 
                 pull(rn)
 
 filtro_est <- Inmigrantes %>%
@@ -3765,7 +3765,7 @@ filtro_est <- Inmigrantes %>%
                   mutate(rn = substr(.$rn, 1, 3)) %>%
                    group_by(rn) %>%
                     summarise(value = sum(value)) %>%
-                     filter(value > 13000) %>%
+                     filter(value > 10000) %>%
                       pull(rn)
 
 ################################################################################
@@ -3924,7 +3924,7 @@ filtro  <- Inmigrantes %>%
             full_join(., Emigrantes, by = c("rn" = "cn")) %>%
              filter(rn %in% ZM) %>%
               mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-               filter(value > 11000) %>% 
+               filter(value > 8000) %>% 
                 pull(rn)
 
 filtro_est <- Inmigrantes %>%
@@ -3934,7 +3934,7 @@ filtro_est <- Inmigrantes %>%
                   mutate(rn = substr(.$rn, 1, 3)) %>%
                    group_by(rn) %>%
                     summarise(value = sum(value)) %>%
-                     filter(value > 15000) %>%
+                     filter(value > 10000) %>%
                       pull(rn)
 
 ################################################################################
@@ -4412,7 +4412,7 @@ Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuesti
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, CVE_MUN, ENT_PAIS_RES10, MUN_RES_5A, CVE_MUN_RES, CVE_ZM, MC, CF, CVE_ZM_RES, M, EDAD, FACTOR, ESTRATO, UPM) %>%
+       select(CVE_ENT, CVE_MUN, ENT_PAIS_RES10, CVE_MUN_RES, CVE_ZM, CVE_ZM_RES, M, EDAD, FACTOR, ESTRATO, UPM) %>%
         # Se genera una indicadora de zm 
         mutate(I_ZM_2015 = ifelse(is.na(.$CVE_ZM), '0', '1'),
                I_RES5A_ZM_2015 = ifelse(is.na(.$CVE_ZM_RES), '0', '1')) %>%
