@@ -426,7 +426,7 @@ load(file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2015/Mat
 
 tabla <- Migrantes 
 
-rownames(tabla) <- stringr::str_wrap(nom_estados, 50)data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAWElEQVR42mNgGPTAxsZmJsVqQApgmGw1yApwKcQiT7phRBuCzzCSDSHGMKINIeDNmWQlA2IigKJwIssQkHdINgxfmBBtGDEBS3KCxBc7pMQgMYE5c/AXPwAwSX4lV3pTWwAAAABJRU5ErkJggg==
+rownames(tabla) <- stringr::str_wrap(nom_estados, 50)
 colnames(tabla) <- stringr::str_wrap(nom_estados, 50)
 
 # Paleta de colores

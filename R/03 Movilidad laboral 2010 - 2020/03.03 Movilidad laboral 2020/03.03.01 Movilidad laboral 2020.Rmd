@@ -566,7 +566,7 @@ tabla1 <- lapply(1:32, function(x){
 )
 
 
-## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+## Se guardan las matrices de movilidad laboral para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:32){
      tabla <- tabla1[[i]] %>%
@@ -1140,7 +1140,7 @@ Pob.ocupada <- mydata %>%
                         CVE_MUN_TRABAJO = case_when(.$CVE_MUN_TRABAJO %in% municipios ~.$CVE_MUN_TRABAJO,
                                                     #### Se excluyen los municipios que no fueron muestreados
                                                     .$CVE_MUN_TRABAJO %in% municipios_nomuestra ~ "777",
-                                                     nchar(.$CVE_MUN_TRABAJO) == 3 ~ "888",  #Residencia en otro país
+                                                     nchar(.$CVE_MUN_TRABAJO) == 3 ~ "888",  #Municipio de trabajo en otro país
                                                     .$CVE_MUN_TRABAJO %in% "997999" ~ '997999',
                                                     .$ENT_PAIS_TRAB %in% "997" ~ "997",
                                                     .$ENT_PAIS_TRAB %in% "998" ~ "998",
@@ -1415,7 +1415,7 @@ tabla1 <-  lapply(1:32, function(x){
 #                                        pull(Total)
 #})
 
-## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+## Se guardan las matrices de movilidad laboral para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:32){
      tabla <- tabla1[[i]] %>%
@@ -2032,7 +2032,7 @@ tabla1 <-  lapply(1:32, function(x){
  #}
 #)
 
-## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+## Se guardan las matrices de movilidad laboral para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:32){
      tabla <- tabla1[[i]] %>%
@@ -2822,7 +2822,7 @@ tabla1 <-  lapply(1:32, function(x){
 #                                      pull(Total)
 #})
 
-## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+## Se guardan las matrices de movilidad laboral para analizarlos después. 
  wb <- createWorkbook()
 for(i in 1:32){
      tabla <- tabla1[[i]] %>%
