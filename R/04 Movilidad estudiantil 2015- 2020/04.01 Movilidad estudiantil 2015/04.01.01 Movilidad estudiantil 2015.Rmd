@@ -2178,7 +2178,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                              legend.spacing.y = unit(0.4, "cm"),
                                              legend.text = element_text(size = 7, family = "Montserrat Medium"),
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                        scale_fill_manual(values = setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(nom_estados[x]), 100),
                                                color = stringr::str_wrap(paste(nom_estados[x]), 100))
@@ -2442,15 +2443,11 @@ tabla[1:20,] %>%
 ### Matrices 
 
 ```{r, eval = FALSE}
-### Municipios que no pertenecen en la muestra
-municipios_nomuestra <- c("004012", "007125", "029048")
-
 #Clave de los municipios 2015 
 municipios <- MUN %>%
                select(CVE_MUN) %>%
                 unique() %>%
-                 filter(CVE_MUN %nin% municipios_nomuestra) %>%
-                  pull(CVE_MUN)
+                 pull(CVE_MUN)
 
 Pob.3ymas <- mydata %>%
               mutate(CVE_MUN_ASI = paste0(ENT_PAIS_ASI, MUN_ASI)) %>%
@@ -2460,8 +2457,6 @@ Pob.3ymas <- mydata %>%
                                                .$ENT_PAIS_ASI %in% "998" ~ "998",
                                                .$ENT_PAIS_ASI %in% "997" ~ "999"),
                       CVE_MUN_ASI = case_when(.$CVE_MUN_ASI %in% municipios ~.$CVE_MUN_ASI,
-                                             #### Se excluyen los municipios que no fueron muestreados
-                                              .$CVE_MUN_ASI %in% municipios_nomuestra ~ "777",
                                                nchar(.$CVE_MUN_ASI) == 3 ~ "888",  #Asistencia escolar en otro país
                                               .$CVE_MUN_ASI %in% "997999" ~ '997999',
                                               .$ENT_PAIS_ASI %in% "997" ~ "997",
@@ -2590,13 +2585,9 @@ colnames(Migrantes) <- colnames
 estado <- stringr::str_wrap(nom_estados, 100)
 
 # Clave de los municipios 
-### Municipios que no pertenecen en la muestra
-municipios_nomuestra <- c("004012", "007125", "029048")
-
 municipios <- MUN %>% 
-               filter(CVE_MUN %nin% municipios_nomuestra) %>%
-                mutate(municipios = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
-                 pull(municipios)
+               mutate(municipios = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                pull(municipios)
              
 ################################################################################
 ################################## Filtro ######################################
@@ -2966,7 +2957,8 @@ etiquetas  <- lapply(1:length(estados), function(x){
                                              legend.spacing.y = unit(0.4, "cm"),
                                              legend.text = element_text(size = 7, family = "Montserrat Medium"),
                                              legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
+                                        scale_fill_manual(values = setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) + 
                                          guides(fill = guide_legend(ncol = 1)) + 
                                           labs(fill = stringr::str_wrap(paste(nom_estados[x]), 100),
                                                color = stringr::str_wrap(paste(nom_estados[x]), 100))
