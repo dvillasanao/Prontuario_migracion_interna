@@ -321,7 +321,7 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2015/01_Migracion reciente/Matriz de migracion reciente a nivel municipal.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de migración reciente hace 5 años a nivel municipal, 2015 - 2015**
+**Matriz de migración reciente hace 5 años a nivel municipal, 2010 - 2015**
 
 <div style="height:500px;overflow:auto;">
 
@@ -335,7 +335,7 @@ tabla <- Migrantes %>%
 
 tabla[1:30, 1:30] %>%  
  gt() %>% 
-  tab_header(title = "Matriz de migración reciente 2015 - 2015", 
+  tab_header(title = "Matriz de migración reciente 2010 - 2015", 
              subtitle = "Nivel municipal") %>%
    tab_options(heading.title.font.size = 12, 
                heading.align = "center",
@@ -1777,7 +1777,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 ```
 
 
-**Matriz de migración reciente hace 5 años a nivel municipal, 2015 - 2015**  
+**Matriz de migración reciente hace 5 años a nivel municipal, 2010 - 2015**  
 
 
 <div style="height:500px;overflow:auto;">
@@ -1843,7 +1843,7 @@ saveWorkbook(wb,
 }
 ```
 
-**Matriz de migración reciente hace 5 años en la Zona Metropolitana de Cuernavaca, 2015 - 2015**  
+**Matriz de migración reciente hace 5 años en la Zona Metropolitana de Cuernavaca, 2010 - 2015**  
 
 <div style="height:500px;overflow:auto;">
 ```{r, echo = FALSE}
@@ -1998,16 +1998,19 @@ tabla1 <- lapply(1:length(ZM), function(x){
 #                                                    pull(Total)
 #})
 
-## Se guardan las matrices de Movilidad laboral para analizarlos después. 
+## Se guardan las matrices de Movilidad laboral para analizarlos después.
 wb <- createWorkbook()
-for(i in 1:length(ZM)){
-     tabla <- tabla1[[i]] %>%
-                as.data.frame() %>%
-                 adorn_totals(c("row", "col"), 
-                               fill = "-", 
+for(i in 1:length(ZM_CF)){
+     if(i %in% 10) {
+       tabla <- tabla1[[i]]
+        } else {
+        tabla <- tabla1[[i]] %>%
+                  as.data.frame() %>%
+                   adorn_totals(c("row", "col"), 
+                                fill = "-", 
                                 na.rm = TRUE, 
-          ,,,,contains(colnames(tabla1[[i]])))
-                 
+                                ,,,,contains(colnames(tabla1[[i]])))
+        }  
      addWorksheet(wb, paste(ZM_CF[i]))
      writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
      saveWorkbook(wb, 
@@ -2022,38 +2025,45 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/01_Migracion reciente/Matriz MR5a a nivel intramunicipal.RDS"))
 
 totales <- lapply(1:length(ZM), function(x){
-                #Se agrupan los totales
-                 full_join(
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              slice(nrow(.)) %>% 
-                               t() %>%
-                                as.data.frame()%>%
-                                 rownames_to_column(var = "name")  %>% 
-                                  rename("Total_Filas" = "1"),
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              rownames_to_column(var = "name") %>%
-                               select(name, Total) %>%
-                                mutate(name = str_replace(.$name, "1$", "Total")), 
-                           by = c("name")
-                           ) %>%
-                           rename("CVE_MUN" = "name",
-                                  "Emigrantes" = "Total_Filas",
-                                  "Inmigrantes" = "Total") %>%
-                            select(Inmigrantes, CVE_MUN, Emigrantes)
-  }
+                  #Se agrupan los totales
+                  if(x %in% 10){
+                     tabla1[[x]]
+                     } else {
+                       full_join(
+                                 tabla1[[x]] %>%
+                                  as.data.frame() %>%
+                                   adorn_totals(c("row", "col"), 
+                                                fill = "-", 
+                                                na.rm = TRUE, 
+                                                 ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                                    slice(nrow(.)) %>% 
+                                     t() %>%
+                                      as.data.frame()%>%
+                                       rownames_to_column(var = "name")  %>% 
+                                        rename("Total_Filas" = "1"),
+                                 tabla1[[x]] %>%
+                                  as.data.frame() %>%
+                                   adorn_totals(c("row", "col"), 
+                                                fill = "-", 
+                                                na.rm = TRUE, 
+                                                 ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                                    rownames_to_column(var = "name") %>%
+                                     select(name, Total) %>%
+                                      mutate(name = str_replace(.$name, "1$", "Total")), 
+                                 by = c("name")
+                                 ) %>%
+                                 rename("CVE_MUN" = "name",
+                                        "Emigrantes" = "Total_Filas",
+                                        "Inmigrantes" = "Total") %>%
+                                  select(Inmigrantes, CVE_MUN, Emigrantes)
+                 }
+}
 )
 porcentajes <- lapply(1:length(ZM), function(x){
-                           #Se agrupan los porcentajes
+                       #Se agrupan los porcentajes
+                       if(x %in% 10){
+                           tabla1[[x]]
+                         } else {
                            full_join(
                                      tabla1[[x]] %>%
                                       as.data.frame() %>%
@@ -2089,7 +2099,8 @@ porcentajes <- lapply(1:length(ZM), function(x){
                                              "Inmigrantes%" = "Total") %>%
                                       select(`Inmigrantes%`, CVE_MUN, `Emigrantes%`)
                                    
-  }
+                         }
+}
 )
 
 # Se guardan los totales de las matrices reducidas 
@@ -3047,7 +3058,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 ```
 
 
-**Matriz de migración reciente hace 5 años a nivel intermunicipal, 2015 - 2015**  
+**Matriz de migración reciente hace 5 años a nivel intermunicipal, 2010 - 2015**  
 
 <div style="height:500px;overflow:auto;">
 ```{r, echo = FALSE}
@@ -4470,7 +4481,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 ```
 
 
-**Matriz de migración reciente hace 5 años a nivel municipal, 2015 - 2015**  
+**Matriz de migración reciente hace 5 años a nivel municipal, 2010 - 2015**  
 
 
 <div style="height:500px;overflow:auto;">
