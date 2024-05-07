@@ -258,7 +258,7 @@ nom_zm <- sjlabelled::get_labels(mydata$NOM_ZM)[-2]
 ## Movilidad interna {.tabset .tabset-pills}
 
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.   
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la Población de 3 años y más.   
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -1473,7 +1473,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-###################### Población de 5 años y más ###############################
+###################### Población de 3 años y más ###############################
 Pob.3ymas <- mydata %>%
               as.data.frame() %>%
                mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -1569,7 +1569,7 @@ tabla[1:20,] %>%
 
 ## Movilidad intramunicipal {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.   
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la Población de 3 años y más.   
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -2759,7 +2759,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-###################### Población de 5 años y más ###############################
+###################### Población de 3 años y más ###############################
 Pob.3ymas <- mydata %>%
               as.data.frame() %>%
                mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -2854,7 +2854,7 @@ tabla[1:20,] %>%
 
 ## Migración intermunicipal {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.   
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la Población de 3 años y más.   
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -4117,7 +4117,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-###################### Población de 5 años y más ###############################
+###################### Población de 3 años y más ###############################
 Pob.3ymas <- mydata %>%
               as.data.frame() %>%
                mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -4213,7 +4213,7 @@ tabla[1:20,] %>%
 ## Movilidad metropolitana {.tabset .tabset-pills}
 
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.   
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la Población de 3 años y más.   
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
