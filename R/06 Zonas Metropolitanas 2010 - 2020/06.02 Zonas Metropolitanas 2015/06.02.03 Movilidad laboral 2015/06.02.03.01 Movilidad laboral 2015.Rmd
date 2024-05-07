@@ -447,7 +447,6 @@ Emigrantes <- lapply(1:length(ZM), function(x){
 
 #### Filtro de municipios
 filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Filtro a nivel municipal.xlsx"), colNames = TRUE) %>%
-  +
                pull(filtro_municipio)
 
 #### Filtro de estados 
