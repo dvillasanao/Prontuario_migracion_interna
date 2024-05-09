@@ -909,7 +909,8 @@ tabla1 <- lapply(1:32, function(x){
 
                          filtro <- filtro_rn %>%
                                     full_join(., filtro_cn, by = c("rn" = "cn")) %>%
-                                     mutate(value = sum_row(.$Inm, .$Emg, na.rm = TRUE)) %>%
+                                     mutate(value = sum_row(.$Emg, na.rm = TRUE)) %>%
+                                     #mutate(value = sum_row(.$Inm, .$Emg, na.rm = TRUE)) %>%
                                       filter(value > filtro_mig[x] & rn != estado[x]) %>%
                                        pull(rn)
 
@@ -920,7 +921,7 @@ tabla1 <- lapply(1:32, function(x){
                               mutate_if(is.factor, as.character) %>%
                                mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
                                 mutate(rn = case_when(.$rn %in% estado[x] ~ .$rn,
-                                                      .$rn %in% filtro ~ .$rn,
+                                                      .$rn %in% filtro ~ "Otros estados",
                                                       .$rn %nin% filtro ~ "Otros estados"),
                                        cn = case_when(.$cn %in% estado[x] ~.$cn, 
                                                       .$cn %in% filtro ~ .$cn,
@@ -955,8 +956,7 @@ tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/05_Migracion de re
 
 totales <- lapply(1:length(estados), function(x){
                   tabla <- tabla1[[x]] %>%
-                            t() %>%
-                             dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                               
+                             dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                                                          
                               column_to_rownames(., var = "rn") 
                   
                   #Se agrupan los totales
@@ -984,12 +984,15 @@ totales <- lapply(1:length(estados), function(x){
                              by = c("name")
                              ) %>%
                              rename("CVE_ENT" = "name",
-                                    "Migrantes de retorno" = "Total_Filas",
-                                    "Entidad de residencia 5a" = "Total") %>%
+                                    "Entidad de residencia 5a" = "Total_Filas",
+                                    "Migrantes de retorno" = "Total") %>%
                               select(`Migrantes de retorno`, CVE_ENT, `Entidad de residencia 5a`)
     }
   )
   porcentajes <- lapply(1:length(estados), function(x){
+                             tabla <- tabla1[[x]] %>%
+                              dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                                                           column_to_rownames(., var = "rn") 
+                             
                              #Se agrupan los porcentajes
                              full_join(
                                        tabla %>%
@@ -1022,9 +1025,9 @@ totales <- lapply(1:length(estados), function(x){
                                        by = c("name")
                                             ) %>%
                                          rename("CVE_ENT" = "name",
-                                                "Migrantes de retorno%" = "Total_Filas",
-                                                "Entidad de residencia 5a%" = "Total") %>%
-                                        select(`Migrantes de retorno%`, CVE_ENT, `Entidad de residencia 5a%`)
+                                                "Entidad de residencia 5a" = "Total_Filas",
+                                                "Migrantes de retorno" = "Total") %>%
+                                        select(`Migrantes de retorno`, CVE_ENT, `Entidad de residencia 5a`)
   }
 )
 
@@ -1047,35 +1050,31 @@ Este tipo de gráfico puede servir para analizar los grandes flujos de migració
 ```{r, eval = FALSE}
 paleta <- c("#352A87", "#3436A2", "#2A45BC", "#1556D5", "#0963DC", "#066FDD", "#0E78D9", "#1180D5", "#1089D2", "#0995D1", "#069DCB", "#06A5C5", "#0AAABC", "#17B0B0", "#27B4A5", "#3DB999", "#55BC8C", "#6EBE7F", "#87BE75", "#9CBE6C", "#B0BC64", "#C3BB5C", "#D5B955", "#E7B94C", "#F5BB40", "#FBC434", "#FACF2A")
 
+x <- 1
 p <- lapply(1:32, function(x){
                      tabla <- tabla1[[x]] %>% 
                                filter(value > 0) %>%
-                                dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                               
-                                 column_to_rownames(., var = "rn") %>%
-                                  t()  %>% 
-                                   as.data.frame() %>%
-                                    tibble::rownames_to_column(var = "rn") %>%
-                                     melt(., id.vars = "rn", variable.name = "cn") %>%
-                                      as_tibble() %>%
-                                       filter(value > 0)
+                                mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                 group_by(rn) %>%
+                                  mutate(freq = value/sum(value, na.rm = TRUE))
                      tabla %>%
-                     ggplot(aes(axis1 = rn, 
-                                 axis2 = cn, 
+                     ggplot(aes(axis1 = cn, 
+                                 axis2 = rn, 
                                   y = value),  # c("value", "freq", "tasa")
-                             reverse = FALSE, 
+                             reverse = T, 
                               na.rm = TRUE) + 
-                      geom_alluvium(aes(fill = rn),  
+                      geom_alluvium(aes(fill = cn),  
                                      color = "transparent", 
                                       alpha = 0.9, 
                                        lwd = 0.0001, 
                                         width = 1/5,
-                                         reverse = FALSE) +
-                       geom_stratum(aes(fill = rn), 
+                                         reverse = T) +
+                       geom_stratum(aes(fill = cn), 
                                      color = "#F1F1F1", 
                                       alpha = 1, 
                                        lwd = 0.0001, 
                                         width = 1/5,
-                                         reverse = FALSE) +
+                                         reverse = T) +
                          geom_text_repel(aes(label = ifelse(after_stat(x)  == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
                                              fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
                                            stat = "stratum", 
@@ -1084,7 +1083,7 @@ p <- lapply(1:32, function(x){
                                               nudge_x = -.2, 
                                                force = 0,
                                                 family = "Montserrat Medium",
-                                                 reverse = FALSE) +
+                                                 reverse = T) +
                           geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
                                               fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
                                            stat = "stratum", 
@@ -1093,7 +1092,7 @@ p <- lapply(1:32, function(x){
                                               nudge_x = .2, 
                                                force = 0,
                                                 family = "Montserrat Medium",
-                                                 reverse = FALSE) +
+                                                 reverse = T) +
                             theme_void() + 
                              theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
                                     text = element_text(family = "Montserrat Medium"),
@@ -1108,7 +1107,6 @@ p <- lapply(1:32, function(x){
                                       color = "")
               }
 )
-
 path = paste0(here::here(),"/Graficos/Estado/05_Migracion de retorno/2020/GSankey de MRt a nivel estatal.pdf")
 ggexport(p, width = 14, height = 10, dpi = 400, filename = path, device = "cairo_pdf")
 ```
