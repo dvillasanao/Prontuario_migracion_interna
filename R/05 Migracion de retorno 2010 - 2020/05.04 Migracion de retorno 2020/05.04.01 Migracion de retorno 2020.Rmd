@@ -27,7 +27,7 @@ pre {
 body {
 text-align: justify;
 font-style: normal;
-font-family: "Montserrat";
+font-family: "Montserrat Medium";
 font-size: 12px
 }
 h1.title {
@@ -507,8 +507,7 @@ Se filtran los flujos migratorios que son exclusivos de los estados y que visual
 load(file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Matriz de MRt a nivel estatal 2020.RData"))
 
 tabla <- Migrantes %>%
-          sna::diag.remove(remove.val = 0) %>%
-           t()
+          sna::diag.remove(remove.val = 0) 
 
 rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
 colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
@@ -810,7 +809,7 @@ etiquetas  <- lapply(1:length(estados), function(x){
 cairo_pdf(paste0(here::here(), "/Graficos/Estado/05_Migracion de retorno/2020/Etiquetas a nivel estatal.pdf"),
           width = 7, height = 8, 
           fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
+          family = "Montserrat Medium", onefile = TRUE)
 for(i in 1:length(estados)){
   print(etiquetas[i])
 }
@@ -876,111 +875,190 @@ gtsave(p, paste0(here::here(), "/Graficos/Estado/05_Migracion de retorno/2020/p.
 ### Gráfico Sankey
 
 ```{r, eval = FALSE}
-## Variable `Migrantes`  se vuelve a recalcular. 
-Migrantes <- svytable(~ENT + ENT_PAIS_RES_5A, design = MC)  
+load(file = paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Matriz de MRt a nivel estatal 2020.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0) 
+
+rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
 
 
-# Para evitar estar recalculando el muestreo complejo, se le nombra como un data.frame a la variable `Migrantes`  previamente calculada.
-# Se remueve la diagonal para quedarnos con los flujos migratorios a nivel estatal.  
-Migrantes <- Migrantes %>%
-              as.data.frame() %>%
-               expss::cross_cases(ENT, ENT_PAIS_RES_5A, weight = Freq) %>%
-                as.data.frame() %>%
-                 slice(-33) %>% 
-                  select(-row_labels) %>% 
-                   sna::diag.remove(remove.val = 0)
+# Nombre de los estados 
+estado <- stringr::str_wrap(nom_estados, 100)
 
-estados <- est 
+filtro_est <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) 
 
-rownames(Migrantes) <- estados
-colnames(Migrantes) <- estados
+filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Estado/05_Migracion de retorno/2020/Filtro a nivel estatal_Retorno.xlsx"), colNames = TRUE) %>% 
+               pull(filtro_estados)
+
+tabla1 <- lapply(1:32, function(x){
+                         filtro_rn  <- filtro_est %>%
+                                        mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                         group_by(rn) %>%
+                                          summarise(Inm = sum(value, na.rm = TRUE))
+
+                         filtro_cn  <- filtro_est %>%
+                                        mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                         group_by(cn) %>%
+                                          summarise(Emg = sum(value, na.rm = TRUE))
+
+                         filtro <- filtro_rn %>%
+                                    full_join(., filtro_cn, by = c("rn" = "cn")) %>%
+                                     mutate(value = sum_row(.$Inm, .$Emg, na.rm = TRUE)) %>%
+                                      filter(value > filtro_mig[x] & rn != estado[x]) %>%
+                                       pull(rn)
+
+                          tabla  %>%
+                           as.data.frame() %>%
+                            tibble::rownames_to_column(var = "rn") %>%
+                             melt(., id.vars = "rn", variable.name = "cn") %>%
+                              mutate_if(is.factor, as.character) %>%
+                               mutate(value = ifelse(.$rn %in% estado[x] | .$cn %in% estado[x], value, 0)) %>%
+                                mutate(rn = case_when(.$rn %in% estado[x] ~ .$rn,
+                                                      .$rn %in% filtro ~ .$rn,
+                                                      .$rn %nin% filtro ~ "Otros estados"),
+                                       cn = case_when(.$cn %in% estado[x] ~.$cn, 
+                                                      .$cn %in% filtro ~ .$cn,
+                                                      .$cn %nin% filtro ~ "Otros estados")) 
+                                 #dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                               
+                                  #column_to_rownames(., var = "rn")  %>%
+  }
+)
+
+## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+wb <- createWorkbook()
+for(i in 1:32){
+     tabla <- tabla1[[i]] %>% 
+               filter(value > 0) %>%
+                dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                               
+                 column_to_rownames(., var = "rn") %>%
+                  as.data.frame() 
+                
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Matriz MRt por estados_2020_GGSankey_Reduccion.xlsx"), 
+               overwrite = TRUE)
+}
+
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Tabla MRt a nivel estatal_GGSankey.RDS"))
+```
+
+
+```{r tablas de matrices}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Tabla MRt a nivel estatal_GGSankey.RDS"))
+
+totales <- lapply(1:length(estados), function(x){
+                  tabla <- tabla1[[x]] %>%
+                            t() %>%
+                             dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                               
+                              column_to_rownames(., var = "rn") 
+                  
+                  #Se agrupan los totales
+                   full_join(
+                             tabla %>%
+                              as.data.frame() %>%
+                               adorn_totals(c("row", "col"), 
+                                            fill = "-", 
+                                            na.rm = TRUE, 
+                                            ,,,,contains(str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))) %>%
+                                slice(nrow(.)) %>% 
+                                 t() %>%
+                                  as.data.frame()%>%
+                                   rownames_to_column(var = "name")  %>% 
+                                    rename("Total_Filas" = "1"),
+                             tabla %>%
+                              as.data.frame() %>%
+                               adorn_totals(c("row", "col"), 
+                                            fill = "-", 
+                                            na.rm = TRUE, 
+                                            ,,,,contains(str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))) %>%
+                                rownames_to_column(var = "name") %>%
+                                 select(name, Total) %>%
+                                  mutate(name = str_replace(.$name, "1$", "Total")), 
+                             by = c("name")
+                             ) %>%
+                             rename("CVE_ENT" = "name",
+                                    "Migrantes de retorno" = "Total_Filas",
+                                    "Entidad de residencia 5a" = "Total") %>%
+                              select(`Migrantes de retorno`, CVE_ENT, `Entidad de residencia 5a`)
+    }
+  )
+  porcentajes <- lapply(1:length(estados), function(x){
+                             #Se agrupan los porcentajes
+                             full_join(
+                                       tabla %>%
+                                        as.data.frame() %>%
+                                         adorn_totals(c("col", "row"), 
+                                                      fill = "0", 
+                                                      na.rm = TRUE, 
+                                                      name = "Total",
+                                                      ,,,,contains(str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))) %>%
+                                          adorn_percentages("col",
+                                                            na.rm = TRUE) %>% 
+                                           rownames_to_column(var = "name") %>%
+                                            select(name, Total) %>%
+                                             mutate(name = str_replace(.$name, "1$", "Total")),
+                                       tabla %>%
+                                        as.data.frame() %>%
+                                         adorn_totals(c("row"), 
+                                                      fill = "0", 
+                                                      na.rm = TRUE, 
+                                                      name = "Total", 
+                                                      ,,,,contains(str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))) %>%
+                                          adorn_percentages("row", 
+                                                            na.rm = TRUE, 
+                                                           ,,,,contains(str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))) %>%
+                                           slice(nrow(.)) %>% 
+                                            t() %>%
+                                             as.data.frame()%>%
+                                              rownames_to_column(var = "name")  %>% 
+                                               rename("Total_Filas" = "1"), 
+                                       by = c("name")
+                                            ) %>%
+                                         rename("CVE_ENT" = "name",
+                                                "Migrantes de retorno%" = "Total_Filas",
+                                                "Entidad de residencia 5a%" = "Total") %>%
+                                        select(`Migrantes de retorno%`, CVE_ENT, `Entidad de residencia 5a%`)
+  }
+)
+
+# Se guardan los totales de las matrices reducidas 
+wb <- createWorkbook()
+for(i in 1:32){
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, totales[[i]], colNames = TRUE, startCol = 1)
+     writeData(wb, i, porcentajes[[i]], colNames = TRUE, startCol = 5)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Matriz MRt por estados_2020_Reduccion_GGSankey_Totales.xlsx"), 
+               overwrite = TRUE)
+}
 ```
 
 **Gráficos Sankey por estados**
 
-```{r, eval = FALSE}
-# Matiz de migración de retorno
-tabla <- Migrantes %>% 
-          as.data.frame() %>%
-           tibble::rownames_to_column(var = "rn") %>%
-            melt(., id.vars = "rn", variable.name = "cn") %>%
-             as_tibble() %>%
-              mutate(rn = forcats::fct_relevel(.$rn, estados),
-                     cn = forcats::fct_relevel(.$cn, estados))
-```
-
-
-```{r, eval = FALSE}
-p <- tabla %>% 
-       ggplot(aes(axis1 = rn, 
-                   axis2 = cn, 
-                    y = value),  # c("value", "freq", "tasa")
-               reverse = FALSE, 
-                na.rm = TRUE) +
-        geom_alluvium(aes(fill = rn),
-                       curve_type = "quintic", 
-                        color = "transparent", 
-                         alpha = 0.85, 
-                          lwd = 0.001, 
-                           width = 1/5,
-                            reverse = FALSE) +
-          geom_stratum(aes(fill = cn), 
-                        color = "white", 
-                         alpha = 0.65,  
-                          lwd = 0.001, 
-                           width = 1/5,
-                            reverse = FALSE) +
-           geom_text_repel(aes(label = ifelse(after_stat(x) == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""), 
-                               fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
-                            stat = "stratum", 
-                             size = 3, 
-                              direction = "y", 
-                               nudge_x = -.2,
-                                min.segment.length = unit(1, "lines"),
-                                 force = 1,
-                                  force_pull = 0,
-                                   family = "montserrat",
-                                    reverse = FALSE) +
-            geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
-                                fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
-                             stat = "stratum", 
-                              size = 3,
-                               direction = "y", 
-                                nudge_x = .2, 
-                                 force = 1,
-                                  force_pull = 0,
-                                   family = "montserrat",
-                                    reverse = FALSE) +
-             theme_void() + 
-              theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                     text = element_text(family = "montserrat"),
-                      axis.text = element_blank(),
-                       axis.title = element_blank(),
-                        strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
-                         legend.key.size = unit(0.5, "cm"),
-                          legend.text = element_text(size = 9, family = "montserrat"),
-                           legend.position = c(1, .5)) + 
-               scale_x_discrete(expand = c(-0.1, 0.35)) +
-                scale_fill_viridis_d(option = "A", end = 0.9, begin = 0.2) +
-                 guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
-                  labs(fill = "", 
-                       color = "")
-
-path = paste0(here::here(),"/Graficos/Estado/05_Migracion de retorno/2020/GSankey de MRt a nivel estatal.pdf")
-ggexport(p, width = 14, height = 10, dpi = 400, filename = path)
-```
-
-
 Este tipo de gráfico puede servir para analizar los grandes flujos de migración.   
 
 ```{r, eval = FALSE}
+paleta <- c("#352A87", "#3436A2", "#2A45BC", "#1556D5", "#0963DC", "#066FDD", "#0E78D9", "#1180D5", "#1089D2", "#0995D1", "#069DCB", "#06A5C5", "#0AAABC", "#17B0B0", "#27B4A5", "#3DB999", "#55BC8C", "#6EBE7F", "#87BE75", "#9CBE6C", "#B0BC64", "#C3BB5C", "#D5B955", "#E7B94C", "#F5BB40", "#FBC434", "#FACF2A")
+
 p <- lapply(1:32, function(x){
-                   tabla <- tabla %>%
-                             mutate(rn = forcats::fct_relevel(.$rn, estados),
-                                    cn = forcats::fct_relevel(.$cn, estados)) %>%
-                              mutate(value = ifelse(.$rn %in% estados[x] | .$cn %in% estados[x], value, 0)) 
- 
-                    tabla %>% 
+                     tabla <- tabla1[[x]] %>% 
+                               filter(value > 0) %>%
+                                dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                                               
+                                 column_to_rownames(., var = "rn") %>%
+                                  t()  %>% 
+                                   as.data.frame() %>%
+                                    tibble::rownames_to_column(var = "rn") %>%
+                                     melt(., id.vars = "rn", variable.name = "cn") %>%
+                                      as_tibble() %>%
+                                       filter(value > 0)
+                     tabla %>%
                      ggplot(aes(axis1 = rn, 
                                  axis2 = cn, 
                                   y = value),  # c("value", "freq", "tasa")
@@ -988,14 +1066,14 @@ p <- lapply(1:32, function(x){
                               na.rm = TRUE) + 
                       geom_alluvium(aes(fill = rn),  
                                      color = "transparent", 
-                                      alpha = 0.8, 
-                                       lwd = 0.001, 
+                                      alpha = 0.9, 
+                                       lwd = 0.0001, 
                                         width = 1/5,
                                          reverse = FALSE) +
                        geom_stratum(aes(fill = rn), 
                                      color = "#F1F1F1", 
                                       alpha = 1, 
-                                       lwd = 0.001, 
+                                       lwd = 0.0001, 
                                         width = 1/5,
                                          reverse = FALSE) +
                          geom_text_repel(aes(label = ifelse(after_stat(x)  == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
@@ -1004,39 +1082,35 @@ p <- lapply(1:32, function(x){
                                             size = 3,
                                              direction = "y", 
                                               nudge_x = -.2, 
-                                               force = 1,
-                                                        force_pull = 0,
-                                                         family = "montserrat",
-                                                          reverse = FALSE) +
+                                               force = 0,
+                                                family = "Montserrat Medium",
+                                                 reverse = FALSE) +
                           geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
                                               fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
                                            stat = "stratum", 
                                             size = 3,
                                              direction = "y", 
                                               nudge_x = .2, 
-                                               force = 1,
-                                                force_pull = 0,
-                                                 family = "montserrat",
-                                                  reverse = FALSE) +
+                                               force = 0,
+                                                family = "Montserrat Medium",
+                                                 reverse = FALSE) +
                             theme_void() + 
                              theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                    text = element_text(family = "montserrat"),
+                                    text = element_text(family = "Montserrat Medium"),
                                      axis.text = element_blank(),
                                       axis.title = element_blank(),
-                                       strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
-                                        legend.key.size = unit(0.5, "cm"),
-                                         legend.text = element_text(size = 9, family = "montserrat"),
-                                          legend.position = c(1, .5)) + 
+                                       strip.text = element_text(size = 10, face = "bold", family = "Montserrat Medium"),
+                                        legend.position = "none") + 
                               scale_x_discrete(expand = c(-0.1, 0.35)) +
-                               scale_fill_viridis_d(option = "A", end = 0.9, begin = 0.2) +
+                               scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(tabla$rn, tabla$cn))))) + 
                                 guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
                                  labs(fill = "", 
                                       color = "")
               }
 )
 
-path = paste0(here::here(),"/Graficos/Estado/05_Migracion de retorno/2020/GSankey de MRt desagregado por estados_Absolutos.pdf")
-ggexport(list = p, width = 14, height = 10, dpi = 400, filename = path)
+path = paste0(here::here(),"/Graficos/Estado/05_Migracion de retorno/2020/GSankey de MRt a nivel estatal.pdf")
+ggexport(p, width = 14, height = 10, dpi = 400, filename = path, device = "cairo_pdf")
 ```
 
 
@@ -1278,7 +1352,7 @@ kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(att
                     c(package, loadedversion, source))) %>%
  kable_styling(font_size = 10, 
                bootstrap_options = c("condensed", "responsive", "bordered")) %>%
-  kable_classic(full_width = TRUE, html_font = "montserrat") %>% 
+  kable_classic(full_width = TRUE, html_font = "Montserrat Medium") %>% 
    scroll_box(width = "100%", height = "150px") %>%  
     gsub("font-size: initial !important;", "font-size: 10pt !important;", .)
 ```

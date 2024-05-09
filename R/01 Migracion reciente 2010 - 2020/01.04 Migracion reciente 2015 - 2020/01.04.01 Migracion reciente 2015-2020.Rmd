@@ -532,7 +532,8 @@ for(i in 1:32){
                  adorn_totals(c("row", "col"), 
                                fill = "-", 
                                 na.rm = TRUE, 
-                                 name = "Total",,,,contains(colnames(tabla1[[i]])))
+                                 name = "Total"
+                              ,,,,contains(colnames(tabla1[[i]])))
                  
      addWorksheet(wb, paste(est[i]))
      writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
