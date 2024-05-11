@@ -1039,6 +1039,7 @@ for(i in 1:32){
      writeData(wb, i, porcentajes[[i]], colNames = TRUE, startCol = 5)
      saveWorkbook(wb, 
                   file = paste0(here::here(), "/Output/Estado/05_Migracion de retorno/2020/Matriz MRt por estados_2020_Reduccion_GGSankey_Totales.xlsx"), 
+                  
                overwrite = TRUE)
 }
 ```
