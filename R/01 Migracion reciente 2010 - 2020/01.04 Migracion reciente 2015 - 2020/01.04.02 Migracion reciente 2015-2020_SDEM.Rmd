@@ -261,7 +261,7 @@ data <- mydata %>%
 ## Indicadores sociodemográficos
 
 ```{r}
-Variable <- "SEXO"
+#Variable <- "SEXO"
 #Variable <- "NIVACAD"
 #Clave <- "20.01"
 #Clave <- "30.01"
@@ -300,7 +300,7 @@ Indicadores <- function(Variable){
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset(EDAD >= 5 & EDAD <= 130) %>%
                                       filter(CVE_ENT %in% estados) %>%
-                                       #filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                       filter(ENT_PAIS_RES_5A %in% estados) %>%
                                         filter(get(Variable) %in% Var) %>%
                                          group_by(CVE_ENT) %>%
                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -391,6 +391,35 @@ Indicadores <- function(Variable){
                 return(Resultados)
 }
 #tabla <- Indicadores("SEXO")
+```
+
+
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+writeData(wb, 1, Indicadores("SEXO"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT"), colNames = TRUE)
+writeData(wb, 4, Indicadores("AFRODES"), colNames = TRUE)
+writeData(wb, 5, Indicadores("HLENGUA"), colNames = TRUE)
+writeData(wb, 6, Indicadores("PERTE_INDIGENA"), colNames = TRUE)
+writeData(wb, 7, Indicadores("ALFABET"), colNames = TRUE)
+writeData(wb, 8, Indicadores("CAUSA_MIG"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD"), colNames = TRUE)
+writeData(wb, 11, Indicadores("G_ESCOACUM"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2020/SDEM/Indicadores sociodemograficos a nivel estatal 2020.xlsx"), overwrite = TRUE)
 ```
 
 
