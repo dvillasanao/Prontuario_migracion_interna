@@ -2280,7 +2280,7 @@ Ampliado.</p>
 <span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a><span class="fu">writeData</span>(wb, <span class="dv">10</span>, <span class="fu">Indicadores</span>(<span class="st">&quot;SITUA_CONYUGAL&quot;</span>), <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a><span class="fu">writeData</span>(wb, <span class="dv">11</span>, <span class="fu">Indicadores</span>(<span class="st">&quot;NIVACAD&quot;</span>), <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a><span class="fu">writeData</span>(wb, <span class="dv">12</span>, <span class="fu">Indicadores</span>(<span class="st">&quot;G_ESCOACUM&quot;</span>), <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a><span class="fu">saveWorkbook</span>(wb, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/01_Migracion reciente/2020/SDEM/Indicadores sociodemograficos a nivel estatal 2020.xlsx&quot;</span>), <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a><span class="fu">saveWorkbook</span>(wb, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/01_Migracion reciente/2020/SDEM/Indicadores sociodemograficos a nivel municipal 2020.xlsx&quot;</span>), <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 </div>
 <div id="valores-relativos-1" class="section level4">
 <h4>Valores relativos</h4>
@@ -2289,142 +2289,142 @@ Ampliado.</p>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#Clave &lt;- &quot;20.01&quot;</span></span>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#Clave &lt;- &quot;30.01&quot;</span></span>
 <span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>Indicadores <span class="ot">&lt;-</span> <span class="cf">function</span>(Variable){</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>                <span class="co"># Municipios</span></span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>                <span class="do">### Municipios que no pertenecen en la muestra</span></span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>                municipios_nomuestra <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;004012&quot;</span>, <span class="st">&quot;007125&quot;</span>, <span class="st">&quot;029048&quot;</span>)</span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>                </span>
-<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>                <span class="co">#Clave de los municipios 2020 </span></span>
-<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>                municipios <span class="ot">&lt;-</span> MUN <span class="sc">%&gt;%</span></span>
-<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>                               <span class="fu">select</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
-<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>                                <span class="fu">unique</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>                                 <span class="fu">filter</span>(CVE_MUN <span class="sc">%nin%</span> municipios_nomuestra) <span class="sc">%&gt;%</span></span>
-<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>                                  <span class="fu">pull</span>(CVE_MUN)</span>
-<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>                </span>
-<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>                <span class="co"># Estados </span></span>
-<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>                estados <span class="ot">&lt;-</span> ENT <span class="sc">%&gt;%</span> <span class="fu">pull</span>(CVE_ENT)</span>
-<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a></span>
-<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>                <span class="co"># Variable que se dese analizar</span></span>
-<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>                X <span class="ot">&lt;-</span> <span class="fu">get_values</span>(data[, <span class="fu">paste</span>(Variable)], <span class="at">drop.na =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>                      <span class="fu">unlist</span>()</span>
-<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a>                <span class="co"># Etiquetas para las columnnas</span></span>
-<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>                etiquetas <span class="ot">&lt;-</span> <span class="fu">get_labels</span>(data[, <span class="fu">paste</span>(Variable)], <span class="at">drop.na =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a>                              <span class="fu">unlist</span>()</span>
-<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a></span>
-<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a>                <span class="co"># Población total</span></span>
-<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a>                Pob.Total <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a>                              <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a>                               <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
-<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a>                                <span class="fu">group_by</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
-<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a>                                 <span class="fu">summarise</span>(<span class="at">Pob.Total =</span> <span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a>                                  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb13-35"><a href="#cb13-35" tabindex="-1"></a>                                   <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
-<span id="cb13-36"><a href="#cb13-36" tabindex="-1"></a>                                                <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
-<span id="cb13-37"><a href="#cb13-37" tabindex="-1"></a>                                                 <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
-<span id="cb13-38"><a href="#cb13-38" tabindex="-1"></a>                </span>
-<span id="cb13-39"><a href="#cb13-39" tabindex="-1"></a>                <span class="co">#Población desagregada</span></span>
-<span id="cb13-40"><a href="#cb13-40" tabindex="-1"></a>                 <span class="co"># Filtro de la población desagregada</span></span>
-<span id="cb13-41"><a href="#cb13-41" tabindex="-1"></a>                p <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(X), <span class="cf">function</span>(x){</span>
-<span id="cb13-42"><a href="#cb13-42" tabindex="-1"></a>                                 Var <span class="ot">&lt;-</span> X[x]   </span>
-<span id="cb13-43"><a href="#cb13-43" tabindex="-1"></a>                                  data <span class="sc">%&gt;%</span></span>
-<span id="cb13-44"><a href="#cb13-44" tabindex="-1"></a>                                   <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb13-45"><a href="#cb13-45" tabindex="-1"></a>                                    <span class="fu">mutate</span>(<span class="at">EDAD =</span> <span class="fu">as.numeric</span>(.<span class="sc">$</span>EDAD)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-46"><a href="#cb13-46" tabindex="-1"></a>                                     <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span> <span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-47"><a href="#cb13-47" tabindex="-1"></a>                                      <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
-<span id="cb13-48"><a href="#cb13-48" tabindex="-1"></a>                                       <span class="fu">filter</span>(CVE_MUN_RES <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
-<span id="cb13-49"><a href="#cb13-49" tabindex="-1"></a>                                        <span class="fu">filter</span>(<span class="fu">get</span>(Variable) <span class="sc">%in%</span> Var) <span class="sc">%&gt;%</span></span>
-<span id="cb13-50"><a href="#cb13-50" tabindex="-1"></a>                                         <span class="fu">group_by</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
-<span id="cb13-51"><a href="#cb13-51" tabindex="-1"></a>                                          <span class="fu">summarise</span>(<span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-52"><a href="#cb13-52" tabindex="-1"></a>                                           <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>, <span class="fu">paste0</span>(<span class="st">&quot;Pob_&quot;</span>, etiquetas[x])))</span>
-<span id="cb13-53"><a href="#cb13-53" tabindex="-1"></a>                  }, <span class="at">simplify =</span> <span class="cn">FALSE</span></span>
-<span id="cb13-54"><a href="#cb13-54" tabindex="-1"></a>                )</span>
-<span id="cb13-55"><a href="#cb13-55" tabindex="-1"></a>                </span>
-<span id="cb13-56"><a href="#cb13-56" tabindex="-1"></a>                Pob.Objetivo <span class="ot">&lt;-</span> <span class="fu">left_join</span>(MUN <span class="sc">%&gt;%</span> <span class="fu">select</span>(CVE_MUN), </span>
-<span id="cb13-57"><a href="#cb13-57" tabindex="-1"></a>                                          purrr<span class="sc">::</span><span class="fu">reduce</span>(p, dplyr<span class="sc">::</span>full_join, <span class="at">by =</span> <span class="st">&#39;CVE_MUN&#39;</span>), <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-58"><a href="#cb13-58" tabindex="-1"></a>                                   <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
-<span id="cb13-59"><a href="#cb13-59" tabindex="-1"></a>                                                <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
-<span id="cb13-60"><a href="#cb13-60" tabindex="-1"></a>                                                 <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-61"><a href="#cb13-61" tabindex="-1"></a>                                    <span class="fu">adorn_percentages</span>(<span class="at">denominator =</span> <span class="st">&quot;row&quot;</span>) </span>
-<span id="cb13-62"><a href="#cb13-62" tabindex="-1"></a></span>
-<span id="cb13-63"><a href="#cb13-63" tabindex="-1"></a>                <span class="co"># Población residente </span></span>
-<span id="cb13-64"><a href="#cb13-64" tabindex="-1"></a>                p <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(X), <span class="cf">function</span>(x){</span>
-<span id="cb13-65"><a href="#cb13-65" tabindex="-1"></a>                                 Var <span class="ot">&lt;-</span> X[x]     </span>
-<span id="cb13-66"><a href="#cb13-66" tabindex="-1"></a>                                  data <span class="sc">%&gt;%</span></span>
-<span id="cb13-67"><a href="#cb13-67" tabindex="-1"></a>                                   <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb13-68"><a href="#cb13-68" tabindex="-1"></a>                                    <span class="fu">mutate</span>(<span class="at">EDAD =</span> <span class="fu">as.numeric</span>(.<span class="sc">$</span>EDAD)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-69"><a href="#cb13-69" tabindex="-1"></a>                                     <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span> <span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-70"><a href="#cb13-70" tabindex="-1"></a>                                      <span class="fu">filter</span>(CVE_MUN <span class="sc">==</span> CVE_MUN_RES)<span class="sc">%&gt;%</span></span>
-<span id="cb13-71"><a href="#cb13-71" tabindex="-1"></a>                                       <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
-<span id="cb13-72"><a href="#cb13-72" tabindex="-1"></a>                                        <span class="fu">filter</span>(CVE_MUN_RES <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
-<span id="cb13-73"><a href="#cb13-73" tabindex="-1"></a>                                         <span class="fu">filter</span>(<span class="fu">get</span>(Variable) <span class="sc">%in%</span> Var) <span class="sc">%&gt;%</span></span>
-<span id="cb13-74"><a href="#cb13-74" tabindex="-1"></a>                                          <span class="fu">group_by</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
-<span id="cb13-75"><a href="#cb13-75" tabindex="-1"></a>                                           <span class="fu">summarise</span>(<span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-76"><a href="#cb13-76" tabindex="-1"></a>                                            <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>, <span class="fu">paste0</span>(<span class="st">&quot;Residentes_&quot;</span>, etiquetas[x])))</span>
-<span id="cb13-77"><a href="#cb13-77" tabindex="-1"></a>                  }, <span class="at">simplify =</span> <span class="cn">FALSE</span></span>
-<span id="cb13-78"><a href="#cb13-78" tabindex="-1"></a>                )</span>
-<span id="cb13-79"><a href="#cb13-79" tabindex="-1"></a></span>
-<span id="cb13-80"><a href="#cb13-80" tabindex="-1"></a>                Residentes <span class="ot">&lt;-</span> <span class="fu">left_join</span>(MUN <span class="sc">%&gt;%</span> <span class="fu">select</span>(CVE_MUN),</span>
-<span id="cb13-81"><a href="#cb13-81" tabindex="-1"></a>                                         purrr<span class="sc">::</span><span class="fu">reduce</span>(p, dplyr<span class="sc">::</span>full_join, <span class="at">by =</span> <span class="st">&#39;CVE_MUN&#39;</span>), <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-82"><a href="#cb13-82" tabindex="-1"></a>                                   <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
-<span id="cb13-83"><a href="#cb13-83" tabindex="-1"></a>                                                <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
-<span id="cb13-84"><a href="#cb13-84" tabindex="-1"></a>                                                 <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-85"><a href="#cb13-85" tabindex="-1"></a>                                    <span class="fu">adorn_percentages</span>(<span class="at">denominator =</span> <span class="st">&quot;row&quot;</span>) </span>
-<span id="cb13-86"><a href="#cb13-86" tabindex="-1"></a>                </span>
-<span id="cb13-87"><a href="#cb13-87" tabindex="-1"></a>                <span class="co"># Población Inmigrante</span></span>
-<span id="cb13-88"><a href="#cb13-88" tabindex="-1"></a>                p <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(X), <span class="cf">function</span>(x){</span>
-<span id="cb13-89"><a href="#cb13-89" tabindex="-1"></a>                                 Var <span class="ot">&lt;-</span> X[x]      </span>
-<span id="cb13-90"><a href="#cb13-90" tabindex="-1"></a>                                  data <span class="sc">%&gt;%</span></span>
-<span id="cb13-91"><a href="#cb13-91" tabindex="-1"></a>                                   <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb13-92"><a href="#cb13-92" tabindex="-1"></a>                                    <span class="fu">mutate</span>(<span class="at">EDAD =</span> <span class="fu">as.numeric</span>(.<span class="sc">$</span>EDAD)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-93"><a href="#cb13-93" tabindex="-1"></a>                                     <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span> <span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-94"><a href="#cb13-94" tabindex="-1"></a>                                      <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES) <span class="sc">%&gt;%</span></span>
-<span id="cb13-95"><a href="#cb13-95" tabindex="-1"></a>                                       <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
-<span id="cb13-96"><a href="#cb13-96" tabindex="-1"></a>                                        <span class="fu">filter</span>(CVE_MUN_RES <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
-<span id="cb13-97"><a href="#cb13-97" tabindex="-1"></a>                                         <span class="fu">filter</span>(<span class="fu">get</span>(Variable) <span class="sc">%in%</span> Var) <span class="sc">%&gt;%</span></span>
-<span id="cb13-98"><a href="#cb13-98" tabindex="-1"></a>                                          <span class="fu">group_by</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
-<span id="cb13-99"><a href="#cb13-99" tabindex="-1"></a>                                           <span class="fu">summarise</span>(<span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-100"><a href="#cb13-100" tabindex="-1"></a>                                            <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>, <span class="fu">paste0</span>(<span class="st">&quot;Inmigrantes_&quot;</span>, etiquetas[x])))</span>
-<span id="cb13-101"><a href="#cb13-101" tabindex="-1"></a>                  }, <span class="at">simplify =</span> <span class="cn">FALSE</span></span>
-<span id="cb13-102"><a href="#cb13-102" tabindex="-1"></a>                )</span>
-<span id="cb13-103"><a href="#cb13-103" tabindex="-1"></a>                </span>
-<span id="cb13-104"><a href="#cb13-104" tabindex="-1"></a>                Inmigrantes <span class="ot">&lt;-</span> <span class="fu">left_join</span>(MUN <span class="sc">%&gt;%</span> <span class="fu">select</span>(CVE_MUN),</span>
-<span id="cb13-105"><a href="#cb13-105" tabindex="-1"></a>                                          purrr<span class="sc">::</span><span class="fu">reduce</span>(p, dplyr<span class="sc">::</span>full_join, <span class="at">by =</span> <span class="st">&#39;CVE_MUN&#39;</span>), <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-106"><a href="#cb13-106" tabindex="-1"></a>                                   <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
-<span id="cb13-107"><a href="#cb13-107" tabindex="-1"></a>                                                <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
-<span id="cb13-108"><a href="#cb13-108" tabindex="-1"></a>                                                 <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-109"><a href="#cb13-109" tabindex="-1"></a>                                    <span class="fu">adorn_percentages</span>(<span class="at">denominator =</span> <span class="st">&quot;row&quot;</span>) </span>
-<span id="cb13-110"><a href="#cb13-110" tabindex="-1"></a>               </span>
-<span id="cb13-111"><a href="#cb13-111" tabindex="-1"></a>                <span class="co"># Población Emigrante</span></span>
-<span id="cb13-112"><a href="#cb13-112" tabindex="-1"></a>                p <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(X), <span class="cf">function</span>(x){</span>
-<span id="cb13-113"><a href="#cb13-113" tabindex="-1"></a>                                 Var <span class="ot">&lt;-</span> X[x]      </span>
-<span id="cb13-114"><a href="#cb13-114" tabindex="-1"></a>                                  data <span class="sc">%&gt;%</span></span>
-<span id="cb13-115"><a href="#cb13-115" tabindex="-1"></a>                                   <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb13-116"><a href="#cb13-116" tabindex="-1"></a>                                    <span class="fu">mutate</span>(<span class="at">EDAD =</span> <span class="fu">as.numeric</span>(.<span class="sc">$</span>EDAD)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-117"><a href="#cb13-117" tabindex="-1"></a>                                     <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span> <span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-118"><a href="#cb13-118" tabindex="-1"></a>                                      <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES) <span class="sc">%&gt;%</span></span>
-<span id="cb13-119"><a href="#cb13-119" tabindex="-1"></a>                                       <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
-<span id="cb13-120"><a href="#cb13-120" tabindex="-1"></a>                                        <span class="fu">filter</span>(CVE_MUN_RES <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
-<span id="cb13-121"><a href="#cb13-121" tabindex="-1"></a>                                         <span class="fu">filter</span>(<span class="fu">get</span>(Variable) <span class="sc">%in%</span> Var) <span class="sc">%&gt;%</span></span>
-<span id="cb13-122"><a href="#cb13-122" tabindex="-1"></a>                                          <span class="fu">group_by</span>(CVE_MUN_RES) <span class="sc">%&gt;%</span></span>
-<span id="cb13-123"><a href="#cb13-123" tabindex="-1"></a>                                           <span class="fu">summarise</span>(<span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-124"><a href="#cb13-124" tabindex="-1"></a>                                            <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>, <span class="fu">paste0</span>(<span class="st">&quot;Emigrantes_&quot;</span>, etiquetas[x])))</span>
-<span id="cb13-125"><a href="#cb13-125" tabindex="-1"></a>                  }, <span class="at">simplify =</span> <span class="cn">FALSE</span></span>
-<span id="cb13-126"><a href="#cb13-126" tabindex="-1"></a>                )</span>
-<span id="cb13-127"><a href="#cb13-127" tabindex="-1"></a>                </span>
-<span id="cb13-128"><a href="#cb13-128" tabindex="-1"></a>                Emigrantes <span class="ot">&lt;-</span> <span class="fu">left_join</span>(MUN <span class="sc">%&gt;%</span> <span class="fu">select</span>(CVE_MUN), </span>
-<span id="cb13-129"><a href="#cb13-129" tabindex="-1"></a>                                         purrr<span class="sc">::</span><span class="fu">reduce</span>(p, dplyr<span class="sc">::</span>full_join, <span class="at">by =</span> <span class="st">&#39;CVE_MUN&#39;</span>), <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-130"><a href="#cb13-130" tabindex="-1"></a>                                   <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
-<span id="cb13-131"><a href="#cb13-131" tabindex="-1"></a>                                                <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
-<span id="cb13-132"><a href="#cb13-132" tabindex="-1"></a>                                                 <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-133"><a href="#cb13-133" tabindex="-1"></a>                                    <span class="fu">adorn_percentages</span>(<span class="at">denominator =</span> <span class="st">&quot;row&quot;</span>) </span>
-<span id="cb13-134"><a href="#cb13-134" tabindex="-1"></a>                </span>
-<span id="cb13-135"><a href="#cb13-135" tabindex="-1"></a>               <span class="co"># Tabla de resultados</span></span>
-<span id="cb13-136"><a href="#cb13-136" tabindex="-1"></a>                Resultados <span class="ot">&lt;-</span> Pob.Total <span class="sc">%&gt;%</span></span>
-<span id="cb13-137"><a href="#cb13-137" tabindex="-1"></a>                               <span class="fu">full_join</span>(., Pob.Objetivo, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-138"><a href="#cb13-138" tabindex="-1"></a>                               <span class="fu">full_join</span>(., Residentes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-139"><a href="#cb13-139" tabindex="-1"></a>                               <span class="fu">full_join</span>(., Inmigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-140"><a href="#cb13-140" tabindex="-1"></a>                               <span class="fu">full_join</span>(., Emigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>)) </span>
-<span id="cb13-141"><a href="#cb13-141" tabindex="-1"></a>                <span class="fu">return</span>(Resultados)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>Indicadores_P <span class="ot">&lt;-</span> <span class="cf">function</span>(Variable){</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>                  <span class="co"># Municipios</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>                  <span class="do">### Municipios que no pertenecen en la muestra</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>                  municipios_nomuestra <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;004012&quot;</span>, <span class="st">&quot;007125&quot;</span>, <span class="st">&quot;029048&quot;</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>                  </span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>                  <span class="co">#Clave de los municipios 2020 </span></span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>                  municipios <span class="ot">&lt;-</span> MUN <span class="sc">%&gt;%</span></span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>                                 <span class="fu">select</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>                                  <span class="fu">unique</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>                                   <span class="fu">filter</span>(CVE_MUN <span class="sc">%nin%</span> municipios_nomuestra) <span class="sc">%&gt;%</span></span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>                                    <span class="fu">pull</span>(CVE_MUN)</span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>                  </span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>                  <span class="co"># Estados </span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>                  estados <span class="ot">&lt;-</span> ENT <span class="sc">%&gt;%</span> <span class="fu">pull</span>(CVE_ENT)</span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a>  </span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>                  <span class="co"># Variable que se dese analizar</span></span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>                  X <span class="ot">&lt;-</span> <span class="fu">get_values</span>(data[, <span class="fu">paste</span>(Variable)], <span class="at">drop.na =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>                        <span class="fu">unlist</span>()</span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a>                  <span class="co"># Etiquetas para las columnnas</span></span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>                  etiquetas <span class="ot">&lt;-</span> <span class="fu">get_labels</span>(data[, <span class="fu">paste</span>(Variable)], <span class="at">drop.na =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a>                                <span class="fu">unlist</span>()</span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a>  </span>
+<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a>                  <span class="co"># Población total</span></span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a>                  Pob.Total <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a>                                <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a>                                 <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
+<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a>                                  <span class="fu">group_by</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
+<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a>                                   <span class="fu">summarise</span>(<span class="at">Pob.Total =</span> <span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a>                                    <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-35"><a href="#cb13-35" tabindex="-1"></a>                                     <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
+<span id="cb13-36"><a href="#cb13-36" tabindex="-1"></a>                                                  <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
+<span id="cb13-37"><a href="#cb13-37" tabindex="-1"></a>                                                   <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb13-38"><a href="#cb13-38" tabindex="-1"></a>                  </span>
+<span id="cb13-39"><a href="#cb13-39" tabindex="-1"></a>                  <span class="co">#Población desagregada</span></span>
+<span id="cb13-40"><a href="#cb13-40" tabindex="-1"></a>                   <span class="co"># Filtro de la población desagregada</span></span>
+<span id="cb13-41"><a href="#cb13-41" tabindex="-1"></a>                  p <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(X), <span class="cf">function</span>(x){</span>
+<span id="cb13-42"><a href="#cb13-42" tabindex="-1"></a>                                   Var <span class="ot">&lt;-</span> X[x]   </span>
+<span id="cb13-43"><a href="#cb13-43" tabindex="-1"></a>                                    data <span class="sc">%&gt;%</span></span>
+<span id="cb13-44"><a href="#cb13-44" tabindex="-1"></a>                                     <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-45"><a href="#cb13-45" tabindex="-1"></a>                                      <span class="fu">mutate</span>(<span class="at">EDAD =</span> <span class="fu">as.numeric</span>(.<span class="sc">$</span>EDAD)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-46"><a href="#cb13-46" tabindex="-1"></a>                                       <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span> <span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-47"><a href="#cb13-47" tabindex="-1"></a>                                        <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
+<span id="cb13-48"><a href="#cb13-48" tabindex="-1"></a>                                         <span class="fu">filter</span>(CVE_MUN_RES <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
+<span id="cb13-49"><a href="#cb13-49" tabindex="-1"></a>                                          <span class="fu">filter</span>(<span class="fu">get</span>(Variable) <span class="sc">%in%</span> Var) <span class="sc">%&gt;%</span></span>
+<span id="cb13-50"><a href="#cb13-50" tabindex="-1"></a>                                           <span class="fu">group_by</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
+<span id="cb13-51"><a href="#cb13-51" tabindex="-1"></a>                                            <span class="fu">summarise</span>(<span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-52"><a href="#cb13-52" tabindex="-1"></a>                                             <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>, <span class="fu">paste0</span>(<span class="st">&quot;Pob_&quot;</span>, etiquetas[x])))</span>
+<span id="cb13-53"><a href="#cb13-53" tabindex="-1"></a>                    }, <span class="at">simplify =</span> <span class="cn">FALSE</span></span>
+<span id="cb13-54"><a href="#cb13-54" tabindex="-1"></a>                  )</span>
+<span id="cb13-55"><a href="#cb13-55" tabindex="-1"></a>                  </span>
+<span id="cb13-56"><a href="#cb13-56" tabindex="-1"></a>                  Pob.Objetivo <span class="ot">&lt;-</span> <span class="fu">left_join</span>(MUN <span class="sc">%&gt;%</span> <span class="fu">select</span>(CVE_MUN), </span>
+<span id="cb13-57"><a href="#cb13-57" tabindex="-1"></a>                                            purrr<span class="sc">::</span><span class="fu">reduce</span>(p, dplyr<span class="sc">::</span>full_join, <span class="at">by =</span> <span class="st">&#39;CVE_MUN&#39;</span>), <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-58"><a href="#cb13-58" tabindex="-1"></a>                                     <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
+<span id="cb13-59"><a href="#cb13-59" tabindex="-1"></a>                                                  <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
+<span id="cb13-60"><a href="#cb13-60" tabindex="-1"></a>                                                   <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-61"><a href="#cb13-61" tabindex="-1"></a>                                      <span class="fu">adorn_percentages</span>(<span class="at">denominator =</span> <span class="st">&quot;row&quot;</span>) </span>
+<span id="cb13-62"><a href="#cb13-62" tabindex="-1"></a>  </span>
+<span id="cb13-63"><a href="#cb13-63" tabindex="-1"></a>                  <span class="co"># Población residente </span></span>
+<span id="cb13-64"><a href="#cb13-64" tabindex="-1"></a>                  p <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(X), <span class="cf">function</span>(x){</span>
+<span id="cb13-65"><a href="#cb13-65" tabindex="-1"></a>                                   Var <span class="ot">&lt;-</span> X[x]     </span>
+<span id="cb13-66"><a href="#cb13-66" tabindex="-1"></a>                                    data <span class="sc">%&gt;%</span></span>
+<span id="cb13-67"><a href="#cb13-67" tabindex="-1"></a>                                     <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-68"><a href="#cb13-68" tabindex="-1"></a>                                      <span class="fu">mutate</span>(<span class="at">EDAD =</span> <span class="fu">as.numeric</span>(.<span class="sc">$</span>EDAD)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-69"><a href="#cb13-69" tabindex="-1"></a>                                       <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span> <span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-70"><a href="#cb13-70" tabindex="-1"></a>                                        <span class="fu">filter</span>(CVE_MUN <span class="sc">==</span> CVE_MUN_RES)<span class="sc">%&gt;%</span></span>
+<span id="cb13-71"><a href="#cb13-71" tabindex="-1"></a>                                         <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
+<span id="cb13-72"><a href="#cb13-72" tabindex="-1"></a>                                          <span class="fu">filter</span>(CVE_MUN_RES <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
+<span id="cb13-73"><a href="#cb13-73" tabindex="-1"></a>                                           <span class="fu">filter</span>(<span class="fu">get</span>(Variable) <span class="sc">%in%</span> Var) <span class="sc">%&gt;%</span></span>
+<span id="cb13-74"><a href="#cb13-74" tabindex="-1"></a>                                            <span class="fu">group_by</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
+<span id="cb13-75"><a href="#cb13-75" tabindex="-1"></a>                                             <span class="fu">summarise</span>(<span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-76"><a href="#cb13-76" tabindex="-1"></a>                                              <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>, <span class="fu">paste0</span>(<span class="st">&quot;Residentes_&quot;</span>, etiquetas[x])))</span>
+<span id="cb13-77"><a href="#cb13-77" tabindex="-1"></a>                    }, <span class="at">simplify =</span> <span class="cn">FALSE</span></span>
+<span id="cb13-78"><a href="#cb13-78" tabindex="-1"></a>                  )</span>
+<span id="cb13-79"><a href="#cb13-79" tabindex="-1"></a>  </span>
+<span id="cb13-80"><a href="#cb13-80" tabindex="-1"></a>                  Residentes <span class="ot">&lt;-</span> <span class="fu">left_join</span>(MUN <span class="sc">%&gt;%</span> <span class="fu">select</span>(CVE_MUN),</span>
+<span id="cb13-81"><a href="#cb13-81" tabindex="-1"></a>                                           purrr<span class="sc">::</span><span class="fu">reduce</span>(p, dplyr<span class="sc">::</span>full_join, <span class="at">by =</span> <span class="st">&#39;CVE_MUN&#39;</span>), <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-82"><a href="#cb13-82" tabindex="-1"></a>                                     <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
+<span id="cb13-83"><a href="#cb13-83" tabindex="-1"></a>                                                  <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
+<span id="cb13-84"><a href="#cb13-84" tabindex="-1"></a>                                                   <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-85"><a href="#cb13-85" tabindex="-1"></a>                                      <span class="fu">adorn_percentages</span>(<span class="at">denominator =</span> <span class="st">&quot;row&quot;</span>) </span>
+<span id="cb13-86"><a href="#cb13-86" tabindex="-1"></a>                  </span>
+<span id="cb13-87"><a href="#cb13-87" tabindex="-1"></a>                  <span class="co"># Población Inmigrante</span></span>
+<span id="cb13-88"><a href="#cb13-88" tabindex="-1"></a>                  p <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(X), <span class="cf">function</span>(x){</span>
+<span id="cb13-89"><a href="#cb13-89" tabindex="-1"></a>                                   Var <span class="ot">&lt;-</span> X[x]      </span>
+<span id="cb13-90"><a href="#cb13-90" tabindex="-1"></a>                                    data <span class="sc">%&gt;%</span></span>
+<span id="cb13-91"><a href="#cb13-91" tabindex="-1"></a>                                     <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-92"><a href="#cb13-92" tabindex="-1"></a>                                      <span class="fu">mutate</span>(<span class="at">EDAD =</span> <span class="fu">as.numeric</span>(.<span class="sc">$</span>EDAD)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-93"><a href="#cb13-93" tabindex="-1"></a>                                       <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span> <span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-94"><a href="#cb13-94" tabindex="-1"></a>                                        <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES) <span class="sc">%&gt;%</span></span>
+<span id="cb13-95"><a href="#cb13-95" tabindex="-1"></a>                                         <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
+<span id="cb13-96"><a href="#cb13-96" tabindex="-1"></a>                                          <span class="fu">filter</span>(CVE_MUN_RES <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
+<span id="cb13-97"><a href="#cb13-97" tabindex="-1"></a>                                           <span class="fu">filter</span>(<span class="fu">get</span>(Variable) <span class="sc">%in%</span> Var) <span class="sc">%&gt;%</span></span>
+<span id="cb13-98"><a href="#cb13-98" tabindex="-1"></a>                                            <span class="fu">group_by</span>(CVE_MUN) <span class="sc">%&gt;%</span></span>
+<span id="cb13-99"><a href="#cb13-99" tabindex="-1"></a>                                             <span class="fu">summarise</span>(<span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-100"><a href="#cb13-100" tabindex="-1"></a>                                              <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>, <span class="fu">paste0</span>(<span class="st">&quot;Inmigrantes_&quot;</span>, etiquetas[x])))</span>
+<span id="cb13-101"><a href="#cb13-101" tabindex="-1"></a>                    }, <span class="at">simplify =</span> <span class="cn">FALSE</span></span>
+<span id="cb13-102"><a href="#cb13-102" tabindex="-1"></a>                  )</span>
+<span id="cb13-103"><a href="#cb13-103" tabindex="-1"></a>                  </span>
+<span id="cb13-104"><a href="#cb13-104" tabindex="-1"></a>                  Inmigrantes <span class="ot">&lt;-</span> <span class="fu">left_join</span>(MUN <span class="sc">%&gt;%</span> <span class="fu">select</span>(CVE_MUN),</span>
+<span id="cb13-105"><a href="#cb13-105" tabindex="-1"></a>                                            purrr<span class="sc">::</span><span class="fu">reduce</span>(p, dplyr<span class="sc">::</span>full_join, <span class="at">by =</span> <span class="st">&#39;CVE_MUN&#39;</span>), <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-106"><a href="#cb13-106" tabindex="-1"></a>                                     <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
+<span id="cb13-107"><a href="#cb13-107" tabindex="-1"></a>                                                  <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
+<span id="cb13-108"><a href="#cb13-108" tabindex="-1"></a>                                                   <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-109"><a href="#cb13-109" tabindex="-1"></a>                                      <span class="fu">adorn_percentages</span>(<span class="at">denominator =</span> <span class="st">&quot;row&quot;</span>) </span>
+<span id="cb13-110"><a href="#cb13-110" tabindex="-1"></a>                 </span>
+<span id="cb13-111"><a href="#cb13-111" tabindex="-1"></a>                  <span class="co"># Población Emigrante</span></span>
+<span id="cb13-112"><a href="#cb13-112" tabindex="-1"></a>                  p <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(X), <span class="cf">function</span>(x){</span>
+<span id="cb13-113"><a href="#cb13-113" tabindex="-1"></a>                                   Var <span class="ot">&lt;-</span> X[x]      </span>
+<span id="cb13-114"><a href="#cb13-114" tabindex="-1"></a>                                    data <span class="sc">%&gt;%</span></span>
+<span id="cb13-115"><a href="#cb13-115" tabindex="-1"></a>                                     <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb13-116"><a href="#cb13-116" tabindex="-1"></a>                                      <span class="fu">mutate</span>(<span class="at">EDAD =</span> <span class="fu">as.numeric</span>(.<span class="sc">$</span>EDAD)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-117"><a href="#cb13-117" tabindex="-1"></a>                                       <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span> <span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-118"><a href="#cb13-118" tabindex="-1"></a>                                        <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES) <span class="sc">%&gt;%</span></span>
+<span id="cb13-119"><a href="#cb13-119" tabindex="-1"></a>                                         <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
+<span id="cb13-120"><a href="#cb13-120" tabindex="-1"></a>                                          <span class="fu">filter</span>(CVE_MUN_RES <span class="sc">%in%</span> municipios) <span class="sc">%&gt;%</span></span>
+<span id="cb13-121"><a href="#cb13-121" tabindex="-1"></a>                                           <span class="fu">filter</span>(<span class="fu">get</span>(Variable) <span class="sc">%in%</span> Var) <span class="sc">%&gt;%</span></span>
+<span id="cb13-122"><a href="#cb13-122" tabindex="-1"></a>                                            <span class="fu">group_by</span>(CVE_MUN_RES) <span class="sc">%&gt;%</span></span>
+<span id="cb13-123"><a href="#cb13-123" tabindex="-1"></a>                                             <span class="fu">summarise</span>(<span class="fu">sum</span>(FACTOR, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-124"><a href="#cb13-124" tabindex="-1"></a>                                              <span class="fu">set_names</span>(<span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>, <span class="fu">paste0</span>(<span class="st">&quot;Emigrantes_&quot;</span>, etiquetas[x])))</span>
+<span id="cb13-125"><a href="#cb13-125" tabindex="-1"></a>                    }, <span class="at">simplify =</span> <span class="cn">FALSE</span></span>
+<span id="cb13-126"><a href="#cb13-126" tabindex="-1"></a>                  )</span>
+<span id="cb13-127"><a href="#cb13-127" tabindex="-1"></a>                  </span>
+<span id="cb13-128"><a href="#cb13-128" tabindex="-1"></a>                  Emigrantes <span class="ot">&lt;-</span> <span class="fu">left_join</span>(MUN <span class="sc">%&gt;%</span> <span class="fu">select</span>(CVE_MUN), </span>
+<span id="cb13-129"><a href="#cb13-129" tabindex="-1"></a>                                           purrr<span class="sc">::</span><span class="fu">reduce</span>(p, dplyr<span class="sc">::</span>full_join, <span class="at">by =</span> <span class="st">&#39;CVE_MUN&#39;</span>), <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-130"><a href="#cb13-130" tabindex="-1"></a>                                     <span class="fu">adorn_totals</span>(<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>), </span>
+<span id="cb13-131"><a href="#cb13-131" tabindex="-1"></a>                                                  <span class="at">fill =</span> <span class="st">&quot;-&quot;</span>, </span>
+<span id="cb13-132"><a href="#cb13-132" tabindex="-1"></a>                                                   <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-133"><a href="#cb13-133" tabindex="-1"></a>                                      <span class="fu">adorn_percentages</span>(<span class="at">denominator =</span> <span class="st">&quot;row&quot;</span>) </span>
+<span id="cb13-134"><a href="#cb13-134" tabindex="-1"></a>                  </span>
+<span id="cb13-135"><a href="#cb13-135" tabindex="-1"></a>                 <span class="co"># Tabla de resultados</span></span>
+<span id="cb13-136"><a href="#cb13-136" tabindex="-1"></a>                  Resultados <span class="ot">&lt;-</span> Pob.Total <span class="sc">%&gt;%</span></span>
+<span id="cb13-137"><a href="#cb13-137" tabindex="-1"></a>                                 <span class="fu">full_join</span>(., Pob.Objetivo, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-138"><a href="#cb13-138" tabindex="-1"></a>                                 <span class="fu">full_join</span>(., Residentes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-139"><a href="#cb13-139" tabindex="-1"></a>                                 <span class="fu">full_join</span>(., Inmigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-140"><a href="#cb13-140" tabindex="-1"></a>                                 <span class="fu">full_join</span>(., Emigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_MUN&quot;</span>)) </span>
+<span id="cb13-141"><a href="#cb13-141" tabindex="-1"></a>                  <span class="fu">return</span>(Resultados)</span>
 <span id="cb13-142"><a href="#cb13-142" tabindex="-1"></a>}</span>
 <span id="cb13-143"><a href="#cb13-143" tabindex="-1"></a><span class="co">#tabla &lt;- Indicadores(&quot;SEXO&quot;)</span></span></code></pre></div>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r fold-show"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">require</span>(openxlsx)</span>
@@ -2453,7 +2453,13 @@ Ampliado.</p>
 <span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a><span class="fu">writeData</span>(wb, <span class="dv">10</span>, <span class="fu">Indicadores_P</span>(<span class="st">&quot;SITUA_CONYUGAL&quot;</span>), <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a><span class="fu">writeData</span>(wb, <span class="dv">11</span>, <span class="fu">Indicadores_P</span>(<span class="st">&quot;NIVACAD&quot;</span>), <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a><span class="fu">writeData</span>(wb, <span class="dv">12</span>, <span class="fu">Indicadores_P</span>(<span class="st">&quot;G_ESCOACUM&quot;</span>), <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="fu">saveWorkbook</span>(wb, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/01_Migracion reciente/2020/SDEM/Indicadores sociodemograficos a nivel estatal 2020_Porcentajes.xlsx&quot;</span>), <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="fu">saveWorkbook</span>(wb, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/01_Migracion reciente/2020/SDEM/Indicadores sociodemograficos a nivel municipal 2020_Porcentajes.xlsx&quot;</span>), <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+</div>
+<div id="nivel-estatal-1" class="section level3 tabset tabset-pills">
+<h3 class="tabset tabset-pills">Nivel estatal</h3>
+<div id="valores-absolutos-2" class="section level4">
+<h4>Valores absolutos</h4>
 </div>
 </div>
 </div>
