@@ -178,7 +178,7 @@ Se asignan las claves de las zonas metropolitanas de acuerdo a las diferentes va
 ```{r, eval = FALSE}
 mydata <- mydata %>%
            rename("CVE_MUN_RES" = "CVE_MUN_RES15") %>%
-          # Zonas Metropolitanas por residenicia
+            # Zonas Metropolitanas por residenicia
             left_join(., ZM_2020 %>% select(-CVE_ENT), by = c("CVE_MUN")) %>%
             # Zonas Metropolitanas en el lugar de residencia hace 5 años
              left_join(., ZM_2020 %>% select(-CVE_ENT, -NOM_ENT, -NOM_MUN) %>% 
