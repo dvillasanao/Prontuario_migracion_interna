@@ -1209,8 +1209,7 @@ Indicadores_P <- function(Variable){
                                     ungroup() %>%
                                      adorn_totals(c("row"), 
                                                   fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
+                                                   na.rm = TRUE) 
                   
                   #Población desagregada
                    # Filtro de la población desagregada
@@ -1231,10 +1230,9 @@ Indicadores_P <- function(Variable){
                   
                   Pob.Objetivo <- left_join(ENT %>% select(CVE_ENT), 
                                             purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                na.rm = TRUE) 
   
                   # Población residente 
                   p <- sapply(1:length(X), function(x){
@@ -1255,10 +1253,10 @@ Indicadores_P <- function(Variable){
   
                   Residentes <- left_join(ENT %>% select(CVE_ENT), 
                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
+                                 adorn_totals(c("row"), 
+                                              fill = "-", 
+                                              na.rm = TRUE) %>%
+                                  adorn_percentages(denominator = "row") 
                   
                   # Población Inmigrante
                   p <- sapply(1:length(X), function(x){
@@ -1279,10 +1277,10 @@ Indicadores_P <- function(Variable){
                   
                   Inmigrantes <- left_join(ENT %>% select(CVE_ENT), 
                                             purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
+                                  adorn_totals(c("row"), 
+                                               fill = "-", 
+                                               na.rm = TRUE) %>%
+                                   adorn_percentages(denominator = "row") 
                  
                   # Población Emigrante
                   p <- sapply(1:length(X), function(x){
@@ -1303,10 +1301,10 @@ Indicadores_P <- function(Variable){
                   
                   Emigrantes <- left_join(ENT %>% select(CVE_ENT), 
                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
+                                 adorn_totals(c("row"), 
+                                              fill = "-", 
+                                              na.rm = TRUE) %>%
+                                  adorn_percentages(denominator = "row") 
                   
                  # Tabla de resultados
                   Resultados <- Pob.Total %>%
