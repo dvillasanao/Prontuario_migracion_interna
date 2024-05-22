@@ -659,7 +659,7 @@ Indicadores <- function(Variable){
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                                       filter(CVE_MUN %in% municipios) %>%
-                                       filter(CVE_MUN_RES %in% municipios) %>%
+                                       filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                         filter(get(Variable) %in% Var) %>%
                                          group_by(CVE_MUN) %>%
                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -680,9 +680,9 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN == CVE_MUN_RES)%>%
+                                      filter(CVE_MUN == CVE_MUN_TRABAJO)%>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
                                           group_by(CVE_MUN) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -703,9 +703,9 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
                                           group_by(CVE_MUN) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -726,11 +726,11 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_MUN_RES) %>%
+                                          group_by(CVE_MUN_TRABAJO) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
                                             set_names(c("CVE_MUN", paste0("Emigrantes_", etiquetas[x])))
                   }, simplify = FALSE
@@ -843,7 +843,7 @@ Indicadores_P <- function(Variable){
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                                         filter(CVE_MUN %in% municipios) %>%
-                                         filter(CVE_MUN_RES %in% municipios) %>%
+                                         filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                           filter(get(Variable) %in% Var) %>%
                                            group_by(CVE_MUN) %>%
                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -865,9 +865,9 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN == CVE_MUN_RES)%>%
+                                        filter(CVE_MUN == CVE_MUN_TRABAJO)%>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
                                             group_by(CVE_MUN) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -889,9 +889,9 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
+                                        filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
                                             group_by(CVE_MUN) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -913,11 +913,11 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
+                                        filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_MUN_RES) %>%
+                                            group_by(CVE_MUN_TRABAJO) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
                                               set_names(c("CVE_MUN", paste0("Emigrantes_", etiquetas[x])))
                     }, simplify = FALSE
@@ -1033,7 +1033,7 @@ Indicadores <- function(Variable){
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                                       filter(CVE_MUN %in% municipios) %>%
-                                       filter(CVE_MUN_RES %in% municipios) %>%
+                                       filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                         filter(get(Variable) %in% Var) %>%
                                          group_by(CVE_ENT) %>%
                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1054,9 +1054,9 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN == CVE_MUN_RES)%>%
+                                      filter(CVE_MUN == CVE_MUN_TRABAJO)%>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
                                           group_by(CVE_ENT) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1077,9 +1077,9 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
                                           group_by(CVE_ENT) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1100,11 +1100,11 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
-                                          group_by(ENT_PAIS_RES_5A) %>%
+                                          group_by(ENT_PAIS_TRAB) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
                                             set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
                   }, simplify = FALSE
@@ -1218,7 +1218,7 @@ Indicadores_P <- function(Variable){
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                                         filter(CVE_MUN %in% municipios) %>%
-                                         filter(CVE_MUN_RES %in% municipios) %>%
+                                         filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                           filter(get(Variable) %in% Var) %>%
                                            group_by(CVE_ENT) %>%
                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1240,9 +1240,9 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN == CVE_MUN_RES)%>%
+                                        filter(CVE_MUN == CVE_MUN_TRABAJO)%>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
                                             group_by(CVE_ENT) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1264,9 +1264,9 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
+                                        filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
                                             group_by(CVE_ENT) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1288,11 +1288,11 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
+                                        filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
-                                            group_by(ENT_PAIS_RES_5A) %>%
+                                            group_by(ENT_PAIS_TRAB) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
                                               set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
                     }, simplify = FALSE
@@ -1412,7 +1412,7 @@ Indicadores <- function(Variable){
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                                       filter(CVE_MUN %in% municipios) %>%
-                                       filter(CVE_MUN_RES %in% municipios) %>%
+                                       filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                         filter(get(Variable) %in% Var) %>%
                                          group_by(CVE_ENT) %>%
                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1433,9 +1433,9 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN == CVE_MUN_RES)%>%
+                                      filter(CVE_MUN == CVE_MUN_TRABAJO)%>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
                                           group_by(CVE_ENT) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1456,9 +1456,9 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
                                           group_by(CVE_ENT) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1479,11 +1479,11 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
-                                          group_by(ENT_PAIS_RES_5A) %>%
+                                          group_by(ENT_PAIS_TRAB) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
                                             set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
                   }, simplify = FALSE
@@ -1602,7 +1602,7 @@ Indicadores_P <- function(Variable){
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                                         filter(CVE_MUN %in% municipios) %>%
-                                         filter(CVE_MUN_RES %in% municipios) %>%
+                                         filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                           filter(get(Variable) %in% Var) %>%
                                            group_by(CVE_ENT) %>%
                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1624,9 +1624,9 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN == CVE_MUN_RES)%>%
+                                        filter(CVE_MUN == CVE_MUN_TRABAJO)%>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
                                             group_by(CVE_ENT) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1648,9 +1648,9 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
+                                        filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
                                             group_by(CVE_ENT) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1672,11 +1672,11 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
+                                        filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
-                                            group_by(ENT_PAIS_RES_5A) %>%
+                                            group_by(ENT_PAIS_TRAB) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
                                               set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
                     }, simplify = FALSE
@@ -1797,7 +1797,7 @@ Indicadores <- function(Variable){
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                                       filter(CVE_MUN %in% municipios) %>%
-                                       filter(CVE_MUN_RES %in% municipios) %>%
+                                       filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                         filter(get(Variable) %in% Var) %>%
                                          group_by(CVE_ENT) %>%
                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1818,9 +1818,9 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN == CVE_MUN_RES)%>%
+                                      filter(CVE_MUN == CVE_MUN_TRABAJO)%>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
                                           group_by(CVE_ENT) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1841,9 +1841,9 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
                                           group_by(CVE_ENT) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -1864,11 +1864,11 @@ Indicadores <- function(Variable){
                                    as.data.frame() %>%
                                     mutate(EDAD = as.numeric(.$EDAD)) %>%
                                      subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                        filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                          filter(get(Variable) %in% Var) %>%
-                                          group_by(ENT_PAIS_RES_5A) %>%
+                                          group_by(ENT_PAIS_TRAB) %>%
                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
                                             set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
                   }, simplify = FALSE
@@ -1985,7 +1985,7 @@ Indicadores_P <- function(Variable){
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                                         filter(CVE_MUN %in% municipios) %>%
-                                         filter(CVE_MUN_RES %in% municipios) %>%
+                                         filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                           filter(get(Variable) %in% Var) %>%
                                            group_by(CVE_ENT) %>%
                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -2007,9 +2007,9 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN == CVE_MUN_RES)%>%
+                                        filter(CVE_MUN == CVE_MUN_TRABAJO)%>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
                                             group_by(CVE_ENT) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -2031,9 +2031,9 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
+                                        filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
                                             group_by(CVE_ENT) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
@@ -2055,11 +2055,11 @@ Indicadores_P <- function(Variable){
                                      as.data.frame() %>%
                                       mutate(EDAD = as.numeric(.$EDAD)) %>%
                                        subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
+                                        filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
                                          filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
+                                          filter(CVE_MUN_TRABAJO %in% municipios) %>%
                                            filter(get(Variable) %in% Var) %>%
-                                            group_by(ENT_PAIS_RES_5A) %>%
+                                            group_by(ENT_PAIS_TRAB) %>%
                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
                                               set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
                     }, simplify = FALSE
