@@ -78,25 +78,24 @@ rm(list = ls())
 setwd(here::here())
 ```
 
-
 ```{r, echo=FALSE}
 #Font Stlye
 require(showtext)
 library(extrafont)
 # activar showtext
-showtext_auto()
-#font_add_google("Montserrat", "montserrat")
-#font_add_google("Raleway", "Raleway")
-loadfonts(device = "win")
-font.add("montserrat", regular = 'C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/Montserrat-Light.ttf')
+# SE cargan las funtes del sitema Windows (Pero tarda en correr)
+#ttf_import('C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/')
+#fonts()
+#extrafont::loadfonts(device = "win")
+#font_import()
+windowsFonts()
 ```
-
-
 
 ```{r, echo = FALSE}
 # Librerías que se usaron en el documCVE_ENTo
 require(chorddiag)
 require(circlize)
+require(Cairo)
 require(haven)
 require(Hmisc) # %nin%
 require(dplyr)
@@ -114,8 +113,77 @@ require(ggpubr)
 require(ggalluvial)
 require(ggsankey)
 require(ggrepel)
+require(janitor)
 require(tibble)
 require(tidyr)
 require(reshape2)
 require(openxlsx)
+require(rlang)
+require(doMC)
+registerDoMC(cores = 18)
+```
+
+**Cuestionario Ampliado del Censo de Población y Vivienda 2020**
+
+El cuestionario ampliado se guarda en un un archivo `.RData`. 
+
+```{r, eval = FALSE}
+data <- read_sav("~/Personas_Censo 2020.SAV")
+
+save(data, 
+      file = paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
+```
+
+
+✔️A partir de aquí se pueden correr los códidos 👇.
+Se carga el archivo `Migracion por Zonas Metropolitanas_2020.RData`.   
+
+```{r}
+load(file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2020.RData"))
+
+# Para fines prácticos se genera un ponderador de uno 
+mydata <- mydata %>%
+           mutate(M = 1)  %>%
+            mutate(NOM_ENT = as.factor(.$CVE_ENT)) %>%
+             ungroup()
+
+# Se vuelve a cargar la base de datos para fines practicos
+ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"), 
+                      startRow = 7, 
+                       skipEmptyRows = TRUE) %>%
+            mutate(CVE_ENT = stringr::str_pad(.$CVE_ENT, width = 3, side = c("left"), pad = "0"),
+                   CVE_MUN = stringr::str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0"))
+```
+
+
+**Entidades y Municipios**
+
+Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento.     
+Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.     
+Se genera un vector con las claves de los municipios, pero es importante hacer notar que tres municipios no entraron el muestreo del Cuestionario Ampliado.   
+
+```{r}
+# Claves de los municipios
+estados <- sjlabelled::get_labels(mydata$CVE_ENT)
+nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza", "Colima", 
+                  "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",        
+                  "México", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", 
+                  "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", 
+                  "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas")
+est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO",
+         "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", 
+         "TAMS", "TLX", "VER", "YUC", "ZAC")
+
+# Claves de los estados
+ENT <- readRDS(file = paste0(here::here(), "/Bases/estados.RDS"))
+
+# Claves de los municipios
+MUN <- readRDS(paste0(here::here(), "/Bases/municipios_2020.RDS"))
+nom_municipios <- sjlabelled::get_labels(MUN$NOM_MUN) %>% as.factor()
+municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
+#saveRDS(MUN, file = paste0(here::here(), "/Bases/municipios_2020.RDS"))
+
+# Claves de las zonas metropolitanas
+zm <- sjlabelled::get_labels(mydata$CVE_ZM)[-2]
+nom_zm <- sjlabelled::get_labels(mydata$NOM_ZM)[-2]
 ```
