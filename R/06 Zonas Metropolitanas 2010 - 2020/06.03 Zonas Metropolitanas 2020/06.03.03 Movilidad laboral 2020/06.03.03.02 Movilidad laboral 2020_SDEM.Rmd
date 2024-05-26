@@ -187,3 +187,1205 @@ municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 zm <- sjlabelled::get_labels(mydata$CVE_ZM)[-2]
 nom_zm <- sjlabelled::get_labels(mydata$NOM_ZM)[-2]
 ```
+
+**Se reclasifican algunas variables**
+
+```{r}
+data <- mydata %>%
+         mutate(PE = case_when(.$CONACT %in% c("10", "13", "14", "15", "16", "17", "18", "19", "20") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 1,
+                               .$CONACT %in% c("30", "40", "50", "60", "70", "80") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 2,
+                               .$CONACT %in% c("99") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 99)) %>%
+         mutate(PE = labelled(x = .$PE, 
+                                  labels = c(`Población economicamente activa` = 1,
+                                             `Población no economicamente activa` = 2,
+                                             `No especificado` = 99))) %>%
+         mutate(ESCOACUM = stringr::str_pad(.$ESCOACUM, width = 2, side = c("left"), pad = "0")) %>%
+         mutate(G_ESCOACUM = case_when(.$ESCOACUM %in% c("00", "01", "02", "03", "04") ~ 1,
+                                       .$ESCOACUM %in% c("05", "06", "07", "08") ~ 2,
+                                       .$ESCOACUM %in% c("09", "10", "11") ~ 3,
+                                       .$ESCOACUM %in% c("12", "13","14","15","16", "17", "18","19", "20", "21", "22", "23", "24") ~ 4)) %>%
+         mutate(G_ESCOACUM = labelled(x = .$G_ESCOACUM,
+                                     labels = c(`0 a 4` = 1,
+                                                `5 a 8` = 2,
+                                                `9 a 11` = 3,
+                                                `12 y más` = 4))) %>%
+         mutate(ESCOACUM = as.double(.$ESCOACUM)) %>%
+         mutate(ESCOACUM = labelled(x = .$ESCOACUM,
+                                     labels = c(`00` = 0, 
+                                                `01` = 1,
+                                                `02` = 2,
+                                                `03` = 3,
+                                                `04` = 4,
+                                                `05` = 5,
+                                                `06` = 6,
+                                                `07` = 7,
+                                                `08` = 8,
+                                                `09` = 9,
+                                                `10` = 10,
+                                                `11` = 11,
+                                                `12` = 12,
+                                                `13` = 13,
+                                                `14` = 14,
+                                                `15` = 15,
+                                                `16` = 16,
+                                                `17` = 17,
+                                                `18` = 18,
+                                                `19` = 19,
+                                                `20` = 20,
+                                                `21` = 21,
+                                                `22` = 22,
+                                                `23` = 23,
+                                                `24` = 24,
+                                                `99` = 99))) %>%
+         mutate(GEDAD = case_when(.$EDAD >= 5 & .$EDAD <= 14 ~ 1,
+                                  .$EDAD >= 15 & .$EDAD <= 29 ~ 2,
+                                  .$EDAD >= 30 & .$EDAD <= 59 ~ 3,
+                                  .$EDAD >= 60 & .$EDAD <= 130 ~ 4)) %>%
+          mutate(GEDAD = labelled(x = .$GEDAD, 
+                                  labels = c(`5 a 14 años` = 1,
+                                             `15 a 29 años` = 2,
+                                             `30 a 59 años` = 3, 
+                                             `60 años y más` = 4)))  %>%
+          # Se genera una indicadora de zm 
+          mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+                 I_TRAB_ZM_2020 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
+          # Se clasifican a los migrantes internos 
+          mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Trabajan en el mismo municipio
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
+                                  ))
+```
+
+
+# Nivel metropolitano {.tabset .tabset-pills}   
+ 
+## Indicadores sociodemográficos {.tabset .tabset-pills}   
+
+### Valores absolutos   
+
+```{r}
+Variable <- "SEXO"
+#Variable <- "NIVACAD"
+#Clave <- "20.01"
+#Clave <- "30.01"
+
+Indicadores <- function(Variable){
+               # Zonas metropolitanas
+                 ZM <- ZM_2020 %>%
+                        select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
+                         pull(CVE_MUN)
+                 
+                # Municipios
+                municipios <- MUN %>% pull(CVE_MUN)
+                
+                # Estados 
+                estados <- ENT %>% pull(CVE_ENT)
+
+                # Variable que se dese analizar
+                X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
+                      unlist()
+                # Etiquetas para las columnnas
+                etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
+                              unlist()
+
+                # Población total
+                Pob.Total <- data %>%
+                              as.data.frame() %>%
+                               filter(CVE_MUN %in% municipios) %>%
+                                group_by(CVE_ZM) %>%
+                                 summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
+                                  ungroup() %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                 na.rm = TRUE) 
+                
+                #Población desagregada
+                 # Filtro de la población desagregada
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]   
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN %in% municipios) %>%
+                                       filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                        filter(get(Variable) %in% Var) %>%
+                                         group_by(CVE_ZM) %>%
+                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                           set_names(c("CVE_ZM", paste0("Pob_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+                
+                Pob.Objetivo <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                 na.rm = TRUE) 
+
+                # Población residente 
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]     
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN == CVE_MUN_TRABAJO) %>%
+                                       filter(CVE_MUN %in% municipios) %>%
+                                        filter(get(Variable) %in% Var) %>%
+                                         group_by(CVE_ZM) %>%
+                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                           set_names(c("CVE_ZM", paste0("Residentes_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+
+                Residentes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                 na.rm = TRUE) 
+                
+                # Población Inmigrante
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]      
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                       filter(CVE_MUN %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                         filter(get(Variable) %in% Var) %>%
+                                          group_by(CVE_ZM) %>%
+                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                            set_names(c("CVE_ZM", paste0("Inmigrantes_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+                
+                Inmigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM),  
+                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                 na.rm = TRUE) 
+               
+                # Población Emigrante
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]      
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                       filter(CVE_MUN %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                         filter(get(Variable) %in% Var) %>%
+                                          group_by(CVE_ZM_TRABAJO) %>%
+                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                            set_names(c("CVE_ZM", paste0("Emigrantes_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+                
+                Emigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                 na.rm = TRUE) 
+                
+               # Tabla de resultados
+                Resultados <- Pob.Total %>%
+                               full_join(., Pob.Objetivo, by = c("CVE_ZM")) %>%
+                               full_join(., Residentes, by = c("CVE_ZM")) %>%
+                               full_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+                               full_join(., Emigrantes, by = c("CVE_ZM")) 
+                return(Resultados)
+}
+#tabla <- Indicadores("SEXO")
+```
+
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "SITTRA")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+addWorksheet(wb, "TIE_TRASLADO_TRAB")
+addWorksheet(wb, "MED_TRASLADO_TRAB1")
+addWorksheet(wb, "MED_TRASLADO_TRAB2")
+addWorksheet(wb, "MED_TRASLADO_TRAB3")
+writeData(wb, 1, Indicadores("SEXO"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT"), colNames = TRUE)
+writeData(wb, 4, Indicadores("SITTRA"), colNames = TRUE)
+writeData(wb, 5, Indicadores("PE"), colNames = TRUE)
+writeData(wb, 6, Indicadores("AFRODES"), colNames = TRUE)
+writeData(wb, 7, Indicadores("HLENGUA"), colNames = TRUE)
+writeData(wb, 8, Indicadores("PERTE_INDIGENA"), colNames = TRUE)
+writeData(wb, 9, Indicadores("ALFABET"), colNames = TRUE)
+writeData(wb, 10, Indicadores("CAUSA_MIG"), colNames = TRUE)
+writeData(wb, 11, Indicadores("SITUA_CONYUGAL"), colNames = TRUE)
+writeData(wb, 12, Indicadores("NIVACAD"), colNames = TRUE)
+writeData(wb, 13, Indicadores("G_ESCOACUM"), colNames = TRUE)
+writeData(wb, 14, Indicadores("TIE_TRASLADO_TRAB"), colNames = TRUE)
+writeData(wb, 15, Indicadores("MED_TRASLADO_TRAB1"), colNames = TRUE)
+writeData(wb, 16, Indicadores("MED_TRASLADO_TRAB2"), colNames = TRUE)
+writeData(wb, 17, Indicadores("MED_TRASLADO_TRAB3"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel metropolitano 2020.xlsx"), overwrite = TRUE)
+```
+
+
+### Valores relativos  
+
+```{r}
+Variable <- "SEXO"
+#Variable <- "NIVACAD"
+#Clave <- "20.01"
+#Clave <- "30.01"
+
+Indicadores_P <- function(Variable){
+                   # Zonas metropolitanas
+                     ZM <- ZM_2020 %>%
+                            select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
+                             pull(CVE_MUN)
+                     
+                    # Municipios
+                    municipios <- MUN %>% pull(CVE_MUN)
+                    
+                    # Estados 
+                    estados <- ENT %>% pull(CVE_ENT)
+    
+                    # Variable que se dese analizar
+                    X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
+                          unlist()
+                    # Etiquetas para las columnnas
+                    etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
+                                  unlist()
+    
+                    # Población total
+                    Pob.Total <- data %>%
+                                  as.data.frame() %>%
+                                   filter(CVE_MUN %in% municipios) %>%
+                                    group_by(CVE_ZM) %>%
+                                     summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
+                                      ungroup() %>%
+                                       adorn_totals(c("row"), 
+                                                    fill = "-", 
+                                                     na.rm = TRUE) 
+                    
+                    #Población desagregada
+                     # Filtro de la población desagregada
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]   
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN %in% municipios) %>%
+                                           filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                            filter(get(Variable) %in% Var) %>%
+                                             group_by(CVE_ZM) %>%
+                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                               set_names(c("CVE_ZM", paste0("Pob_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+                    
+                    Pob.Objetivo <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                              purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                     adorn_totals(c("row"), 
+                                                  fill = "-", 
+                                                  na.rm = TRUE) %>%
+                                      adorn_percentages(denominator = "row") 
+    
+                    # Población residente 
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]     
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN == CVE_MUN_TRABAJO) %>%
+                                           filter(CVE_MUN %in% municipios) %>%
+                                            filter(get(Variable) %in% Var) %>%
+                                             group_by(CVE_ZM) %>%
+                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                               set_names(c("CVE_ZM", paste0("Residentes_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+    
+                    Residentes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                na.rm = TRUE) %>%
+                                    adorn_percentages(denominator = "row") 
+                    
+                    # Población Inmigrante
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]      
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                           filter(CVE_MUN %in% municipios) %>%
+                                            filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                             filter(get(Variable) %in% Var) %>%
+                                              group_by(CVE_ZM) %>%
+                                               summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                                set_names(c("CVE_ZM", paste0("Inmigrantes_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+                    
+                    Inmigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM),  
+                                              purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                    adorn_totals(c("row"), 
+                                                 fill = "-", 
+                                                 na.rm = TRUE) %>%
+                                     adorn_percentages(denominator = "row")  
+                   
+                    # Población Emigrante
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]      
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                           filter(CVE_MUN %in% municipios) %>%
+                                            filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                             filter(get(Variable) %in% Var) %>%
+                                              group_by(CVE_ZM_TRABAJO) %>%
+                                               summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                                set_names(c("CVE_ZM", paste0("Emigrantes_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+                    
+                    Emigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                              purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                na.rm = TRUE) %>%
+                                    adorn_percentages(denominator = "row") 
+                    
+                   # Tabla de resultados
+                    Resultados <- Pob.Total %>%
+                                   full_join(., Pob.Objetivo, by = c("CVE_ZM")) %>%
+                                   full_join(., Residentes, by = c("CVE_ZM")) %>%
+                                   full_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+                                   full_join(., Emigrantes, by = c("CVE_ZM")) 
+                    return(Resultados)
+}
+#tabla <- Indicadores("SEXO")
+```
+
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "SITTRA")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+addWorksheet(wb, "TIE_TRASLADO_TRAB")
+addWorksheet(wb, "MED_TRASLADO_TRAB1")
+addWorksheet(wb, "MED_TRASLADO_TRAB2")
+addWorksheet(wb, "MED_TRASLADO_TRAB3")
+writeData(wb, 1, Indicadores_P("SEXO"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("SITTRA"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("PE"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("AFRODES"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("HLENGUA"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("PERTE_INDIGENA"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("ALFABET"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("CAUSA_MIG"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("SITUA_CONYUGAL"), colNames = TRUE)
+writeData(wb, 12, Indicadores_P("NIVACAD"), colNames = TRUE)
+writeData(wb, 13, Indicadores_P("G_ESCOACUM"), colNames = TRUE)
+writeData(wb, 14, Indicadores_P("TIE_TRASLADO_TRAB"), colNames = TRUE)
+writeData(wb, 15, Indicadores_P("MED_TRASLADO_TRAB1"), colNames = TRUE)
+writeData(wb, 16, Indicadores_P("MED_TRASLADO_TRAB2"), colNames = TRUE)
+writeData(wb, 17, Indicadores_P("MED_TRASLADO_TRAB3"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel metropolitano 2020_Porcentajes.xlsx"), overwrite = TRUE)
+```
+
+
+# Nivel intrametropolitano {.tabset .tabset-pills}   
+ 
+## Indicadores sociodemográficos {.tabset .tabset-pills}   
+
+### Valores absolutos   
+
+```{r}
+Variable <- "SEXO"
+#Variable <- "NIVACAD"
+#Clave <- "20.01"
+#Clave <- "30.01"
+
+Indicadores <- function(Variable){
+               # Filtro de la base de datos
+               data <- data %>%
+                        filter(.$I_ZM %in% "Pertenecen a la Zona Metropolitana") 
+               
+               # Zonas metropolitanas
+                 ZM <- ZM_2020 %>%
+                        select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
+                         pull(CVE_MUN)
+                 
+                # Municipios
+                municipios <- MUN %>% pull(CVE_MUN)
+                
+                # Estados 
+                estados <- ENT %>% pull(CVE_ENT)
+
+                # Variable que se dese analizar
+                X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
+                      unlist()
+                # Etiquetas para las columnnas
+                etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
+                              unlist()
+
+                # Población total
+                Pob.Total <- data %>%
+                              as.data.frame() %>%
+                               filter(CVE_MUN %in% municipios) %>%
+                                group_by(CVE_ZM) %>%
+                                 summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
+                                  ungroup() %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                 na.rm = TRUE) 
+                
+                #Población desagregada
+                 # Filtro de la población desagregada
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]   
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN %in% municipios) %>%
+                                       filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                        filter(get(Variable) %in% Var) %>%
+                                         group_by(CVE_ZM) %>%
+                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                           set_names(c("CVE_ZM", paste0("Pob_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+                
+                Pob.Objetivo <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                 adorn_totals(c("row"), 
+                                              fill = "-", 
+                                              na.rm = TRUE) 
+
+                # Población residente 
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]     
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN == CVE_MUN_TRABAJO) %>%
+                                       filter(CVE_MUN %in% municipios) %>%
+                                        filter(get(Variable) %in% Var) %>%
+                                         group_by(CVE_ZM) %>%
+                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                           set_names(c("CVE_ZM", paste0("Residentes_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+
+                Residentes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                               adorn_totals(c("row"), 
+                                            fill = "-", 
+                                            na.rm = TRUE)  
+                
+                # Población Inmigrante
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]      
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                       filter(CVE_MUN %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                         filter(get(Variable) %in% Var) %>%
+                                          group_by(CVE_ZM) %>%
+                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                            set_names(c("CVE_ZM", paste0("Inmigrantes_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+                
+                Inmigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                adorn_totals(c("row"), 
+                                             fill = "-", 
+                                             na.rm = TRUE)  
+               
+                # Población Emigrante
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]      
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                       filter(CVE_MUN %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                         filter(get(Variable) %in% Var) %>%
+                                          group_by(CVE_ZM_TRABAJO) %>%
+                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                            set_names(c("CVE_ZM", paste0("Emigrantes_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+                
+                Emigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                               adorn_totals(c("row"), 
+                                            fill = "-", 
+                                            na.rm = TRUE) 
+                
+               # Tabla de resultados
+                Resultados <- Pob.Total %>%
+                               full_join(., Pob.Objetivo, by = c("CVE_ZM")) %>%
+                               full_join(., Residentes, by = c("CVE_ZM")) %>%
+                               full_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+                               full_join(., Emigrantes, by = c("CVE_ZM")) 
+                return(Resultados)
+}
+#tabla <- Indicadores("SEXO")
+```
+
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "SITTRA")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+addWorksheet(wb, "TIE_TRASLADO_TRAB")
+addWorksheet(wb, "MED_TRASLADO_TRAB1")
+addWorksheet(wb, "MED_TRASLADO_TRAB2")
+addWorksheet(wb, "MED_TRASLADO_TRAB3")
+writeData(wb, 1, Indicadores("SEXO"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT"), colNames = TRUE)
+writeData(wb, 4, Indicadores("SITTRA"), colNames = TRUE)
+writeData(wb, 5, Indicadores("PE"), colNames = TRUE)
+writeData(wb, 6, Indicadores("AFRODES"), colNames = TRUE)
+writeData(wb, 7, Indicadores("HLENGUA"), colNames = TRUE)
+writeData(wb, 8, Indicadores("PERTE_INDIGENA"), colNames = TRUE)
+writeData(wb, 9, Indicadores("ALFABET"), colNames = TRUE)
+writeData(wb, 10, Indicadores("CAUSA_MIG"), colNames = TRUE)
+writeData(wb, 11, Indicadores("SITUA_CONYUGAL"), colNames = TRUE)
+writeData(wb, 12, Indicadores("NIVACAD"), colNames = TRUE)
+writeData(wb, 13, Indicadores("G_ESCOACUM"), colNames = TRUE)
+writeData(wb, 14, Indicadores("TIE_TRASLADO_TRAB"), colNames = TRUE)
+writeData(wb, 15, Indicadores("MED_TRASLADO_TRAB1"), colNames = TRUE)
+writeData(wb, 16, Indicadores("MED_TRASLADO_TRAB2"), colNames = TRUE)
+writeData(wb, 17, Indicadores("MED_TRASLADO_TRAB3"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intrametropolitano 2020.xlsx"), overwrite = TRUE)
+```
+
+
+### Valores relativos  
+
+```{r}
+Variable <- "SEXO"
+#Variable <- "NIVACAD"
+#Clave <- "20.01"
+#Clave <- "30.01"
+
+Indicadores_P <- function(Variable){
+                   # Filtro de la base de datos
+                   data <- data %>%
+                            filter(.$I_ZM %in% "Pertenecen a la Zona Metropolitana") 
+                   
+                   # Zonas metropolitanas
+                     ZM <- ZM_2020 %>%
+                            select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
+                             pull(CVE_MUN)
+                     
+                    # Municipios
+                    municipios <- MUN %>% pull(CVE_MUN)
+                    
+                    # Estados 
+                    estados <- ENT %>% pull(CVE_ENT)
+    
+                    # Variable que se dese analizar
+                    X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
+                          unlist()
+                    # Etiquetas para las columnnas
+                    etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
+                                  unlist()
+    
+                    # Población total
+                    Pob.Total <- data %>%
+                                  as.data.frame() %>%
+                                   filter(CVE_MUN %in% municipios) %>%
+                                    group_by(CVE_ZM) %>%
+                                     summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
+                                      ungroup() %>%
+                                       adorn_totals(c("row"), 
+                                                    fill = "-", 
+                                                     na.rm = TRUE) %>%
+                                        adorn_percentages(denominator = "row") 
+                    
+                    #Población desagregada
+                     # Filtro de la población desagregada
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]   
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN %in% municipios) %>%
+                                           filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                            filter(get(Variable) %in% Var) %>%
+                                             group_by(CVE_ZM) %>%
+                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                               set_names(c("CVE_ZM", paste0("Pob_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+                    
+                    Pob.Objetivo <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                               purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                     adorn_totals(c("row"), 
+                                                  fill = "-", 
+                                                  na.rm = TRUE) %>%
+                                      adorn_percentages(denominator = "row") 
+    
+                    # Población residente 
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]     
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN == CVE_MUN_TRABAJO) %>%
+                                           filter(CVE_MUN %in% municipios) %>%
+                                            filter(get(Variable) %in% Var) %>%
+                                             group_by(CVE_ZM) %>%
+                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                               set_names(c("CVE_ZM", paste0("Residentes_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+    
+                    Residentes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                             purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                na.rm = TRUE) %>%
+                                    adorn_percentages(denominator = "row")  
+                    
+                    # Población Inmigrante
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]      
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                           filter(CVE_MUN %in% municipios) %>%
+                                            filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                             filter(get(Variable) %in% Var) %>%
+                                              group_by(CVE_ZM) %>%
+                                               summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                                set_names(c("CVE_ZM", paste0("Inmigrantes_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+                    
+                    Inmigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                             purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                    adorn_totals(c("row"), 
+                                                 fill = "-", 
+                                                 na.rm = TRUE) %>%
+                                     adorn_percentages(denominator = "row") 
+                   
+                    # Población Emigrante
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]      
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                           filter(CVE_MUN %in% municipios) %>%
+                                            filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                             filter(get(Variable) %in% Var) %>%
+                                              group_by(CVE_ZM_TRABAJO) %>%
+                                               summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                                set_names(c("CVE_ZM", paste0("Emigrantes_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+                    
+                    Emigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                             purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                na.rm = TRUE)  %>%
+                                    adorn_percentages(denominator = "row") 
+                    
+                   # Tabla de resultados
+                    Resultados <- Pob.Total %>%
+                                   full_join(., Pob.Objetivo, by = c("CVE_ZM")) %>%
+                                   full_join(., Residentes, by = c("CVE_ZM")) %>%
+                                   full_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+                                   full_join(., Emigrantes, by = c("CVE_ZM")) 
+                    return(Resultados)
+}
+#tabla <- Indicadores("SEXO")
+```
+
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "SITTRA")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+addWorksheet(wb, "TIE_TRASLADO_TRAB")
+addWorksheet(wb, "MED_TRASLADO_TRAB1")
+addWorksheet(wb, "MED_TRASLADO_TRAB2")
+addWorksheet(wb, "MED_TRASLADO_TRAB3")
+writeData(wb, 1, Indicadores_P("SEXO"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("SITTRA"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("PE"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("AFRODES"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("HLENGUA"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("PERTE_INDIGENA"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("ALFABET"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("CAUSA_MIG"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("SITUA_CONYUGAL"), colNames = TRUE)
+writeData(wb, 12, Indicadores_P("NIVACAD"), colNames = TRUE)
+writeData(wb, 13, Indicadores_P("G_ESCOACUM"), colNames = TRUE)
+writeData(wb, 14, Indicadores_P("TIE_TRASLADO_TRAB"), colNames = TRUE)
+writeData(wb, 15, Indicadores_P("MED_TRASLADO_TRAB1"), colNames = TRUE)
+writeData(wb, 16, Indicadores_P("MED_TRASLADO_TRAB2"), colNames = TRUE)
+writeData(wb, 17, Indicadores_P("MED_TRASLADO_TRAB3"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intrametropolitano 2020_Porcentajes.xlsx"), overwrite = TRUE)
+```
+
+
+# Nivel intermetropolitano {.tabset .tabset-pills}   
+ 
+## Indicadores sociodemográficos {.tabset .tabset-pills}   
+
+### Valores absolutos   
+
+```{r}
+Variable <- "SEXO"
+#Variable <- "NIVACAD"
+#Clave <- "20.01"
+#Clave <- "30.01"
+
+Indicadores <- function(Variable){
+               # Filtro de la base de datos
+               data <- data %>%
+                        filter(.$I_ZM %in% "No pertenecen a la Zona Metropolitana") 
+               
+               # Zonas metropolitanas
+                 ZM <- ZM_2020 %>%
+                        select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
+                         pull(CVE_MUN)
+                 
+                # Municipios
+                municipios <- MUN %>% pull(CVE_MUN)
+                
+                # Estados 
+                estados <- ENT %>% pull(CVE_ENT)
+
+                # Variable que se dese analizar
+                X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
+                      unlist()
+                # Etiquetas para las columnnas
+                etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
+                              unlist()
+
+                # Población total
+                Pob.Total <- data %>%
+                              as.data.frame() %>%
+                               filter(CVE_MUN %in% municipios) %>%
+                                group_by(CVE_ZM) %>%
+                                 summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
+                                  ungroup() %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                 na.rm = TRUE) 
+                
+                #Población desagregada
+                 # Filtro de la población desagregada
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]   
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN %in% municipios) %>%
+                                       filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                        filter(get(Variable) %in% Var) %>%
+                                         group_by(CVE_ZM) %>%
+                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                           set_names(c("CVE_ZM", paste0("Pob_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+                
+                Pob.Objetivo <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                 adorn_totals(c("row"), 
+                                              fill = "-", 
+                                              na.rm = TRUE) 
+
+                # Población residente 
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]     
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN == CVE_MUN_TRABAJO) %>%
+                                       filter(CVE_MUN %in% municipios) %>%
+                                        filter(get(Variable) %in% Var) %>%
+                                         group_by(CVE_ZM) %>%
+                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                           set_names(c("CVE_ZM", paste0("Residentes_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+
+                Residentes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                               adorn_totals(c("row"), 
+                                            fill = "-", 
+                                            na.rm = TRUE)  
+                
+                # Población Inmigrante
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]      
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                       filter(CVE_MUN %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                         filter(get(Variable) %in% Var) %>%
+                                          group_by(CVE_ZM) %>%
+                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                            set_names(c("CVE_ZM", paste0("Inmigrantes_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+                
+                Inmigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                adorn_totals(c("row"), 
+                                             fill = "-", 
+                                             na.rm = TRUE)  
+               
+                # Población Emigrante
+                p <- sapply(1:length(X), function(x){
+                                 Var <- X[x]      
+                                  data %>%
+                                   as.data.frame() %>%
+                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                     subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                      filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                       filter(CVE_MUN %in% municipios) %>%
+                                        filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                         filter(get(Variable) %in% Var) %>%
+                                          group_by(CVE_ZM_TRABAJO) %>%
+                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                            set_names(c("CVE_ZM", paste0("Emigrantes_", etiquetas[x])))
+                  }, simplify = FALSE
+                )
+                
+                Emigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                               adorn_totals(c("row"), 
+                                            fill = "-", 
+                                            na.rm = TRUE) 
+                
+               # Tabla de resultados
+                Resultados <- Pob.Total %>%
+                               full_join(., Pob.Objetivo, by = c("CVE_ZM")) %>%
+                               full_join(., Residentes, by = c("CVE_ZM")) %>%
+                               full_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+                               full_join(., Emigrantes, by = c("CVE_ZM")) 
+                return(Resultados)
+}
+#tabla <- Indicadores("SEXO")
+```
+
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "SITTRA")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+addWorksheet(wb, "TIE_TRASLADO_TRAB")
+addWorksheet(wb, "MED_TRASLADO_TRAB1")
+addWorksheet(wb, "MED_TRASLADO_TRAB2")
+addWorksheet(wb, "MED_TRASLADO_TRAB3")
+writeData(wb, 1, Indicadores("SEXO"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT"), colNames = TRUE)
+writeData(wb, 4, Indicadores("SITTRA"), colNames = TRUE)
+writeData(wb, 5, Indicadores("PE"), colNames = TRUE)
+writeData(wb, 6, Indicadores("AFRODES"), colNames = TRUE)
+writeData(wb, 7, Indicadores("HLENGUA"), colNames = TRUE)
+writeData(wb, 8, Indicadores("PERTE_INDIGENA"), colNames = TRUE)
+writeData(wb, 9, Indicadores("ALFABET"), colNames = TRUE)
+writeData(wb, 10, Indicadores("CAUSA_MIG"), colNames = TRUE)
+writeData(wb, 11, Indicadores("SITUA_CONYUGAL"), colNames = TRUE)
+writeData(wb, 12, Indicadores("NIVACAD"), colNames = TRUE)
+writeData(wb, 13, Indicadores("G_ESCOACUM"), colNames = TRUE)
+writeData(wb, 14, Indicadores("TIE_TRASLADO_TRAB"), colNames = TRUE)
+writeData(wb, 15, Indicadores("MED_TRASLADO_TRAB1"), colNames = TRUE)
+writeData(wb, 16, Indicadores("MED_TRASLADO_TRAB2"), colNames = TRUE)
+writeData(wb, 17, Indicadores("MED_TRASLADO_TRAB3"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermetropolitano 2020.xlsx"), overwrite = TRUE)
+```
+
+
+### Valores relativos  
+
+```{r}
+Variable <- "SEXO"
+#Variable <- "NIVACAD"
+#Clave <- "20.01"
+#Clave <- "30.01"
+
+Indicadores_P <- function(Variable){
+                   # Filtro de la base de datos
+                   data <- data %>%
+                            filter(.$I_ZM %in% "No pertenecen a la Zona Metropolitana") 
+                   
+                   # Zonas metropolitanas
+                     ZM <- ZM_2020 %>%
+                            select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
+                             pull(CVE_MUN)
+                     
+                    # Municipios
+                    municipios <- MUN %>% pull(CVE_MUN)
+                    
+                    # Estados 
+                    estados <- ENT %>% pull(CVE_ENT)
+    
+                    # Variable que se dese analizar
+                    X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
+                          unlist()
+                    # Etiquetas para las columnnas
+                    etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
+                                  unlist()
+    
+                    # Población total
+                    Pob.Total <- data %>%
+                                  as.data.frame() %>%
+                                   filter(CVE_MUN %in% municipios) %>%
+                                    group_by(CVE_ZM) %>%
+                                     summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
+                                      ungroup() %>%
+                                       adorn_totals(c("row"), 
+                                                    fill = "-", 
+                                                     na.rm = TRUE) %>%
+                                        adorn_percentages(denominator = "row") 
+                    
+                    #Población desagregada
+                     # Filtro de la población desagregada
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]   
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN %in% municipios) %>%
+                                           filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                            filter(get(Variable) %in% Var) %>%
+                                             group_by(CVE_ZM) %>%
+                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                               set_names(c("CVE_ZM", paste0("Pob_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+                    
+                    Pob.Objetivo <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                               purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                     adorn_totals(c("row"), 
+                                                  fill = "-", 
+                                                  na.rm = TRUE) %>%
+                                      adorn_percentages(denominator = "row") 
+    
+                    # Población residente 
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]     
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN == CVE_MUN_TRABAJO) %>%
+                                           filter(CVE_MUN %in% municipios) %>%
+                                            filter(get(Variable) %in% Var) %>%
+                                             group_by(CVE_ZM) %>%
+                                              summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                               set_names(c("CVE_ZM", paste0("Residentes_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+    
+                    Residentes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                             purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                na.rm = TRUE) %>%
+                                    adorn_percentages(denominator = "row")  
+                    
+                    # Población Inmigrante
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]      
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                           filter(CVE_MUN %in% municipios) %>%
+                                            filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                             filter(get(Variable) %in% Var) %>%
+                                              group_by(CVE_ZM) %>%
+                                               summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                                set_names(c("CVE_ZM", paste0("Inmigrantes_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+                    
+                    Inmigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                             purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                    adorn_totals(c("row"), 
+                                                 fill = "-", 
+                                                 na.rm = TRUE) %>%
+                                     adorn_percentages(denominator = "row") 
+                   
+                    # Población Emigrante
+                    p <- sapply(1:length(X), function(x){
+                                     Var <- X[x]      
+                                      data %>%
+                                       as.data.frame() %>%
+                                        mutate(EDAD = as.numeric(.$EDAD)) %>%
+                                         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                                          filter(CVE_MUN != CVE_MUN_TRABAJO) %>%
+                                           filter(CVE_MUN %in% municipios) %>%
+                                            filter(CVE_MUN_TRABAJO %in% municipios) %>%
+                                             filter(get(Variable) %in% Var) %>%
+                                              group_by(CVE_ZM_TRABAJO) %>%
+                                               summarise(sum(FACTOR, na.rm = TRUE)) %>%
+                                                set_names(c("CVE_ZM", paste0("Emigrantes_", etiquetas[x])))
+                      }, simplify = FALSE
+                    )
+                    
+                    Emigrantes <- left_join(ZM_2020 %>% distinct(CVE_ZM), 
+                                             purrr::reduce(p, dplyr::full_join, by = 'CVE_ZM'), "CVE_ZM") %>%
+                                   adorn_totals(c("row"), 
+                                                fill = "-", 
+                                                na.rm = TRUE)  %>%
+                                    adorn_percentages(denominator = "row") 
+                    
+                   # Tabla de resultados
+                    Resultados <- Pob.Total %>%
+                                   full_join(., Pob.Objetivo, by = c("CVE_ZM")) %>%
+                                   full_join(., Residentes, by = c("CVE_ZM")) %>%
+                                   full_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+                                   full_join(., Emigrantes, by = c("CVE_ZM")) 
+                    return(Resultados)
+}
+#tabla <- Indicadores("SEXO")
+```
+
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "SITTRA")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+addWorksheet(wb, "TIE_TRASLADO_TRAB")
+addWorksheet(wb, "MED_TRASLADO_TRAB1")
+addWorksheet(wb, "MED_TRASLADO_TRAB2")
+addWorksheet(wb, "MED_TRASLADO_TRAB3")
+writeData(wb, 1, Indicadores_P("SEXO"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("SITTRA"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("PE"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("AFRODES"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("HLENGUA"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("PERTE_INDIGENA"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("ALFABET"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("CAUSA_MIG"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("SITUA_CONYUGAL"), colNames = TRUE)
+writeData(wb, 12, Indicadores_P("NIVACAD"), colNames = TRUE)
+writeData(wb, 13, Indicadores_P("G_ESCOACUM"), colNames = TRUE)
+writeData(wb, 14, Indicadores_P("TIE_TRASLADO_TRAB"), colNames = TRUE)
+writeData(wb, 15, Indicadores_P("MED_TRASLADO_TRAB1"), colNames = TRUE)
+writeData(wb, 16, Indicadores_P("MED_TRASLADO_TRAB2"), colNames = TRUE)
+writeData(wb, 17, Indicadores_P("MED_TRASLADO_TRAB3"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermetropolitano 2020_Porcentajes.xlsx"), overwrite = TRUE)
+```
+
+
+
