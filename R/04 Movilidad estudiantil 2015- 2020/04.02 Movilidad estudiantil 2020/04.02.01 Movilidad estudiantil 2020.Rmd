@@ -150,10 +150,11 @@ La variable `mydata` contiene **15 015 683 observaciones** y **27 variables**.
 load(paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
 
 mydata <- data %>%
-           select(CVE_ENT, ENT, MUN, CVE_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI, EDAD, SEXO, 
-                  AFRODES,  HLENGUA, QDIALECT_INALI, ELENGUA, PERTE_INDIGENA, ALFABET, ASISTEN, NIVACAD, 
+           select(CVE_ENT, ENT, MUN, CVE_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI, 
+                  EDAD, SEXO, AFRODES,  HLENGUA, QDIALECT_INALI, ELENGUA, PERTE_INDIGENA, ALFABET, ASISTEN, NIVACAD, 
                   ESCOLARI, ESCOACUM,  NOMCAR_C, TIE_TRASLADO_ESCU, MED_TRASLADO_ESC1, MED_TRASLADO_ESC2, MED_TRASLADO_ESC3,  
                   FACTOR, ESTRATO, UPM)
+
 save(mydata, file = paste0(here::here(), "/Bases/04_Movilidad estudiantil_2020.RData"))
 ```
 
