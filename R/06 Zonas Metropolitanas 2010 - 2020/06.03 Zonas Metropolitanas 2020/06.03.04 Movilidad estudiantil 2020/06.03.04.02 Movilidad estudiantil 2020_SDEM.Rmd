@@ -408,7 +408,6 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "NIVACAD")
 addWorksheet(wb, "G_ESCOACUM")
-addWorksheet(wb, "NOMCAR_C")
 addWorksheet(wb, "TIE_TRASLADO_ESCU")
 addWorksheet(wb, "MED_TRASLADO_ESC1")
 addWorksheet(wb, "MED_TRASLADO_ESC2")
@@ -425,7 +424,7 @@ writeData(wb, 9, Indicadores("TIE_TRASLADO_ESCU"), colNames = TRUE)
 writeData(wb, 10, Indicadores("MED_TRASLADO_ESC1"), colNames = TRUE)
 writeData(wb, 11, Indicadores("MED_TRASLADO_ESC2"), colNames = TRUE)
 writeData(wb, 12, Indicadores("MED_TRASLADO_ESC3"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel metropolitano 2020.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here:: here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel metropolitano 2020.xlsx"), overwrite = TRUE)
 ```
 
 
@@ -602,7 +601,7 @@ writeData(wb, 11, Indicadores_P("MED_TRASLADO_ESC2"), colNames = TRUE)
 writeData(wb, 12, Indicadores_P("MED_TRASLADO_ESC3"), colNames = TRUE)
 saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel metropolitano 2020_Porcentajes.xlsx"), overwrite = TRUE)
 ```
-
+ 
 
 # Nivel intrametropolitano {.tabset .tabset-pills}   
  
