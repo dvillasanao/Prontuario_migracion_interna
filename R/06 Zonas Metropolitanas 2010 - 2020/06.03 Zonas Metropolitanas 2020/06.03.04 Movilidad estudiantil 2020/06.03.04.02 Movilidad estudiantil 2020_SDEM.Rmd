@@ -144,6 +144,10 @@ load(file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2
 # Para fines prácticos se genera un ponderador de uno 
 mydata <- mydata %>%
            mutate(M = 1)  %>%
+           select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN,ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI, 
+                  EDAD, SEXO, AFRODES, HLENGUA, PERTE_INDIGENA, ALFABET, NIVACAD, ESCOLARI, ESCOACUM,  
+                  NOMCAR_C, TIE_TRASLADO_ESCU, MED_TRASLADO_ESC1, MED_TRASLADO_ESC2, MED_TRASLADO_ESC3,
+                  CVE_ZM, NOM_ZM, CVE_ZM_ASI, ZM_ASI, FACTOR, ESTRATO, UPM) %>%
             mutate(NOM_ENT = as.factor(.$CVE_ENT)) %>%
              ungroup()
 
@@ -251,6 +255,7 @@ data <- mydata %>%
                                 .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2020 %in% '0' & .$I_ASI_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Estudian en otro municipio que no es ZM y no residen en una ZM
                                 ))
 ```
+
 
 
 # Nivel metropolitano {.tabset .tabset-pills}   
@@ -762,7 +767,6 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "NIVACAD")
 addWorksheet(wb, "G_ESCOACUM")
-addWorksheet(wb, "NOMCAR_C")
 addWorksheet(wb, "TIE_TRASLADO_ESCU")
 addWorksheet(wb, "MED_TRASLADO_ESC1")
 addWorksheet(wb, "MED_TRASLADO_ESC2")
