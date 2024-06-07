@@ -1,5 +1,5 @@
 ---
-title: "Migración reciente 2015 - 2020_SDEM"
+title: "Migración reciente 2015 - 2020"
 author: "Gráficos"
 output:
   html_document:
