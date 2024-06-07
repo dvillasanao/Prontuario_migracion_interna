@@ -1,0 +1,13 @@
+---
+title: "Migración reciente 2015 - 2020_SDEM"
+author: "Gráficos"
+output:
+  html_document:
+    highlight: tango
+    theme: flatly
+    toc: yes
+    toc_depth: 2
+    toc_float:
+      collapsed: yes
+---
+
