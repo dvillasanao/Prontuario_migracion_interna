@@ -1,5 +1,6 @@
 ---
-title: "Movilidad Estudiantil 2020"
+title: "Zonas Metropolitanas 2010"
+subtitle: 'Migración reciente 2005 - 2010'
 author: "Gráficos"
 output:
    html_document:

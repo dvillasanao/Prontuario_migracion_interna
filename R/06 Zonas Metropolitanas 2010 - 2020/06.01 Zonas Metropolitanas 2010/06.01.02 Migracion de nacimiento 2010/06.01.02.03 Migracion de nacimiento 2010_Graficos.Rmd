@@ -1,5 +1,6 @@
 ---
-title: "Movilidad Estudiantil 2020"
+title: "Zonas Metropolitanas 2010"
+subtitle: 'Migración de nacimiento 2010'
 author: "Gráficos"
 output:
    html_document:
@@ -10,4 +11,5 @@ output:
       toc_float:
         collapsed: yes
 ---
+
 
