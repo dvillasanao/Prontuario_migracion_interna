@@ -158,8 +158,8 @@ load(paste0(here::here(), "/Bases/Encuesta Intercensal_2015.RData"))
 
 mydata <- data %>%
            select(CVE_ENT, NOM_ENT, MUN, NOM_MUN, ENT_MUN, ENT_PAIS_RES10, MUN_RES10, ENT_PAIS_RES10, EDAD, 
-                  SEXO, AFRODES, HLENGUA, QDIALECT_INALI, PERTE_INDIGENA, NIVACAD, ALFABET, 
-                  SITUA_CONYUGAL, CONACT, HIJOS_NAC_VIVOS, FACTOR, ESTRATO, UPM) %>%
+                  SEXO, AFRODES, HLENGUA, QDIALECT_C, QDIALECT_INALI, PERTE_INDIGENA, NIVACAD, ESCOACUM, ESCOLARI, ALFABET, 
+                  SITUA_CONYUGAL, CONACT, SITUACION_TRAB, HIJOS_NAC_VIVOS, FACTOR, ESTRATO, UPM) %>%
             rename("CVE_MUN" = "ENT_MUN")
 
 save(mydata, file = paste0(here::here(), "/Bases/01_Migracion interna_2015.RData"))
