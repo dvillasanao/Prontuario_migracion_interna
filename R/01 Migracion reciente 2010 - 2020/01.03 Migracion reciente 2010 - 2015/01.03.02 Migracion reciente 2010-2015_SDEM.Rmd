@@ -211,7 +211,6 @@ municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 **Se reclasifican algunas variables**
 
 ```{r}
-table(data$ESCOACUM)
 data <- mydata %>%
          mutate(PE = case_when(.$CONACT %in% c("10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 1,
                                .$CONACT %in% c("31", "32", "33", "34", "35") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 2,
