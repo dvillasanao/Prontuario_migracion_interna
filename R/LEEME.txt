@@ -7,9 +7,21 @@ Bases
  - MEst (Movilidad estudiantil)
  - MRt (Migración de retorno) 
  - ZM (Zonas Metropolitanas)
+    -- MR5a (Migración reciente hace 5 años)
+       --- Nivel municipal
+       --- Nivel intramunicipal
+       --- Nivel intermunicipal
+    -- MTrab (Movilidad laboral)
+       --- Nivel municipal
+       --- Nivel intramunicipal
+       --- Nivel intermunicipal
+    -- MEst (Movilidad estudiantil)
+       --- Nivel municipal
+       --- Nivel intramunicipal
+       --- Nivel intermunicipal
 
 
-01 Migración reciente 2010 - 2020 (Nivel Estatal | Nivel municipal) (10 Scripts)
+01 Migración reciente 2010 - 2020 (Nivel Estatal | Nivel municipal) (15 Scripts)
         01.01 Migración reciente 1985-1990 (Censo de Población y Vivienda 1990)
 		01.01.01 Migración reciente 1985-1990
 		01.01.02 Migración reciente 1985-1990_SDEM 
@@ -31,10 +43,10 @@ Bases
 		01.05.02 Migración reciente 2015-2020_SDEM
 		01.05.03 Migración reciente 2015-2020_Graficos
 
-02 Migración de nacimiento 2010 - 2020 (Nivel Estatal) (10 Scripts) 
+02 Migración de nacimiento 2010 - 2020 (Nivel Estatal) (15 Scripts) 
         02.01 Migración de nacimiento 2020
     	✓      02.01.01 Migración de nacimiento 2020
-	       02.01.02 Migración de nacimiento 2020_SDEM
+	        02.01.02 Migración de nacimiento 2020_SDEM
 	       02.01.03 Migración de nacimiento 2020_Graficos
 	02.02 Migración de nacimiento 2015
      	✓	02.02.01 Migración de nacimiento 2015
@@ -53,7 +65,7 @@ Bases
 		02.05.02 Migración de nacimiento 1990_SDEM
 		02.05.03 Migración de nacimiento 1990_Graficos
 
-03 Movilidad laboral 2010 - 2020 (Nivel Estatal | Nivel municipal) (6 Scripts)
+03 Movilidad laboral 2010 - 2020 (Nivel Estatal | Nivel municipal) (9 Scripts)
 	03.01 Movilidad laboral 2010 
 	✓	03.01.01 Movilidad laboral 2010
 		03.01.02 Movilidad laboral 2010_SDEM
@@ -78,7 +90,7 @@ Bases
 		04.03.02 Movilidad estudiantil 2020_SDEM
 		04.03.03 Movilidad estudiantil 2020_Graficos
 
-05 Migración de retorno 2010 - 2020 (Nivel Estatal | Nivel municipal) (6 Scripts)
+05 Migración de retorno 2010 - 2020 (Nivel Estatal | Nivel municipal) (9 Scripts)
 
 	05.01 Migración de retorno 2010
 	✓	05.01.01 Migración de retorno 2010
@@ -98,35 +110,22 @@ Bases
 - Intramunicipal 
 - Intermunicipal 
 
-06  Zonas Metropolitanas 2010 - 2020 (Nivel Estatal | Nivel municipal) (30 Scripts)
+06  Zonas Metropolitanas 2010 - 2020 (Nivel Estatal | Nivel municipal) (24 Scripts)
 
 	06.01 Zonas Metropolitanas 2010 
 		06.01.01 Migración reciente 2005 - 2010 (8 Scripts)
 		✓	06.01.01.01 Migración reciente 2005 - 2010
 			06.01.01.02 Migración reciente 2005 - 2010_SDEM
 			06.01.01.03 Migración reciente 2005 - 2010_Graficos
-		06.01.02 Migración de nacimiento 2010
-		✓	06.01.02.01 Migración de nacimiento 2010	
-			06.01.02.02 Migración de nacimiento 2010_SDEM
-			06.01.02.03 Migración de nacimiento 2010_Graficos
 		06.01.03 Movilidad laboral 2010
 		✓	06.01.03.01 Movilidad laboral 2010
 			06.01.03.02 Movilidad laboral 2010_SDEM
 			06.01.03.03 Movilidad laboral 2010_Graficos
-            06.01.04 Movilidad de retorno 2010
-	        ✓       06.01.04.01 Movilidad de retorno 2010
-	                06.01.04.02 Movilidad de retorno 2010_SDEM
-	                06.01.04.03 Movilidad de retorno 2010_Graficos
-
 	06.02 Zonas Metropolitanas 2015 
 		06.02.01 Migración reciente 2010 - 2015 (10 Scripts)
 		✓	06.02.01.01 Migración reciente 2010 - 2015
 			06.02.01.02 Migración reciente 2010 - 2015_SDEM
 			06.02.01.03 Migración reciente 2010 - 2015_Graficos
-		06.02.02 Migración de nacimiento 2015
-		✓	06.02.02.01 Migración de nacimiento 2015	
-			06.02.02.02 Migración de nacimiento 2015_SDEM
-			06.02.02.03 Migración de nacimiento 2015_Graficos
 		06.02.03 Movilidad laboral 2015
 		✓	06.02.03.01 Movilidad laboral 2015
 			06.02.03.02 Movilidad laboral 2015_SDEM
@@ -135,21 +134,11 @@ Bases
 		✓	06.02.04.01 Movilidad estudiantil 2015
 			06.02.04.02 Movilidad estudiantil 2015_SDEM
 			06.02.04.03 Movilidad estudiantil 2015_Graficos
-             06.02.05 Movilidad de retorno 2015
-	        ✓      06.02.05.01 Movilidad de retorno 2015
-	               06.02.05.02 Movilidad de retorno 2015_SDEM
-	               06.02.05.03 Movilidad de retorno 2015_Graficos
-
-
 	06.03 Zonas Metropolitanas 2020 
 		06.03.01 Migración reciente 2015 - 2020 (10 Scripts)
 		✓	06.03.01.01 Migración reciente 2015 - 2020 
 			06.03.01.02 Migración reciente 2015 - 2020_SDEM
 			06.03.01.03 Migración reciente 2015 - 2020_Graficos
-		06.03.02 Migración de nacimiento 2020
-		✓  	06.03.02.01 Migración de nacimiento 2020
-			06.03.02.02 Migración de nacimiento 2020_SDEM
-			06.03.02.03 Migración de nacimiento 2020_Graficos
 		06.03.03 Movilidad laboral 2020
 		✓  	06.03.03.01 Movilidad laboral 2020
 			06.03.03.02 Movilidad laboral 2020_SDEM
@@ -158,7 +147,4 @@ Bases
 		✓  	06.03.04.01 Movilidad estudiantil 2020 
 			06.03.04.02 Movilidad estudiantil 2020_SDEM 
 			06.03.04.03 Movilidad estudiantil 2020_Graficos
-             06.03.05 Movilidad de retorno 2020 
-	      ✓        06.03.05.01 Movilidad de retorno 2020 
-	                06.03.05.02 Movilidad de retorno 2020_SDEM
-	                06.03.05.03 Movilidad de retorno 2020_Graficos
+
