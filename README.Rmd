@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 Este repositorio contiene el prontuario de migración interna en México, abarcando un periodo de 20 años, desde 2010 hasta 2020. El objetivo es proporcionar una evaluación detallada de los diferentes tipos de migración y movilidad dentro del país.
 
-![Untitled](images/ZM_2020.png)
+![Elaboración propia](images/ZM_2020.png){ width=700px }
 
 ## Contenido
 

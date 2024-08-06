@@ -12,8 +12,8 @@ proporcionar una evaluación detallada de los diferentes tipos de
 migración y movilidad dentro del país.
 
 <figure>
-<img src="images/ZM_2020.png" alt="Untitled" />
-<figcaption aria-hidden="true">Untitled</figcaption>
+<img src="images/ZM_2020.png" width="700" alt="Elaboración propia" />
+<figcaption aria-hidden="true">Elaboración propia</figcaption>
 </figure>
 
 ## Contenido
