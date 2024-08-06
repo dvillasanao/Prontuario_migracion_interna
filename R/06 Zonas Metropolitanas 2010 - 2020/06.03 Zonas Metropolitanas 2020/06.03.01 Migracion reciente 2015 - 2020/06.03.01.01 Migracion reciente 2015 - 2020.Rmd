@@ -1822,7 +1822,6 @@ tabla[1:30, 1:30] %>%
 
 #### Matrices por zonas metropolitanas
 
-
 ```{r, eval = FALSE}
 MR <- NULL
 for(i in 1:length(zm)){
@@ -4995,6 +4994,335 @@ for(i in 1:length(ZM_CF)){
 }
 dev.off()
 ```
+
+### Indicadores
+
+Se realizan cálculos generales de migración    
+- Residentes  
+- Inmigrantes     
+- Emigrantes    
+- % Inmigrantes   
+- % Emigrante  
+-  Migración bruta   
+-  Migración Neta  
+- % Tasa de migración bruta   
+- % Tasa de migración neta    
+
+
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+
+```{r}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_ZM) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Población de 5 años y más ###############################
+Pob.5ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 5 & EDAD <=130) %>%
+                 group_by(CVE_ZM) %>%
+                  summarise(Pob.5ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de MR5a a nivel metropolitano 2020.RData"))
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>%
+                gather(CVE_ZM, Value, -rowname)%>%
+                 filter(rowname == CVE_ZM) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+Inmigrantes <- Migrantes %>% 
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_ZM") %>%
+                  melt(., id.vars = "CVE_ZM", variable.name = "CVE_ZM_RES") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_ZM != CVE_ZM_RES) %>%
+                      group_by(CVE_ZM) %>%
+                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+Emigrantes <- Migrantes %>% 
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "CVE_ZM") %>%
+                 melt(., id.vars = "CVE_ZM", variable.name = "CVE_ZM_RES") %>%
+                  mutate_at(vars(3), as.numeric) %>%
+                   as_tibble() %>%
+                    filter(CVE_ZM != CVE_ZM_RES) %>%
+                     group_by(CVE_ZM_RES) %>%
+                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                       rename("CVE_ZM" = "CVE_ZM_RES") 
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.5ymas, by = c("CVE_ZM")) %>%
+          left_join(., Residentes, by = c("CVE_ZM")) %>%
+          left_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+          left_join(., Emigrantes, by = c("CVE_ZM")) %>%
+           mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                  Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                  Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2)) * 1000,
+                  Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2)) * 1000,
+                  Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                  Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.xlsx"), overwrite = TRUE)
+save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.RData"))
+```
+
+```{r, echo = FALSE}
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  migración reciente",  
+              subtitle = "Zonas Metropolitanas") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+
+### Movilidad intrametropolitana {.tabset .tabset-pills}
+
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.   
+
+```{r, eval = FALSE}
+options(survey.lonely.psu = "adjust")
+
+MC <- mydata %>%
+       select(CVE_ENT, CVE_MUN, ENT_PAIS_RES_5A, MUN_RES_5A, CVE_MUN_RES, CVE_ZM, MC, CF, CVE_ZM_RES, M, EDAD, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_RES5A_ZM_2020 = ifelse(is.na(.$CVE_ZM_RES), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_RES ~ 'Pertenecen a la Zona Metropolitana', #Residentes
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_RES ~ "Pertenecen a la Zona Metropolitana", #Migrantes que residen en la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_RES ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residen en otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian fuera de la zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian dentro de una zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Migrantes que no residen en la zona metropolitana
+                                )) %>%
+         filter(EDAD >= 5 & EDAD <= 130) %>%
+          filter(CVE_MUN_RES %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana") %>%
+           svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/MC_intrametropolitana.RDS"))
+```
+
+### Matrices
+
+Se genera una matriz cruzada del lugar de residencia hace 5 años a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
+
+```{r, eval = FALSE}
+MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/MC_intrametropolitana.RDS"))
+
+Migrantes <- svytable(~CVE_MUN_RES + CVE_MUN, design = MC)
+```
+
+#### Matrices por zonas metropolitanas 
+
+```{r, eval = FALSE}
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de migracion reciente a nivel intramunicipal 2020.RData"))
+
+MR <- NULL
+for(i in 1:length(zm)){
+tabla <- ZM_2020 %>%
+          select(CVE_ZM, CVE_MUN) %>%
+           filter(CVE_ZM %in% zm[i]) %>%
+            pull(CVE_MUN)
+
+MR[[paste0(zm[i])]] <- Migrantes %>%
+                        as.data.frame() %>%
+                         tibble::rownames_to_column(var = "CVE_MUN") %>%
+                          mutate_if(is.numeric, as.numeric) %>%
+                           select(CVE_MUN, all_of(tabla)) %>%
+                            filter(CVE_MUN %in% tabla)
+}
+
+# Se guardan en un objeto de R 
+saveRDS(MR, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matrices de MR5a a nivel intramunicipal por ZM2020.RDS"))
+
+# Se genera un Excel con todas las matrices por ZM
+wb <- createWorkbook()
+for(i in 1:length(zm)){
+addWorksheet(wb, paste0(zm[i]))
+writeData(wb, i, MR[[paste0(zm[i])]] %>% as.data.frame())
+saveWorkbook(wb, 
+              file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matrices de MR5a a nivel intramunicipal por ZM2020.xlsx"), 
+               overwrite = TRUE)
+}
+```
+
+**Matriz de migración reciente hace 5 años en la Zona Metropolitana de Cuernavaca, 2015 - 2020**  
+
+<div style="height:500px;overflow:auto;">
+```{r, echo = FALSE}
+MR <- readRDS(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matrices de MR5a a nivel intramunicipal por ZM2020.RDS"))
+
+MR[["17.02"]] %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de migración reciente a nivel intramunicipal", 
+             subtitle = "Zona Metropolitana de Cuernavaca") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "0") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
+</div>
+
+
+#### Indicadores
+
+Se realizan cálculos generales de migración    
+- Residentes  
+- Inmigrantes     
+- Emigrantes    
+- % Inmigrantes   
+- % Emigrante  
+-  Migración bruta   
+-  Migración Neta  
+- % Tasa de migración bruta   
+- % Tasa de migración neta    
+
+
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+
+```{r}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_ZM) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Población de 5 años y más ###############################
+Pob.5ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 5 & EDAD <=130) %>%
+                 group_by(CVE_ZM) %>%
+                  summarise(Pob.5ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de MR5a a nivel metropolitano 2020.RData"))
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>%
+                gather(CVE_ZM, Value, -rowname)%>%
+                 filter(rowname == CVE_ZM) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+Inmigrantes <- Migrantes %>% 
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_ZM") %>%
+                  melt(., id.vars = "CVE_ZM", variable.name = "CVE_ZM_RES") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_ZM != CVE_ZM_RES) %>%
+                      group_by(CVE_ZM) %>%
+                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+Emigrantes <- Migrantes %>% 
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "CVE_ZM") %>%
+                 melt(., id.vars = "CVE_ZM", variable.name = "CVE_ZM_RES") %>%
+                  mutate_at(vars(3), as.numeric) %>%
+                   as_tibble() %>%
+                    filter(CVE_ZM != CVE_ZM_RES) %>%
+                     group_by(CVE_ZM_RES) %>%
+                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                       rename("CVE_ZM" = "CVE_ZM_RES") 
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.5ymas, by = c("CVE_ZM")) %>%
+          left_join(., Residentes, by = c("CVE_ZM")) %>%
+          left_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+          left_join(., Emigrantes, by = c("CVE_ZM")) %>%
+           mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                  Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                  Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2)) * 1000,
+                  Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.5ymas) / 2)) * 1000,
+                  Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                  Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.xlsx"), overwrite = TRUE)
+save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.RData"))
+```
+
+```{r, echo = FALSE}
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  migración reciente",  
+              subtitle = "Zonas Metropolitanas") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+
+
 
 # Referencias
 
