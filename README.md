@@ -12,8 +12,10 @@ proporcionar una evaluación detallada de los diferentes tipos de
 migración y movilidad dentro del país.
 
 <figure>
-<img src="images/ZM_2020.png" width="700" alt="Elaboración propia" />
-<figcaption aria-hidden="true">Elaboración propia</figcaption>
+<img src="images/ZM_2020.png" width="800"
+alt="Elaboración propia: Movilidad laboral de la Zona Metropolitan de la Ciudad de México 2020" />
+<figcaption aria-hidden="true">Elaboración propia: Movilidad laboral de
+la Zona Metropolitan de la Ciudad de México 2020</figcaption>
 </figure>
 
 ## Contenido
