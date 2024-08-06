@@ -13,9 +13,9 @@ migración y movilidad dentro del país.
 
 <figure>
 <img src="images/ZM_2020.png" width="800"
-alt="Elaboración propia: Movilidad laboral de la Zona Metropolitan de la Ciudad de México 2020" />
+alt="Elaboración propia: Movilidad laboral de la Zona Metropolitana de la Ciudad de México 2020" />
 <figcaption aria-hidden="true">Elaboración propia: Movilidad laboral de
-la Zona Metropolitan de la Ciudad de México 2020</figcaption>
+la Zona Metropolitana de la Ciudad de México 2020</figcaption>
 </figure>
 
 ## Contenido

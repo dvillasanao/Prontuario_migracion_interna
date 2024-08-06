@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 Este repositorio contiene el prontuario de migración interna en México, abarcando un periodo de 20 años, desde 2010 hasta 2020. El objetivo es proporcionar una evaluación detallada de los diferentes tipos de migración y movilidad dentro del país.
 
-![Elaboración propia: Movilidad laboral de la Zona Metropolitan de la Ciudad de México 2020](images/ZM_2020.png){ width=800px }
+![Elaboración propia: Movilidad laboral de la Zona Metropolitana de la Ciudad de México 2020](images/ZM_2020.png){ width=800px }
 
 ## Contenido
 
