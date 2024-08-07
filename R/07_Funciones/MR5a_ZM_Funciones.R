@@ -8,12 +8,14 @@ library(circlize)
 library(dplyr)
 library(stringr)
 library(grDevices)
+library(janitor)
+library(tibble)
 
 
 ################################################################################
 #                         Chord Diagram Colors                                 #
 ################################################################################
-color_chord_diagramas <- function(tabla1, ZM_CF = ZM_CF, paleta = paleta) {
+color_chord_diagram <- function(tabla1, ZM_CF = ZM_CF, paleta = paleta) {
                                     tabla2 <- lapply(1:length(ZM_CF), function(x) {
                                                 # Paleta de colores
                                                 groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
@@ -35,7 +37,16 @@ color_chord_diagramas <- function(tabla1, ZM_CF = ZM_CF, paleta = paleta) {
 #                         Chord Diagram Graph                                  #
 ################################################################################
 # Definir la función
-chord_diagram_graph <- function(file, width = 15, height = 10, family = "Montserrat Medium", paleta = paleta, ZM_CF, tabla1, tabla2) {
+chord_diagram_graph <- function(file, 
+                                width = 15, 
+                                height = 10, 
+                                family = "Montserrat Medium", 
+                                paleta = paleta, 
+                                ZM_CF, 
+                                tabla1, 
+                                tabla2, 
+                                color_labels = "black",
+                                margin = c(0, 0, 0, 0)) {
   
   # Archivo de salida
   cairo_pdf(filename = paste0(here::here(), file), 
@@ -57,7 +68,7 @@ chord_diagram_graph <- function(file, width = 15, height = 10, family = "Montser
                track.margin = c(-0.07, 0.1),
                points.overflow.warning = FALSE)
     
-    par(mar = rep(0, 4))
+    par(mar = margin)
     
     chordDiagram(x = as.matrix(tabla1[[i]]), 
                  grid.col = groupColors,
@@ -93,7 +104,7 @@ chord_diagram_graph <- function(file, width = 15, height = 10, family = "Montser
                                          niceFacing = TRUE, 
                                          adj = c(-0.05, 0.5),
                                          cex = fontsize(9),
-                                         col = "#000C7D",
+                                         col = color_labels,
                                          font = 1)
                              circos.axis(h = "top",
                                          labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
@@ -164,4 +175,82 @@ labels_chord_diagram <- function(file, width = 7, height = 9, family = "Montserr
     print(etiquetas[[i]])
   }
   dev.off()
+}
+
+
+################################################################################
+#                     Función Matrices (Reducción)                             #
+################################################################################
+
+# Función para calcular totales
+totales <- function(tabla1, ZM) {
+              lapply(1:length(ZM), function(x){
+                #Se agrupan los totales
+                full_join(
+                          tabla1[[x]] %>%
+                           as.data.frame() %>%
+                            adorn_totals(c("row", "col"), 
+                                         fill = "-", 
+                                         na.rm = TRUE, 
+                                         ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                             slice(nrow(.)) %>% 
+                              t() %>%
+                               as.data.frame()%>%
+                                rownames_to_column(var = "name")  %>% 
+                                 rename("Total_Filas" = "1"),
+                          tabla1[[x]] %>%
+                           as.data.frame() %>%
+                            adorn_totals(c("row", "col"), 
+                                         fill = "-", 
+                                         na.rm = TRUE, 
+                                         ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                             rownames_to_column(var = "name") %>%
+                              select(name, Total) %>%
+                               mutate(name = str_replace(.$name, "1$", "Total")), 
+                          by = c("name")
+                          ) %>%
+                 rename("CVE_MUN" = "name",
+                        "Emigrantes" = "Total_Filas",
+                        "Inmigrantes" = "Total") %>%
+                  select(Inmigrantes, CVE_MUN, Emigrantes)
+  })
+}
+
+# Función para calcular porcentajes
+porcentajes <- function(tabla1, ZM) {
+                    lapply(1:length(ZM), function(x){
+                      #Se agrupan los porcentajes
+                      full_join(tabla1[[x]] %>%
+                                 as.data.frame() %>%
+                                  adorn_totals(c("col", "row"), 
+                                               fill = "0", 
+                                               na.rm = TRUE, 
+                                               name = "Total",
+                                               ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                                   adorn_percentages("col", na.rm = TRUE) %>% 
+                                    rownames_to_column(var = "name") %>%
+                                     select(name, Total) %>%
+                                      mutate(name = str_replace(.$name, "1$", "Total")),
+                                tabla1[[x]] %>%
+                                 as.data.frame() %>%
+                                  adorn_totals(c("row"), 
+                                               fill = "0", 
+                                               na.rm = TRUE, 
+                                               name = "Total", 
+                                               ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                                   adorn_percentages("row", 
+                                                    na.rm = TRUE, 
+                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
+                                    slice(nrow(.)) %>% 
+                                     t() %>%
+                                      as.data.frame()%>%
+                                       rownames_to_column(var = "name")  %>% 
+                                        rename("Total_Filas" = "1"), 
+                                by = c("name")
+                                ) %>%
+                       rename("CVE_MUN" = "name",
+                              "Emigrantes%" = "Total_Filas",
+                              "Inmigrantes%" = "Total") %>%
+                        select(`Inmigrantes%`, CVE_MUN, `Emigrantes%`)
+  })
 }
