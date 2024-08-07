@@ -1294,6 +1294,230 @@ window.buildTabsets = function(tocID) {
 };
 
 </script>
+<script>$(document).ready(function(){
+    if (typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    if ($('[data-toggle="popover"]').popover === 'function') {
+        $('[data-toggle="popover"]').popover();
+    }
+});
+</script>
+<style type="text/css">
+.lightable-minimal {
+border-collapse: separate;
+border-spacing: 16px 1px;
+width: 100%;
+margin-bottom: 10px;
+}
+.lightable-minimal td {
+margin-left: 5px;
+margin-right: 5px;
+}
+.lightable-minimal th {
+margin-left: 5px;
+margin-right: 5px;
+}
+.lightable-minimal thead tr:last-child th {
+border-bottom: 2px solid #00000050;
+empty-cells: hide;
+}
+.lightable-minimal tbody tr:first-child td {
+padding-top: 0.5em;
+}
+.lightable-minimal.lightable-hover tbody tr:hover {
+background-color: #f5f5f5;
+}
+.lightable-minimal.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-classic {
+border-top: 0.16em solid #111111;
+border-bottom: 0.16em solid #111111;
+width: 100%;
+margin-bottom: 10px;
+margin: 10px 5px;
+}
+.lightable-classic tfoot tr td {
+border: 0;
+}
+.lightable-classic tfoot tr:first-child td {
+border-top: 0.14em solid #111111;
+}
+.lightable-classic caption {
+color: #222222;
+}
+.lightable-classic td {
+padding-left: 5px;
+padding-right: 5px;
+color: #222222;
+}
+.lightable-classic th {
+padding-left: 5px;
+padding-right: 5px;
+font-weight: normal;
+color: #222222;
+}
+.lightable-classic thead tr:last-child th {
+border-bottom: 0.10em solid #111111;
+}
+.lightable-classic.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-classic.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-classic-2 {
+border-top: 3px double #111111;
+border-bottom: 3px double #111111;
+width: 100%;
+margin-bottom: 10px;
+}
+.lightable-classic-2 tfoot tr td {
+border: 0;
+}
+.lightable-classic-2 tfoot tr:first-child td {
+border-top: 3px double #111111;
+}
+.lightable-classic-2 caption {
+color: #222222;
+}
+.lightable-classic-2 td {
+padding-left: 5px;
+padding-right: 5px;
+color: #222222;
+}
+.lightable-classic-2 th {
+padding-left: 5px;
+padding-right: 5px;
+font-weight: normal;
+color: #222222;
+}
+.lightable-classic-2 tbody tr:last-child td {
+border-bottom: 3px double #111111;
+}
+.lightable-classic-2 thead tr:last-child th {
+border-bottom: 1px solid #111111;
+}
+.lightable-classic-2.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-classic-2.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-material {
+min-width: 100%;
+white-space: nowrap;
+table-layout: fixed;
+font-family: Roboto, sans-serif;
+border: 1px solid #EEE;
+border-collapse: collapse;
+margin-bottom: 10px;
+}
+.lightable-material tfoot tr td {
+border: 0;
+}
+.lightable-material tfoot tr:first-child td {
+border-top: 1px solid #EEE;
+}
+.lightable-material th {
+height: 56px;
+padding-left: 16px;
+padding-right: 16px;
+}
+.lightable-material td {
+height: 52px;
+padding-left: 16px;
+padding-right: 16px;
+border-top: 1px solid #eeeeee;
+}
+.lightable-material.lightable-hover tbody tr:hover {
+background-color: #f5f5f5;
+}
+.lightable-material.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-material.lightable-striped tbody td {
+border: 0;
+}
+.lightable-material.lightable-striped thead tr:last-child th {
+border-bottom: 1px solid #ddd;
+}
+.lightable-material-dark {
+min-width: 100%;
+white-space: nowrap;
+table-layout: fixed;
+font-family: Roboto, sans-serif;
+border: 1px solid #FFFFFF12;
+border-collapse: collapse;
+margin-bottom: 10px;
+background-color: #363640;
+}
+.lightable-material-dark tfoot tr td {
+border: 0;
+}
+.lightable-material-dark tfoot tr:first-child td {
+border-top: 1px solid #FFFFFF12;
+}
+.lightable-material-dark th {
+height: 56px;
+padding-left: 16px;
+padding-right: 16px;
+color: #FFFFFF60;
+}
+.lightable-material-dark td {
+height: 52px;
+padding-left: 16px;
+padding-right: 16px;
+color: #FFFFFF;
+border-top: 1px solid #FFFFFF12;
+}
+.lightable-material-dark.lightable-hover tbody tr:hover {
+background-color: #FFFFFF12;
+}
+.lightable-material-dark.lightable-striped tbody tr:nth-child(even) {
+background-color: #FFFFFF12;
+}
+.lightable-material-dark.lightable-striped tbody td {
+border: 0;
+}
+.lightable-material-dark.lightable-striped thead tr:last-child th {
+border-bottom: 1px solid #FFFFFF12;
+}
+.lightable-paper {
+width: 100%;
+margin-bottom: 10px;
+color: #444;
+}
+.lightable-paper tfoot tr td {
+border: 0;
+}
+.lightable-paper tfoot tr:first-child td {
+border-top: 1px solid #00000020;
+}
+.lightable-paper thead tr:last-child th {
+color: #666;
+vertical-align: bottom;
+border-bottom: 1px solid #00000020;
+line-height: 1.15em;
+padding: 10px 5px;
+}
+.lightable-paper td {
+vertical-align: middle;
+border-bottom: 1px solid #00000010;
+line-height: 1.15em;
+padding: 7px 5px;
+}
+.lightable-paper.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-paper.lightable-striped tbody tr:nth-child(even) {
+background-color: #00000008;
+}
+.lightable-paper.lightable-striped tbody td {
+border: 0;
+}
+</style>
 
 <style type="text/css">
 code{white-space: pre-wrap;}
@@ -6084,61 +6308,86 @@ satura la computadora</p>
 <span id="cb70-10"><a href="#cb70-10" tabindex="-1"></a>Pob<span class="fl">.5</span>ymas <span class="ot">&lt;-</span> mydata <span class="sc">%&gt;%</span></span>
 <span id="cb70-11"><a href="#cb70-11" tabindex="-1"></a>              <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb70-12"><a href="#cb70-12" tabindex="-1"></a>               <span class="fu">mutate</span>(<span class="at">EDAD =</span> <span class="fu">as.numeric</span>(.<span class="sc">$</span>EDAD)) <span class="sc">%&gt;%</span></span>
-<span id="cb70-13"><a href="#cb70-13" tabindex="-1"></a>                <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span><span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-13"><a href="#cb70-13" tabindex="-1"></a>                <span class="fu">subset</span>(EDAD <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> EDAD <span class="sc">&lt;=</span> <span class="dv">130</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb70-14"><a href="#cb70-14" tabindex="-1"></a>                 <span class="fu">group_by</span>(CVE_ZM) <span class="sc">%&gt;%</span></span>
 <span id="cb70-15"><a href="#cb70-15" tabindex="-1"></a>                  <span class="fu">summarise</span>(<span class="at">Pob.5ymas =</span> <span class="fu">sum</span>(FACTOR)) </span>
 <span id="cb70-16"><a href="#cb70-16" tabindex="-1"></a></span>
 <span id="cb70-17"><a href="#cb70-17" tabindex="-1"></a><span class="do">################################################################################</span></span>
 <span id="cb70-18"><a href="#cb70-18" tabindex="-1"></a><span class="do">########################### Residentes #########################################</span></span>
-<span id="cb70-19"><a href="#cb70-19" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de MR5a a nivel metropolitano 2020.RData&quot;</span>))</span>
+<span id="cb70-19"><a href="#cb70-19" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de migracion reciente a nivel municipal.RData&quot;</span>))</span>
 <span id="cb70-20"><a href="#cb70-20" tabindex="-1"></a></span>
-<span id="cb70-21"><a href="#cb70-21" tabindex="-1"></a>Residentes <span class="ot">&lt;-</span> Migrantes <span class="sc">%&gt;%</span></span>
-<span id="cb70-22"><a href="#cb70-22" tabindex="-1"></a>               <span class="fu">rownames_to_column</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb70-23"><a href="#cb70-23" tabindex="-1"></a>                <span class="fu">gather</span>(CVE_ZM, Value, <span class="sc">-</span>rowname)<span class="sc">%&gt;%</span></span>
-<span id="cb70-24"><a href="#cb70-24" tabindex="-1"></a>                 <span class="fu">filter</span>(rowname <span class="sc">==</span> CVE_ZM) <span class="sc">%&gt;%</span></span>
-<span id="cb70-25"><a href="#cb70-25" tabindex="-1"></a>                  <span class="fu">select</span>(<span class="sc">-</span>rowname) <span class="sc">%&gt;%</span></span>
-<span id="cb70-26"><a href="#cb70-26" tabindex="-1"></a>                   <span class="fu">droplevels</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb70-27"><a href="#cb70-27" tabindex="-1"></a>                    <span class="fu">rename</span>(<span class="st">&quot;Residentes&quot;</span> <span class="ot">=</span> <span class="st">&quot;Value&quot;</span>) </span>
+<span id="cb70-21"><a href="#cb70-21" tabindex="-1"></a>ZM <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
+<span id="cb70-22"><a href="#cb70-22" tabindex="-1"></a>                 ZM_2020 <span class="sc">%&gt;%</span> </span>
+<span id="cb70-23"><a href="#cb70-23" tabindex="-1"></a>                  <span class="fu">select</span>(CVE_ZM, CVE_MUN, NOM_MUN) <span class="sc">%&gt;%</span></span>
+<span id="cb70-24"><a href="#cb70-24" tabindex="-1"></a>                   <span class="fu">filter</span>(CVE_ZM <span class="sc">%in%</span> zm[x])  <span class="sc">%&gt;%</span> </span>
+<span id="cb70-25"><a href="#cb70-25" tabindex="-1"></a>                    <span class="fu">pull</span>(CVE_MUN)</span>
+<span id="cb70-26"><a href="#cb70-26" tabindex="-1"></a>})</span>
+<span id="cb70-27"><a href="#cb70-27" tabindex="-1"></a></span>
 <span id="cb70-28"><a href="#cb70-28" tabindex="-1"></a></span>
-<span id="cb70-29"><a href="#cb70-29" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb70-30"><a href="#cb70-30" tabindex="-1"></a><span class="do">############################### Inmigrantes ####################################</span></span>
-<span id="cb70-31"><a href="#cb70-31" tabindex="-1"></a>Inmigrantes <span class="ot">&lt;-</span> Migrantes <span class="sc">%&gt;%</span> </span>
-<span id="cb70-32"><a href="#cb70-32" tabindex="-1"></a>                <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb70-33"><a href="#cb70-33" tabindex="-1"></a>                 tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;CVE_ZM&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb70-34"><a href="#cb70-34" tabindex="-1"></a>                  <span class="fu">melt</span>(., <span class="at">id.vars =</span> <span class="st">&quot;CVE_ZM&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_ZM_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb70-35"><a href="#cb70-35" tabindex="-1"></a>                   <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
-<span id="cb70-36"><a href="#cb70-36" tabindex="-1"></a>                    <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb70-37"><a href="#cb70-37" tabindex="-1"></a>                     <span class="fu">filter</span>(CVE_ZM <span class="sc">!=</span> CVE_ZM_RES) <span class="sc">%&gt;%</span></span>
-<span id="cb70-38"><a href="#cb70-38" tabindex="-1"></a>                      <span class="fu">group_by</span>(CVE_ZM) <span class="sc">%&gt;%</span></span>
-<span id="cb70-39"><a href="#cb70-39" tabindex="-1"></a>                       <span class="fu">summarise</span>(<span class="at">Inmigrantes =</span> <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb70-40"><a href="#cb70-40" tabindex="-1"></a></span>
-<span id="cb70-41"><a href="#cb70-41" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb70-42"><a href="#cb70-42" tabindex="-1"></a><span class="do">############################### Emigrantes #####################################</span></span>
-<span id="cb70-43"><a href="#cb70-43" tabindex="-1"></a>Emigrantes <span class="ot">&lt;-</span> Migrantes <span class="sc">%&gt;%</span> </span>
-<span id="cb70-44"><a href="#cb70-44" tabindex="-1"></a>               <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb70-45"><a href="#cb70-45" tabindex="-1"></a>                tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;CVE_ZM&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb70-46"><a href="#cb70-46" tabindex="-1"></a>                 <span class="fu">melt</span>(., <span class="at">id.vars =</span> <span class="st">&quot;CVE_ZM&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_ZM_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb70-47"><a href="#cb70-47" tabindex="-1"></a>                  <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
-<span id="cb70-48"><a href="#cb70-48" tabindex="-1"></a>                   <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb70-49"><a href="#cb70-49" tabindex="-1"></a>                    <span class="fu">filter</span>(CVE_ZM <span class="sc">!=</span> CVE_ZM_RES) <span class="sc">%&gt;%</span></span>
-<span id="cb70-50"><a href="#cb70-50" tabindex="-1"></a>                     <span class="fu">group_by</span>(CVE_ZM_RES) <span class="sc">%&gt;%</span></span>
-<span id="cb70-51"><a href="#cb70-51" tabindex="-1"></a>                      <span class="fu">summarise</span>(<span class="at">Emigrantes =</span> <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb70-52"><a href="#cb70-52" tabindex="-1"></a>                       <span class="fu">rename</span>(<span class="st">&quot;CVE_ZM&quot;</span> <span class="ot">=</span> <span class="st">&quot;CVE_ZM_RES&quot;</span>) </span>
-<span id="cb70-53"><a href="#cb70-53" tabindex="-1"></a></span>
-<span id="cb70-54"><a href="#cb70-54" tabindex="-1"></a>tabla <span class="ot">&lt;-</span> Pob.Total <span class="sc">%&gt;%</span></span>
-<span id="cb70-55"><a href="#cb70-55" tabindex="-1"></a>          <span class="fu">left_join</span>(., Pob<span class="fl">.5</span>ymas, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb70-56"><a href="#cb70-56" tabindex="-1"></a>          <span class="fu">left_join</span>(., Residentes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb70-57"><a href="#cb70-57" tabindex="-1"></a>          <span class="fu">left_join</span>(., Inmigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb70-58"><a href="#cb70-58" tabindex="-1"></a>          <span class="fu">left_join</span>(., Emigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb70-59"><a href="#cb70-59" tabindex="-1"></a>           <span class="fu">mutate</span>(<span class="at">Mig.Neta =</span> .<span class="sc">$</span>Inmigrantes <span class="sc">-</span> .<span class="sc">$</span>Emigrantes,</span>
-<span id="cb70-60"><a href="#cb70-60" tabindex="-1"></a>                  <span class="at">Mig.Bruta =</span> .<span class="sc">$</span>Inmigrantes <span class="sc">+</span> .<span class="sc">$</span>Emigrantes, </span>
-<span id="cb70-61"><a href="#cb70-61" tabindex="-1"></a>                  <span class="at">Tasa.Inmig =</span> ((.<span class="sc">$</span>Inmigrantes<span class="sc">/</span> <span class="dv">5</span>) <span class="sc">/</span>((.<span class="sc">$</span>Pob.Total <span class="sc">+</span> .<span class="sc">$</span>Pob<span class="fl">.5</span>ymas) <span class="sc">/</span> <span class="dv">2</span>)) <span class="sc">*</span> <span class="dv">1000</span>,</span>
-<span id="cb70-62"><a href="#cb70-62" tabindex="-1"></a>                  <span class="at">Tasa.Emig =</span> ((.<span class="sc">$</span>Emigrantes<span class="sc">/</span> <span class="dv">5</span>) <span class="sc">/</span>((.<span class="sc">$</span>Pob.Total <span class="sc">+</span> .<span class="sc">$</span>Pob<span class="fl">.5</span>ymas) <span class="sc">/</span> <span class="dv">2</span>)) <span class="sc">*</span> <span class="dv">1000</span>,</span>
-<span id="cb70-63"><a href="#cb70-63" tabindex="-1"></a>                  <span class="at">Tasa.Mig =</span> Tasa.Inmig <span class="sc">-</span> Tasa.Emig, </span>
-<span id="cb70-64"><a href="#cb70-64" tabindex="-1"></a>                  <span class="at">Eficacia =</span> Mig.Neta <span class="sc">-</span> Mig.Bruta)</span>
-<span id="cb70-65"><a href="#cb70-65" tabindex="-1"></a></span>
-<span id="cb70-66"><a href="#cb70-66" tabindex="-1"></a><span class="fu">write.xlsx</span>(tabla, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.xlsx&quot;</span>), <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb70-67"><a href="#cb70-67" tabindex="-1"></a><span class="fu">save</span>(tabla, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.RData&quot;</span>))</span></code></pre></div>
+<span id="cb70-29"><a href="#cb70-29" tabindex="-1"></a>Residentes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
+<span id="cb70-30"><a href="#cb70-30" tabindex="-1"></a>                                     Migrantes <span class="sc">%&gt;%</span> </span>
+<span id="cb70-31"><a href="#cb70-31" tabindex="-1"></a>                                      <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb70-32"><a href="#cb70-32" tabindex="-1"></a>                                       tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-33"><a href="#cb70-33" tabindex="-1"></a>                                        <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-34"><a href="#cb70-34" tabindex="-1"></a>                                         <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
+<span id="cb70-35"><a href="#cb70-35" tabindex="-1"></a>                                          <span class="fu">filter</span>(CVE_MUN <span class="sc">==</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
+<span id="cb70-36"><a href="#cb70-36" tabindex="-1"></a>                                           <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> ZM[[x]]) <span class="sc">%&gt;%</span></span>
+<span id="cb70-37"><a href="#cb70-37" tabindex="-1"></a>                                            <span class="fu">summarize</span>(<span class="at">Residentes =</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb70-38"><a href="#cb70-38" tabindex="-1"></a>                                             <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
+<span id="cb70-39"><a href="#cb70-39" tabindex="-1"></a>}</span>
+<span id="cb70-40"><a href="#cb70-40" tabindex="-1"></a>)</span>
+<span id="cb70-41"><a href="#cb70-41" tabindex="-1"></a></span>
+<span id="cb70-42"><a href="#cb70-42" tabindex="-1"></a>Residentes <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind.data.frame, Residentes)</span>
+<span id="cb70-43"><a href="#cb70-43" tabindex="-1"></a></span>
+<span id="cb70-44"><a href="#cb70-44" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb70-45"><a href="#cb70-45" tabindex="-1"></a><span class="do">############################### Inmigrantes ####################################</span></span>
+<span id="cb70-46"><a href="#cb70-46" tabindex="-1"></a></span>
+<span id="cb70-47"><a href="#cb70-47" tabindex="-1"></a>Inmigrantes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
+<span id="cb70-48"><a href="#cb70-48" tabindex="-1"></a>                                     Migrantes <span class="sc">%&gt;%</span> </span>
+<span id="cb70-49"><a href="#cb70-49" tabindex="-1"></a>                                      <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb70-50"><a href="#cb70-50" tabindex="-1"></a>                                       tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-51"><a href="#cb70-51" tabindex="-1"></a>                                        <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-52"><a href="#cb70-52" tabindex="-1"></a>                                         <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
+<span id="cb70-53"><a href="#cb70-53" tabindex="-1"></a>                                          <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
+<span id="cb70-54"><a href="#cb70-54" tabindex="-1"></a>                                           <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> ZM[[x]]) <span class="sc">%&gt;%</span></span>
+<span id="cb70-55"><a href="#cb70-55" tabindex="-1"></a>                                            <span class="fu">summarize</span>(<span class="at">Inmigrantes =</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb70-56"><a href="#cb70-56" tabindex="-1"></a>                                             <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
+<span id="cb70-57"><a href="#cb70-57" tabindex="-1"></a>})</span>
+<span id="cb70-58"><a href="#cb70-58" tabindex="-1"></a></span>
+<span id="cb70-59"><a href="#cb70-59" tabindex="-1"></a>Inmigrantes <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind.data.frame, Inmigrantes)</span>
+<span id="cb70-60"><a href="#cb70-60" tabindex="-1"></a></span>
+<span id="cb70-61"><a href="#cb70-61" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb70-62"><a href="#cb70-62" tabindex="-1"></a><span class="do">############################### Emigrantes #####################################</span></span>
+<span id="cb70-63"><a href="#cb70-63" tabindex="-1"></a>Emigrantes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
+<span id="cb70-64"><a href="#cb70-64" tabindex="-1"></a>                                     Migrantes <span class="sc">%&gt;%</span> </span>
+<span id="cb70-65"><a href="#cb70-65" tabindex="-1"></a>                                      <span class="fu">t</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb70-66"><a href="#cb70-66" tabindex="-1"></a>                                       <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb70-67"><a href="#cb70-67" tabindex="-1"></a>                                        tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-68"><a href="#cb70-68" tabindex="-1"></a>                                         <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-69"><a href="#cb70-69" tabindex="-1"></a>                                          <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
+<span id="cb70-70"><a href="#cb70-70" tabindex="-1"></a>                                           <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
+<span id="cb70-71"><a href="#cb70-71" tabindex="-1"></a>                                           <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> ZM[[x]]) <span class="sc">%&gt;%</span></span>
+<span id="cb70-72"><a href="#cb70-72" tabindex="-1"></a>                                            <span class="fu">summarize</span>(<span class="at">Emigrantes =</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb70-73"><a href="#cb70-73" tabindex="-1"></a>                                             <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
+<span id="cb70-74"><a href="#cb70-74" tabindex="-1"></a>})</span>
+<span id="cb70-75"><a href="#cb70-75" tabindex="-1"></a></span>
+<span id="cb70-76"><a href="#cb70-76" tabindex="-1"></a>Emigrantes <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind.data.frame, Emigrantes)</span>
+<span id="cb70-77"><a href="#cb70-77" tabindex="-1"></a></span>
+<span id="cb70-78"><a href="#cb70-78" tabindex="-1"></a></span>
+<span id="cb70-79"><a href="#cb70-79" tabindex="-1"></a>tabla <span class="ot">&lt;-</span> Pob.Total <span class="sc">%&gt;%</span></span>
+<span id="cb70-80"><a href="#cb70-80" tabindex="-1"></a>          <span class="fu">left_join</span>(., Pob<span class="fl">.5</span>ymas, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb70-81"><a href="#cb70-81" tabindex="-1"></a>          <span class="fu">left_join</span>(., Residentes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb70-82"><a href="#cb70-82" tabindex="-1"></a>          <span class="fu">left_join</span>(., Inmigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb70-83"><a href="#cb70-83" tabindex="-1"></a>          <span class="fu">left_join</span>(., Emigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb70-84"><a href="#cb70-84" tabindex="-1"></a>           <span class="fu">mutate</span>(<span class="at">Mig.Neta =</span> .<span class="sc">$</span>Inmigrantes <span class="sc">-</span> .<span class="sc">$</span>Emigrantes,</span>
+<span id="cb70-85"><a href="#cb70-85" tabindex="-1"></a>                  <span class="at">Mig.Bruta =</span> .<span class="sc">$</span>Inmigrantes <span class="sc">+</span> .<span class="sc">$</span>Emigrantes, </span>
+<span id="cb70-86"><a href="#cb70-86" tabindex="-1"></a>                  <span class="at">Tasa.Inmig =</span> ((.<span class="sc">$</span>Inmigrantes<span class="sc">/</span> <span class="dv">5</span>) <span class="sc">/</span>((.<span class="sc">$</span>Pob.Total <span class="sc">+</span> .<span class="sc">$</span>Pob<span class="fl">.5</span>ymas) <span class="sc">/</span> <span class="dv">2</span>)) <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb70-87"><a href="#cb70-87" tabindex="-1"></a>                  <span class="at">Tasa.Emig =</span> ((.<span class="sc">$</span>Emigrantes<span class="sc">/</span> <span class="dv">5</span>) <span class="sc">/</span>((.<span class="sc">$</span>Pob.Total <span class="sc">+</span> .<span class="sc">$</span>Pob<span class="fl">.5</span>ymas) <span class="sc">/</span> <span class="dv">2</span>)) <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb70-88"><a href="#cb70-88" tabindex="-1"></a>                  <span class="at">Tasa.Mig =</span> Tasa.Inmig <span class="sc">-</span> Tasa.Emig, </span>
+<span id="cb70-89"><a href="#cb70-89" tabindex="-1"></a>                  <span class="at">Eficacia =</span> Mig.Neta <span class="sc">-</span> Mig.Bruta)</span>
+<span id="cb70-90"><a href="#cb70-90" tabindex="-1"></a></span>
+<span id="cb70-91"><a href="#cb70-91" tabindex="-1"></a><span class="fu">write.xlsx</span>(tabla, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.xlsx&quot;</span>), <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb70-92"><a href="#cb70-92" tabindex="-1"></a><span class="fu">save</span>(tabla, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.RData&quot;</span>))</span></code></pre></div>
 </div>
 </div>
 <div id="migración-intrametropolitana" class="section level2 tabset tabset-pills">
@@ -6367,86 +6616,515 @@ satura la computadora</p>
 <span id="cb76-18"><a href="#cb76-18" tabindex="-1"></a><span class="do">########################### Residentes #########################################</span></span>
 <span id="cb76-19"><a href="#cb76-19" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de migracion reciente a nivel intermunicipal 2020.RData&quot;</span>))</span>
 <span id="cb76-20"><a href="#cb76-20" tabindex="-1"></a></span>
-<span id="cb76-21"><a href="#cb76-21" tabindex="-1"></a>Residentes <span class="ot">&lt;-</span> Migrantes <span class="sc">%&gt;%</span> </span>
-<span id="cb76-22"><a href="#cb76-22" tabindex="-1"></a>               <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb76-23"><a href="#cb76-23" tabindex="-1"></a>                tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">vars =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb76-24"><a href="#cb76-24" tabindex="-1"></a>                <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) </span>
-<span id="cb76-25"><a href="#cb76-25" tabindex="-1"></a></span>
-<span id="cb76-26"><a href="#cb76-26" tabindex="-1"></a>                 <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
-<span id="cb76-27"><a href="#cb76-27" tabindex="-1"></a>                                         <span class="fu">filter</span>(CVE_MUN <span class="sc">==</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
-<span id="cb76-28"><a href="#cb76-28" tabindex="-1"></a>                                          <span class="fu">summarize</span>(<span class="at">Residentes =</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb76-29"><a href="#cb76-29" tabindex="-1"></a>                                           <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
-<span id="cb76-30"><a href="#cb76-30" tabindex="-1"></a><span class="er">}</span></span>
-<span id="cb76-31"><a href="#cb76-31" tabindex="-1"></a><span class="er">)</span></span>
-<span id="cb76-32"><a href="#cb76-32" tabindex="-1"></a></span>
-<span id="cb76-33"><a href="#cb76-33" tabindex="-1"></a></span>
-<span id="cb76-34"><a href="#cb76-34" tabindex="-1"></a>Residentes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
-<span id="cb76-35"><a href="#cb76-35" tabindex="-1"></a>                                     MR[[x]] <span class="sc">%&gt;%</span> </span>
-<span id="cb76-36"><a href="#cb76-36" tabindex="-1"></a>                                      <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb76-37"><a href="#cb76-37" tabindex="-1"></a>                                       tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">vars =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb76-38"><a href="#cb76-38" tabindex="-1"></a>                                       <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb76-39"><a href="#cb76-39" tabindex="-1"></a>                                        <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
-<span id="cb76-40"><a href="#cb76-40" tabindex="-1"></a>                                         <span class="fu">filter</span>(CVE_MUN <span class="sc">==</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
-<span id="cb76-41"><a href="#cb76-41" tabindex="-1"></a>                                          <span class="fu">summarize</span>(<span class="at">Residentes =</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb76-42"><a href="#cb76-42" tabindex="-1"></a>                                           <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
-<span id="cb76-43"><a href="#cb76-43" tabindex="-1"></a>}</span>
-<span id="cb76-44"><a href="#cb76-44" tabindex="-1"></a>)</span>
-<span id="cb76-45"><a href="#cb76-45" tabindex="-1"></a></span>
-<span id="cb76-46"><a href="#cb76-46" tabindex="-1"></a>Residentes <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind.data.frame, Residentes)</span>
-<span id="cb76-47"><a href="#cb76-47" tabindex="-1"></a></span>
-<span id="cb76-48"><a href="#cb76-48" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb76-49"><a href="#cb76-49" tabindex="-1"></a><span class="do">############################### Inmigrantes ####################################</span></span>
-<span id="cb76-50"><a href="#cb76-50" tabindex="-1"></a></span>
-<span id="cb76-51"><a href="#cb76-51" tabindex="-1"></a>Inmigrantes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
-<span id="cb76-52"><a href="#cb76-52" tabindex="-1"></a>                                      MR[[x]] <span class="sc">%&gt;%</span> </span>
-<span id="cb76-53"><a href="#cb76-53" tabindex="-1"></a>                                       <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb76-54"><a href="#cb76-54" tabindex="-1"></a>                                        <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb76-55"><a href="#cb76-55" tabindex="-1"></a>                                         <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
-<span id="cb76-56"><a href="#cb76-56" tabindex="-1"></a>                                          <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
-<span id="cb76-57"><a href="#cb76-57" tabindex="-1"></a>                                           <span class="fu">summarize</span>(<span class="at">Inmigrantes =</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb76-58"><a href="#cb76-58" tabindex="-1"></a>                                            <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
-<span id="cb76-59"><a href="#cb76-59" tabindex="-1"></a>})</span>
+<span id="cb76-21"><a href="#cb76-21" tabindex="-1"></a>ZM <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
+<span id="cb76-22"><a href="#cb76-22" tabindex="-1"></a>                    ZM_2020 <span class="sc">%&gt;%</span> </span>
+<span id="cb76-23"><a href="#cb76-23" tabindex="-1"></a>                     <span class="fu">select</span>(CVE_ZM, CVE_MUN, NOM_MUN) <span class="sc">%&gt;%</span></span>
+<span id="cb76-24"><a href="#cb76-24" tabindex="-1"></a>                      <span class="fu">filter</span>(CVE_ZM <span class="sc">%in%</span> zm[x])  <span class="sc">%&gt;%</span> </span>
+<span id="cb76-25"><a href="#cb76-25" tabindex="-1"></a>                      <span class="fu">pull</span>(CVE_MUN)</span>
+<span id="cb76-26"><a href="#cb76-26" tabindex="-1"></a>})</span>
+<span id="cb76-27"><a href="#cb76-27" tabindex="-1"></a></span>
+<span id="cb76-28"><a href="#cb76-28" tabindex="-1"></a></span>
+<span id="cb76-29"><a href="#cb76-29" tabindex="-1"></a>Residentes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
+<span id="cb76-30"><a href="#cb76-30" tabindex="-1"></a>                                     Migrantes <span class="sc">%&gt;%</span> </span>
+<span id="cb76-31"><a href="#cb76-31" tabindex="-1"></a>                                      <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb76-32"><a href="#cb76-32" tabindex="-1"></a>                                       tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb76-33"><a href="#cb76-33" tabindex="-1"></a>                                        <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb76-34"><a href="#cb76-34" tabindex="-1"></a>                                         <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
+<span id="cb76-35"><a href="#cb76-35" tabindex="-1"></a>                                          <span class="fu">filter</span>(CVE_MUN <span class="sc">==</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
+<span id="cb76-36"><a href="#cb76-36" tabindex="-1"></a>                                           <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> ZM[[x]]) <span class="sc">%&gt;%</span></span>
+<span id="cb76-37"><a href="#cb76-37" tabindex="-1"></a>                                            <span class="fu">summarize</span>(<span class="at">Residentes =</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb76-38"><a href="#cb76-38" tabindex="-1"></a>                                             <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
+<span id="cb76-39"><a href="#cb76-39" tabindex="-1"></a>}</span>
+<span id="cb76-40"><a href="#cb76-40" tabindex="-1"></a>)</span>
+<span id="cb76-41"><a href="#cb76-41" tabindex="-1"></a></span>
+<span id="cb76-42"><a href="#cb76-42" tabindex="-1"></a>Residentes <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind.data.frame, Residentes)</span>
+<span id="cb76-43"><a href="#cb76-43" tabindex="-1"></a></span>
+<span id="cb76-44"><a href="#cb76-44" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb76-45"><a href="#cb76-45" tabindex="-1"></a><span class="do">############################### Inmigrantes ####################################</span></span>
+<span id="cb76-46"><a href="#cb76-46" tabindex="-1"></a></span>
+<span id="cb76-47"><a href="#cb76-47" tabindex="-1"></a>Inmigrantes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
+<span id="cb76-48"><a href="#cb76-48" tabindex="-1"></a>                                     Migrantes <span class="sc">%&gt;%</span> </span>
+<span id="cb76-49"><a href="#cb76-49" tabindex="-1"></a>                                      <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb76-50"><a href="#cb76-50" tabindex="-1"></a>                                       tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb76-51"><a href="#cb76-51" tabindex="-1"></a>                                        <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb76-52"><a href="#cb76-52" tabindex="-1"></a>                                         <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
+<span id="cb76-53"><a href="#cb76-53" tabindex="-1"></a>                                          <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
+<span id="cb76-54"><a href="#cb76-54" tabindex="-1"></a>                                           <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> ZM[[x]]) <span class="sc">%&gt;%</span></span>
+<span id="cb76-55"><a href="#cb76-55" tabindex="-1"></a>                                            <span class="fu">summarize</span>(<span class="at">Inmigrantes =</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb76-56"><a href="#cb76-56" tabindex="-1"></a>                                             <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
+<span id="cb76-57"><a href="#cb76-57" tabindex="-1"></a>})</span>
+<span id="cb76-58"><a href="#cb76-58" tabindex="-1"></a></span>
+<span id="cb76-59"><a href="#cb76-59" tabindex="-1"></a>Inmigrantes <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind.data.frame, Inmigrantes)</span>
 <span id="cb76-60"><a href="#cb76-60" tabindex="-1"></a></span>
-<span id="cb76-61"><a href="#cb76-61" tabindex="-1"></a>Inmigrantes <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind.data.frame, Inmigrantes)</span>
-<span id="cb76-62"><a href="#cb76-62" tabindex="-1"></a></span>
-<span id="cb76-63"><a href="#cb76-63" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb76-64"><a href="#cb76-64" tabindex="-1"></a><span class="do">############################### Emigrantes #####################################</span></span>
-<span id="cb76-65"><a href="#cb76-65" tabindex="-1"></a>Emigrantes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
-<span id="cb76-66"><a href="#cb76-66" tabindex="-1"></a>                                    MR[[x]] <span class="sc">%&gt;%</span> </span>
-<span id="cb76-67"><a href="#cb76-67" tabindex="-1"></a>                                     tibble<span class="sc">::</span><span class="fu">column_to_rownames</span>(<span class="at">var =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb76-68"><a href="#cb76-68" tabindex="-1"></a>                                      <span class="fu">t</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb76-69"><a href="#cb76-69" tabindex="-1"></a>                                       <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb76-70"><a href="#cb76-70" tabindex="-1"></a>                                        tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb76-71"><a href="#cb76-71" tabindex="-1"></a>                                         <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb76-72"><a href="#cb76-72" tabindex="-1"></a>                                          <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
-<span id="cb76-73"><a href="#cb76-73" tabindex="-1"></a>                                           <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
-<span id="cb76-74"><a href="#cb76-74" tabindex="-1"></a>                                            <span class="fu">summarize</span>(<span class="at">Emigrantes=</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb76-75"><a href="#cb76-75" tabindex="-1"></a>                                             <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
-<span id="cb76-76"><a href="#cb76-76" tabindex="-1"></a>})</span>
+<span id="cb76-61"><a href="#cb76-61" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb76-62"><a href="#cb76-62" tabindex="-1"></a><span class="do">############################### Emigrantes #####################################</span></span>
+<span id="cb76-63"><a href="#cb76-63" tabindex="-1"></a>Emigrantes <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(zm), <span class="cf">function</span>(x){</span>
+<span id="cb76-64"><a href="#cb76-64" tabindex="-1"></a>                                     Migrantes <span class="sc">%&gt;%</span> </span>
+<span id="cb76-65"><a href="#cb76-65" tabindex="-1"></a>                                      <span class="fu">t</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb76-66"><a href="#cb76-66" tabindex="-1"></a>                                       <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb76-67"><a href="#cb76-67" tabindex="-1"></a>                                        tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">&quot;CVE_MUN&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb76-68"><a href="#cb76-68" tabindex="-1"></a>                                         <span class="fu">melt</span>(., <span class="at">id.vars =</span>  <span class="st">&quot;CVE_MUN&quot;</span>, <span class="at">variable.name =</span> <span class="st">&quot;CVE_MUN_RES&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb76-69"><a href="#cb76-69" tabindex="-1"></a>                                          <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="dv">3</span>), as.numeric) <span class="sc">%&gt;%</span></span>
+<span id="cb76-70"><a href="#cb76-70" tabindex="-1"></a>                                           <span class="fu">filter</span>(CVE_MUN <span class="sc">!=</span> CVE_MUN_RES)  <span class="sc">%&gt;%</span></span>
+<span id="cb76-71"><a href="#cb76-71" tabindex="-1"></a>                                           <span class="fu">filter</span>(CVE_MUN <span class="sc">%in%</span> ZM[[x]]) <span class="sc">%&gt;%</span></span>
+<span id="cb76-72"><a href="#cb76-72" tabindex="-1"></a>                                            <span class="fu">summarize</span>(<span class="at">Emigrantes =</span>  <span class="fu">sum</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb76-73"><a href="#cb76-73" tabindex="-1"></a>                                             <span class="fu">mutate</span>(<span class="at">CVE_ZM =</span> <span class="sc">!!</span><span class="fu">paste0</span>(zm[x])) </span>
+<span id="cb76-74"><a href="#cb76-74" tabindex="-1"></a>})</span>
+<span id="cb76-75"><a href="#cb76-75" tabindex="-1"></a></span>
+<span id="cb76-76"><a href="#cb76-76" tabindex="-1"></a>Emigrantes <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind.data.frame, Emigrantes)</span>
 <span id="cb76-77"><a href="#cb76-77" tabindex="-1"></a></span>
-<span id="cb76-78"><a href="#cb76-78" tabindex="-1"></a>Emigrantes <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind.data.frame, Emigrantes)</span>
-<span id="cb76-79"><a href="#cb76-79" tabindex="-1"></a></span>
-<span id="cb76-80"><a href="#cb76-80" tabindex="-1"></a></span>
-<span id="cb76-81"><a href="#cb76-81" tabindex="-1"></a>tabla <span class="ot">&lt;-</span> Pob.Total <span class="sc">%&gt;%</span></span>
-<span id="cb76-82"><a href="#cb76-82" tabindex="-1"></a>          <span class="fu">left_join</span>(., Pob<span class="fl">.5</span>ymas, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb76-83"><a href="#cb76-83" tabindex="-1"></a>          <span class="fu">left_join</span>(., Residentes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb76-84"><a href="#cb76-84" tabindex="-1"></a>          <span class="fu">left_join</span>(., Inmigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb76-85"><a href="#cb76-85" tabindex="-1"></a>          <span class="fu">left_join</span>(., Emigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb76-86"><a href="#cb76-86" tabindex="-1"></a>           <span class="fu">mutate</span>(<span class="at">Mig.Neta =</span> .<span class="sc">$</span>Inmigrantes <span class="sc">-</span> .<span class="sc">$</span>Emigrantes,</span>
-<span id="cb76-87"><a href="#cb76-87" tabindex="-1"></a>                  <span class="at">Mig.Bruta =</span> .<span class="sc">$</span>Inmigrantes <span class="sc">+</span> .<span class="sc">$</span>Emigrantes, </span>
-<span id="cb76-88"><a href="#cb76-88" tabindex="-1"></a>                  <span class="at">Tasa.Inmig =</span> ((.<span class="sc">$</span>Inmigrantes<span class="sc">/</span> <span class="dv">5</span>) <span class="sc">/</span>((.<span class="sc">$</span>Pob.Total <span class="sc">+</span> .<span class="sc">$</span>Pob<span class="fl">.5</span>ymas) <span class="sc">/</span> <span class="dv">2</span>)) <span class="sc">*</span> <span class="dv">1000</span>,</span>
-<span id="cb76-89"><a href="#cb76-89" tabindex="-1"></a>                  <span class="at">Tasa.Emig =</span> ((.<span class="sc">$</span>Emigrantes<span class="sc">/</span> <span class="dv">5</span>) <span class="sc">/</span>((.<span class="sc">$</span>Pob.Total <span class="sc">+</span> .<span class="sc">$</span>Pob<span class="fl">.5</span>ymas) <span class="sc">/</span> <span class="dv">2</span>)) <span class="sc">*</span> <span class="dv">1000</span>,</span>
-<span id="cb76-90"><a href="#cb76-90" tabindex="-1"></a>                  <span class="at">Tasa.Mig =</span> Tasa.Inmig <span class="sc">-</span> Tasa.Emig, </span>
-<span id="cb76-91"><a href="#cb76-91" tabindex="-1"></a>                  <span class="at">Eficacia =</span> Mig.Neta <span class="sc">-</span> Mig.Bruta)</span>
-<span id="cb76-92"><a href="#cb76-92" tabindex="-1"></a></span>
-<span id="cb76-93"><a href="#cb76-93" tabindex="-1"></a><span class="fu">write.xlsx</span>(tabla, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intrametropolitano) 2020.xlsx&quot;</span>), <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb76-94"><a href="#cb76-94" tabindex="-1"></a><span class="fu">save</span>(tabla, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intrametropolitano) 2020.RData&quot;</span>))</span></code></pre></div>
+<span id="cb76-78"><a href="#cb76-78" tabindex="-1"></a></span>
+<span id="cb76-79"><a href="#cb76-79" tabindex="-1"></a>tabla <span class="ot">&lt;-</span> Pob.Total <span class="sc">%&gt;%</span></span>
+<span id="cb76-80"><a href="#cb76-80" tabindex="-1"></a>          <span class="fu">left_join</span>(., Pob<span class="fl">.5</span>ymas, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb76-81"><a href="#cb76-81" tabindex="-1"></a>          <span class="fu">left_join</span>(., Residentes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb76-82"><a href="#cb76-82" tabindex="-1"></a>          <span class="fu">left_join</span>(., Inmigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb76-83"><a href="#cb76-83" tabindex="-1"></a>          <span class="fu">left_join</span>(., Emigrantes, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;CVE_ZM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb76-84"><a href="#cb76-84" tabindex="-1"></a>           <span class="fu">mutate</span>(<span class="at">Mig.Neta =</span> .<span class="sc">$</span>Inmigrantes <span class="sc">-</span> .<span class="sc">$</span>Emigrantes,</span>
+<span id="cb76-85"><a href="#cb76-85" tabindex="-1"></a>                  <span class="at">Mig.Bruta =</span> .<span class="sc">$</span>Inmigrantes <span class="sc">+</span> .<span class="sc">$</span>Emigrantes, </span>
+<span id="cb76-86"><a href="#cb76-86" tabindex="-1"></a>                  <span class="at">Tasa.Inmig =</span> ((.<span class="sc">$</span>Inmigrantes<span class="sc">/</span> <span class="dv">5</span>) <span class="sc">/</span>((.<span class="sc">$</span>Pob.Total <span class="sc">+</span> .<span class="sc">$</span>Pob<span class="fl">.5</span>ymas) <span class="sc">/</span> <span class="dv">2</span>)) <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb76-87"><a href="#cb76-87" tabindex="-1"></a>                  <span class="at">Tasa.Emig =</span> ((.<span class="sc">$</span>Emigrantes<span class="sc">/</span> <span class="dv">5</span>) <span class="sc">/</span>((.<span class="sc">$</span>Pob.Total <span class="sc">+</span> .<span class="sc">$</span>Pob<span class="fl">.5</span>ymas) <span class="sc">/</span> <span class="dv">2</span>)) <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb76-88"><a href="#cb76-88" tabindex="-1"></a>                  <span class="at">Tasa.Mig =</span> Tasa.Inmig <span class="sc">-</span> Tasa.Emig, </span>
+<span id="cb76-89"><a href="#cb76-89" tabindex="-1"></a>                  <span class="at">Eficacia =</span> Mig.Neta <span class="sc">-</span> Mig.Bruta)</span>
+<span id="cb76-90"><a href="#cb76-90" tabindex="-1"></a></span>
+<span id="cb76-91"><a href="#cb76-91" tabindex="-1"></a><span class="fu">write.xlsx</span>(tabla, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intermetropolitano) 2020.xlsx&quot;</span>), <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb76-92"><a href="#cb76-92" tabindex="-1"></a><span class="fu">save</span>(tabla, <span class="at">file =</span> <span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intermetropolitano) 2020.RData&quot;</span>))</span></code></pre></div>
 </div>
 </div>
 </div>
 <div id="referencias" class="section level1">
 <h1>Referencias</h1>
 <p>Librerias que se usaron en el documento</p>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; overflow-x: scroll; width:100%; ">
+<table class="table table-condensed table-responsive table-bordered lightable-classic" style="font-size: 10px; margin-left: auto; margin-right: auto; font-family: montserrat; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+package
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+loadedversion
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+source
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Cairo
+</td>
+<td style="text-align:left;">
+1.6-1
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+chorddiag
+</td>
+<td style="text-align:left;">
+0.1.3
+</td>
+<td style="text-align:left;">
+Github (<a href="mailto:mattflor/chorddiag@1688d72cd93071abb373e054190363bdfb3af2af" class="email">mattflor/chorddiag@1688d72cd93071abb373e054190363bdfb3af2af</a>)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+circlize
+</td>
+<td style="text-align:left;">
+0.4.15
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+doMC
+</td>
+<td style="text-align:left;">
+1.3.5
+</td>
+<td style="text-align:left;">
+R-Forge (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+dplyr
+</td>
+<td style="text-align:left;">
+1.1.3
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.2)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+expss
+</td>
+<td style="text-align:left;">
+0.11.6
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+extrafont
+</td>
+<td style="text-align:left;">
+0.19
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.0)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+foreach
+</td>
+<td style="text-align:left;">
+1.5.2
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ggalluvial
+</td>
+<td style="text-align:left;">
+0.12.5
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ggplot2
+</td>
+<td style="text-align:left;">
+3.4.3
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ggpubr
+</td>
+<td style="text-align:left;">
+0.6.0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ggrepel
+</td>
+<td style="text-align:left;">
+0.9.3
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ggsankey
+</td>
+<td style="text-align:left;">
+0.0.99999
+</td>
+<td style="text-align:left;">
+Github (<a href="mailto:davidsjoberg/ggsankey@3e171a83a5364bb24df7cb2cd9203dd79b1dae29" class="email">davidsjoberg/ggsankey@3e171a83a5364bb24df7cb2cd9203dd79b1dae29</a>)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gt
+</td>
+<td style="text-align:left;">
+0.10.0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+haven
+</td>
+<td style="text-align:left;">
+2.5.3
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hmisc
+</td>
+<td style="text-align:left;">
+5.1-0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+iterators
+</td>
+<td style="text-align:left;">
+1.0.14
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+janitor
+</td>
+<td style="text-align:left;">
+2.2.0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+kableExtra
+</td>
+<td style="text-align:left;">
+1.3.4
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+knitr
+</td>
+<td style="text-align:left;">
+1.45
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.2)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+maditr
+</td>
+<td style="text-align:left;">
+0.8.3
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Matrix
+</td>
+<td style="text-align:left;">
+1.6-1.1
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+network
+</td>
+<td style="text-align:left;">
+1.18.1
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+openxlsx
+</td>
+<td style="text-align:left;">
+4.2.5.2
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+reshape2
+</td>
+<td style="text-align:left;">
+1.4.4
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+showtext
+</td>
+<td style="text-align:left;">
+0.9-6
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+showtextdb
+</td>
+<td style="text-align:left;">
+3.0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sjlabelled
+</td>
+<td style="text-align:left;">
+1.2.0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sna
+</td>
+<td style="text-align:left;">
+2.7-1
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+srvyr
+</td>
+<td style="text-align:left;">
+1.2.0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+statnet.common
+</td>
+<td style="text-align:left;">
+4.9.0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+stringr
+</td>
+<td style="text-align:left;">
+1.5.0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+survey
+</td>
+<td style="text-align:left;">
+4.2
+</td>
+<td style="text-align:left;">
+Github (<a href="mailto:bschneidr/fastsurvey@5e4df7bd6c4bac44fa9c6681db40c496dd701f45" class="email">bschneidr/fastsurvey@5e4df7bd6c4bac44fa9c6681db40c496dd701f45</a>)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+survival
+</td>
+<td style="text-align:left;">
+3.5-5
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sysfonts
+</td>
+<td style="text-align:left;">
+0.8.8
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tibble
+</td>
+<td style="text-align:left;">
+3.2.1
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tidyr
+</td>
+<td style="text-align:left;">
+1.3.0
+</td>
+<td style="text-align:left;">
+CRAN (R 4.3.1)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAAAfCAMAAABUFvrSAAAAAXNSR0IB2cksfwAAAARnQU1BAACxjnz7UZMAAAAgY0hSTQAAeiUAAICDAAD5/wAAgOkAAHUwAADqYAAAOpgAABdvkl/FRgAAAW5QTFRFAAAAAAAA////////////7+/v39/f1tXV09bS0tXS0tXR0dTR0dTQ0NTQ0NPPz9PPztLOztHNzdHNzdHMz8/PzdDMzNDMzNDLzM/Ly8/Ly8/Ky87Kys3Jyc3Jyc3IyMzIyMzHx8vHxsrGxsrFxcnFxcnExMnExMjDw8jDxMfDw8fCwsfCwcXAwMXAwMW/wMS/v8S+v8O+vsO+vsK9vcK9vcK8v7+/vMG8vMG7vMC8u8C7u8C6ur+6ur+5ub65ub64uL23t7y2tru1tbq0tLqztLmzs7iysrixsrexsbewsbawsLavsLWvr7Wur7SusLOvrrStrrOtr7KvrbOsrLKrr6+vq7Gqn6OenqCdn5+flpmWk5iTkZSRkZORj4+PiYyJhIaEhIWEgoWCgICAfX98fH98eXx5cHJvcHBwYGBgXV5dUFFQUFBQQ0RDQEBAPj8+NTY1MjMxMDAwKSkpKCkoICAgGxsbEBAQDg4ODQ4N2y3MbAAAAAR0Uk5T/wAKDnDBpeYAAALVSURBVHjatZX9V9JgFMdvNQh1Tme2zU1othSl5WsQZoqIrxmmqaUpqS2JKczibfLfd5+hHCYybB6/B859ftg+5+57Xx54Ag+iR/hPxGPRSXVYkf2SwHGC2C8rQXUiOhdPLK992tze3vn6/wKLOxseCykBkWXoNp+vrYNh+wJKaDQ8S8jJze0dl2TkvgkOSCx9kqsAqpI7prtFeUh9i+SV9eRWY8rpAqAKaWdwDLkyz6TKUFP5kOECg2p4Lr60ut6Q8kERwMhkDIDigRM4OhaUOfocT6auRSKabuLxfORZYGg0GltAM26k/O0Ssl4K5c3C5YEDeDI0wBOuqXmoqvYRXRzh5NDEzHwCU7aDi6DjMwDkQSg6gFVFYpCb91I1efKYMyMqahhT/rhh8yIN2adVMCoL6ebg4RdsCrmYrp182B0Ijs/EF1eTW/XgAtRl4IVCc7Ai0mUweymbPCaU6T5FfRdLrNi9AINC6QA6iQY0B8s9JwCanUvsg2NWDk3Nohd2cIZCAYrEjAPY35UDE42IZA1Dq4Yf+IoJOaafeLG0tuEOLNEV0BEIRMauFXTysZUOcXD0/fziWtKdFUI7AKaYh5I3UtrPY3vslvYtL9oERY1iwyG4oXgALYvH+wAiFGX5XAvWF/i4l41gbDfKod3cgu0DksEBuYsVnt6ShlaQ0GCF00g7F++qaleBZFOhpcbiEXIRIK9n8q2WkL/rHEyq1m67hhWoErabPzj+odpubtam3JNCL24fkNdTcwvLZPLcLPpX1kh7HUbaJRiX0N5tSyjFBoYncPDIEnIFhlOJOUNy3RryWmtT+gn31G+hs37RezQT4A/Nn8K99YvrPLtxNdHPv0MzVeeDHFqTBWav/jJNMXxzLlBXP+oubkgsnbq+/g9pVnLy4Xptwl3094vY00W3+3ztNMP2fb4AB9mMaK2Lo2lJ4HlBmj4iWLcZP7wePwz20T8rQcP0CuFIbQAAAABJRU5ErkJggg==" alt="Creative Commons Licence" style="border-width:0" /></a><br />This
+work by <span xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName"><strong>Diana Villasana
+Ocampo</strong></span> is licensed under a
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative
+Commons Attribution 4.0 International License</a>.</p>
 </div>
 
 

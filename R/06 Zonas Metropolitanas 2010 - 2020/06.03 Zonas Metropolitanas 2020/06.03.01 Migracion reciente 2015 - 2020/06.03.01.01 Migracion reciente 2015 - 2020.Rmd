@@ -5025,46 +5025,71 @@ Pob.Total <- mydata %>%
 Pob.5ymas <- mydata %>%
               as.data.frame() %>%
                mutate(EDAD = as.numeric(.$EDAD)) %>%
-                subset(EDAD >= 5 & EDAD <=130) %>%
+                subset(EDAD >= 5 & EDAD <= 130) %>%
                  group_by(CVE_ZM) %>%
                   summarise(Pob.5ymas = sum(FACTOR)) 
 
 ################################################################################
 ########################### Residentes #########################################
-load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de MR5a a nivel metropolitano 2020.RData"))
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de migracion reciente a nivel municipal.RData"))
 
-Residentes <- Migrantes %>%
-               rownames_to_column() %>%
-                gather(CVE_ZM, Value, -rowname)%>%
-                 filter(rowname == CVE_ZM) %>%
-                  select(-rowname) %>%
-                   droplevels() %>%
-                    rename("Residentes" = "Value") 
+ZM <- lapply(1:length(zm), function(x){
+                 ZM_2020 %>% 
+                  select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
+                   filter(CVE_ZM %in% zm[x])  %>% 
+                    pull(CVE_MUN)
+})
+
+
+Residentes <- lapply(1:length(zm), function(x){
+                                     Migrantes %>% 
+                                      as.data.frame() %>%
+                                       tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                        melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_RES") %>%
+                                         mutate_at(vars(3), as.numeric) %>%
+                                          filter(CVE_MUN == CVE_MUN_RES)  %>%
+                                           filter(CVE_MUN %in% ZM[[x]]) %>%
+                                            summarize(Residentes =  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+}
+)
+
+Residentes <- do.call(rbind.data.frame, Residentes)
 
 ################################################################################
 ############################### Inmigrantes ####################################
-Inmigrantes <- Migrantes %>% 
-                as.data.frame() %>%
-                 tibble::rownames_to_column(var = "CVE_ZM") %>%
-                  melt(., id.vars = "CVE_ZM", variable.name = "CVE_ZM_RES") %>%
-                   mutate_at(vars(3), as.numeric) %>%
-                    as_tibble() %>%
-                     filter(CVE_ZM != CVE_ZM_RES) %>%
-                      group_by(CVE_ZM) %>%
-                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+Inmigrantes <- lapply(1:length(zm), function(x){
+                                     Migrantes %>% 
+                                      as.data.frame() %>%
+                                       tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                        melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_RES") %>%
+                                         mutate_at(vars(3), as.numeric) %>%
+                                          filter(CVE_MUN != CVE_MUN_RES)  %>%
+                                           filter(CVE_MUN %in% ZM[[x]]) %>%
+                                            summarize(Inmigrantes =  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+})
+
+Inmigrantes <- do.call(rbind.data.frame, Inmigrantes)
 
 ################################################################################
 ############################### Emigrantes #####################################
-Emigrantes <- Migrantes %>% 
-               as.data.frame() %>%
-                tibble::rownames_to_column(var = "CVE_ZM") %>%
-                 melt(., id.vars = "CVE_ZM", variable.name = "CVE_ZM_RES") %>%
-                  mutate_at(vars(3), as.numeric) %>%
-                   as_tibble() %>%
-                    filter(CVE_ZM != CVE_ZM_RES) %>%
-                     group_by(CVE_ZM_RES) %>%
-                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
-                       rename("CVE_ZM" = "CVE_ZM_RES") 
+Emigrantes <- lapply(1:length(zm), function(x){
+                                     Migrantes %>% 
+                                      t() %>%
+                                       as.data.frame() %>%
+                                        tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                         melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_RES") %>%
+                                          mutate_at(vars(3), as.numeric) %>%
+                                           filter(CVE_MUN != CVE_MUN_RES)  %>%
+                                           filter(CVE_MUN %in% ZM[[x]]) %>%
+                                            summarize(Emigrantes =  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+})
+
+Emigrantes <- do.call(rbind.data.frame, Emigrantes)
+
 
 tabla <- Pob.Total %>%
           left_join(., Pob.5ymas, by = c("CVE_ZM")) %>%
@@ -5505,14 +5530,19 @@ tabla[1:20,] %>%
 
 Librerias que se usaron en el documento
 
-```{r, echo = FALSE}
-sesion_info <- devtools::session_info()
+```{r, echo = FALSE, eval = TRUE}
+#sesion_info <- devtools::session_info()
+#saveRDS(sesion_info, file = paste0(here::here(), "/Output/sesion_info.RDS"))
+sesion_info <- readRDS(file = paste0(here::here(), "/Output/sesion_info.RDS"))
+require(knitr)
+require(kableExtra)
 kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),
                     c(package, loadedversion, source))) %>%
  kable_styling(font_size = 10, 
                bootstrap_options = c("condensed", "responsive", "bordered")) %>%
   kable_classic(full_width = TRUE, html_font = "montserrat") %>% 
-   scroll_box(width = "100%", height = "150px") %>%  
+   scroll_box(width = "100%", height = "400px") %>%  
     gsub("font-size: initial !important;", "font-size: 10pt !important;", .)
 ```
 
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img src="https://i.creativecommons.org/l/by/4.0/88x31.png" alt="Creative Commons Licence" style="border-width:0"/></a><br />This work by [**Diana Villasana Ocampo**]{xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName"} is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
