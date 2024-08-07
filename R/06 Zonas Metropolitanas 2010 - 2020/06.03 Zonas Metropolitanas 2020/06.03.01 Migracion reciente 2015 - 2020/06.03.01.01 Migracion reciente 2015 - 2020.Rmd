@@ -4,6 +4,7 @@ subtitle: 'Migración reciente 2015 - 2020'
 author: "Diana Villasana Ocampo"
 output:
    html_document:
+      css: "../style.css"
       highlight: tango
       theme: flatly
       toc: yes
@@ -14,53 +15,6 @@ output:
 
 \usepackage{color}
 
-```{=html}
-<style>
-code.r{
-  font-size: 10px;
-}
-pre {
-  font-size: 12px
-}
-</style>
-
-<style>
-body {
-text-align: justify;
-font-style: normal;
-font-family: "Montserrat";
-font-size: 12px
-}
-h1.title {
-  font-size: 40px;
-  color: #000D3B;
-}
-h1 {
-  color: #B6854D;
-}
-h2 {
-  color: #172984;
-}
-h3 {
-  color: #172984;
-}
-</style>
-```
-
-```{=html}
-<style>
-.nav>li>a {
-    position: relative;
-    display: block;
-    padding: 10px 15px;
-    color: #0A2687;
-}
-.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
-    color: #ffffff;
-    background-color: #09C2BC;
-}
-</style>
-```
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
@@ -94,7 +48,7 @@ windowsFonts()
 ```
 
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 # Librerías que se usaron en el documento
 require(chorddiag)
 require(circlize)
@@ -159,7 +113,7 @@ mydata <- data %>%
 
 Se anexa la base de datos de las Zonas Metropolitanas 2020 a la base orginal
 
-```{r}
+```{r, eval = FALSE}
 ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"), 
                       startRow = 7, 
                        skipEmptyRows = TRUE) %>%
@@ -336,7 +290,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 
 <div style="height:500px;overflow:auto;">
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de migracion reciente a nivel municipal.RData"))
 
 tabla <- Migrantes %>%
@@ -354,7 +308,7 @@ tabla[1:30, 1:30] %>%
                data_row.padding = px(1),
                column_labels.font.weight = "bold",
                column_labels.padding = px(10), 
-               table.font.names = 'montserrat',
+               table.font.names = "Montserrat Medium",
                table.font.size = 8) %>%
     tab_style(style = list(cell_text(align = "center",
                                      weight = 'bold')),
@@ -555,7 +509,7 @@ for(i in 1:length(ZM)){
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Tabla MR5a a nivel municipal.RDS"))
 ```
 
-```{r tablas de matrices municipal}
+```{r tablas de matrices municipal, eval = FALSE}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Tabla MR5a a nivel municipal.RDS"))
 
 total_tablas <- totales(tabla1, ZM)
@@ -591,7 +545,7 @@ file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/C
 chord_diagram_graph(file = file, 
                     width = 15,
                     height = 10,
-                    family <- "Montserrat Medium",
+                    family = "Montserrat Medium",
                     paleta = paleta,
                     ZM_CF = ZM_CF,
                     tabla1,
@@ -602,7 +556,7 @@ chord_diagram_graph(file = file,
 
 **Etiquetas**
 
-```{r etiquetas_municipal}
+```{r etiquetas_municipal, eval = FALSE}
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Etiquetas a nivel municipal.pdf"
 
 labels_chord_diagram(file = file, 
@@ -813,7 +767,7 @@ ggexport(list = p, width = 18, height = 10, dpi = 400, filename = path)
 ######  ChorDiagram sin grupos
 
 
-```{r}
+```{r, eval = FALSE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de migracion reciente a nivel municipal.RData"))
 
 rownames <- rownames(Migrantes) %>% 
@@ -904,7 +858,7 @@ tabla1 <- Migrantes %>%
 
 
 
-```{r}
+```{r, eval = FALSE}
 cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/ChordDiagram de MR5a de ZMVM.pdf"), 
           width = 7,
           height = 7, 
@@ -979,7 +933,7 @@ dev.off()
 
 ###### ChordDiagram con grupos
 
-```{r}
+```{r, eval = FALSE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de migracion reciente a nivel municipal.RData"))
 
 rownames <- rownames(Migrantes) %>% 
@@ -1110,7 +1064,7 @@ saveWorkbook(wb,
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 # Paleta de colores
 groupColors <- paste0(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))), "7F")
 
@@ -1222,7 +1176,7 @@ dev.off()
 
 **Etiquetas**
 
-```{r}
+```{r, eval = FALSE}
 etiquetas  <- lapply(1, function(x){
                         orden <- str_sort(unique(c(colnames(tabla1), rownames(tabla1))), numeric = TRUE)
                         p <-  tabla1 %>% 
@@ -1449,7 +1403,7 @@ Se realizan cálculos generales de migración
 
 Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
 
-```{r}
+```{r, eval = FALSE}
 ################################################################################
 ############################ Población total ###################################
 Pob.Total <- mydata %>%
@@ -1519,7 +1473,7 @@ write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020.RData"))
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020.RData"))
 
 tabla[1:20,] %>%  
@@ -1533,7 +1487,7 @@ tabla[1:20,] %>%
                 data_row.padding = px(1),
                 column_labels.font.weight = "bold",
                 column_labels.padding = px(10), 
-                table.font.names = 'montserrat',
+                table.font.names = "Montserrat Medium",
                 table.font.size = 8) %>%
      tab_style(style = list(cell_text(align = "center",
                                       weight = 'bold')),
@@ -1632,7 +1586,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de migracion reciente a nivel intramunicipal 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -1650,7 +1604,7 @@ tabla[1:30, 1:30] %>%
                data_row.padding = px(1),
                column_labels.font.weight = "bold",
                column_labels.padding = px(10), 
-               table.font.names = 'montserrat',
+               table.font.names = "Montserrat Medium",
               table.font.size = 8) %>%
     tab_style(style = list(cell_text(align = "center",
                                      weight = 'bold')),
@@ -1696,7 +1650,7 @@ saveWorkbook(wb,
 **Matriz de migración reciente hace 5 años en la Zona Metropolitana de Cuernavaca, 2015 - 2020**  
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 MR <- readRDS(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matrices de MR5a a nivel intramunicipal por ZM2020.RDS"))
 
 MR[["17.02"]] %>%  
@@ -1709,7 +1663,7 @@ MR[["17.02"]] %>%
                data_row.padding = px(1),
                column_labels.font.weight = "bold",
                column_labels.padding = px(10), 
-               table.font.names = 'montserrat',
+               table.font.names = "Montserrat Medium",
                table.font.size = 8) %>%
     tab_style(style = list(cell_text(align = "center",
                                      weight = 'bold')),
@@ -2611,7 +2565,7 @@ write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intramunicipal).RData"))
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intramunicipal).RData"))
 
 tabla[1:20,] %>%  
@@ -2625,7 +2579,7 @@ tabla[1:20,] %>%
                 data_row.padding = px(1),
                 column_labels.font.weight = "bold",
                 column_labels.padding = px(10), 
-                table.font.names = 'montserrat',
+                table.font.names = "Montserrat Medium",
                 table.font.size = 8) %>%
      tab_style(style = list(cell_text(align = "center",
                                       weight = 'bold')),
@@ -2716,7 +2670,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 **Matriz de migración reciente hace 5 años a nivel intermunicipal, 2015 - 2020**  
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de migracion reciente a nivel intermunicipal 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -2734,7 +2688,7 @@ tabla[1:30, 1:30] %>%
                data_row.padding = px(1),
                column_labels.font.weight = "bold",
                column_labels.padding = px(10), 
-               table.font.names = 'montserrat',
+               table.font.names = "Montserrat Medium",
               table.font.size = 8) %>%
     tab_style(style = list(cell_text(align = "center",
                                      weight = 'bold')),
@@ -3848,7 +3802,7 @@ write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intermunicipal).RData"))
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intermunicipal).RData"))
 
 tabla[1:20,] %>%  
@@ -3862,7 +3816,7 @@ tabla[1:20,] %>%
                 data_row.padding = px(1),
                 column_labels.font.weight = "bold",
                 column_labels.padding = px(10), 
-                table.font.names = 'montserrat',
+                table.font.names = "Montserrat Medium",
                 table.font.size = 8) %>%
      tab_style(style = list(cell_text(align = "center",
                                       weight = 'bold')),
@@ -3955,7 +3909,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matriz de MR5a a nivel metropolitano 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -3973,7 +3927,7 @@ tabla[1:30, 1:30] %>%
                data_row.padding = px(1),
                column_labels.font.weight = "bold",
                column_labels.padding = px(10), 
-               table.font.names = 'montserrat',
+               table.font.names = "Montserrat Medium",
                table.font.size = 8) %>%
     tab_style(style = list(cell_text(align = "center",
                                      weight = 'bold')),
@@ -4394,7 +4348,7 @@ write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.RData"))
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Metropolitano) 2020.RData"))
 
 tabla[1:20,] %>%  
@@ -4408,7 +4362,7 @@ tabla[1:20,] %>%
                 data_row.padding = px(1),
                 column_labels.font.weight = "bold",
                 column_labels.padding = px(10), 
-                table.font.names = 'montserrat',
+                table.font.names = "Montserrat Medium",
                 table.font.size = 8) %>%
      tab_style(style = list(cell_text(align = "center",
                                       weight = 'bold')),
@@ -4495,7 +4449,7 @@ saveWorkbook(wb,
 **Matriz de migración reciente hace 5 años en la Zona Metropolitana de Cuernavaca, 2015 - 2020**  
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 MR <- readRDS(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matrices de MR5a a nivel intramunicipal por ZM2020.RDS"))
 
 MR[["17.02"]] %>%  
@@ -4508,7 +4462,7 @@ MR[["17.02"]] %>%
                data_row.padding = px(1),
                column_labels.font.weight = "bold",
                column_labels.padding = px(10), 
-               table.font.names = 'montserrat',
+               table.font.names = "Montserrat Medium",
                table.font.size = 8) %>%
     tab_style(style = list(cell_text(align = "center",
                                      weight = 'bold')),
@@ -4620,7 +4574,7 @@ write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intrametropolitano) 2020.RData"))
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intrametropolitano) 2020.RData"))
 
 tabla[1:20,] %>%  
@@ -4634,7 +4588,7 @@ tabla[1:20,] %>%
                 data_row.padding = px(1),
                 column_labels.font.weight = "bold",
                 column_labels.padding = px(10), 
-                table.font.names = 'montserrat',
+                table.font.names = "Montserrat Medium",
                 table.font.size = 8) %>%
      tab_style(style = list(cell_text(align = "center",
                                       weight = 'bold')),
@@ -4786,7 +4740,7 @@ write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intermetropolitano) 2020.RData"))
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Indicadores de MR5a por ZM 2020 (Intermetropolitano) 2020.RData"))
 
 tabla[1:20,] %>%  
@@ -4800,7 +4754,7 @@ tabla[1:20,] %>%
                 data_row.padding = px(1),
                 column_labels.font.weight = "bold",
                 column_labels.padding = px(10), 
-                table.font.names = 'montserrat',
+                table.font.names = "Montserrat Medium",
                 table.font.size = 8) %>%
      tab_style(style = list(cell_text(align = "center",
                                       weight = 'bold')),

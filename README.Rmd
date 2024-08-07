@@ -75,4 +75,4 @@ git clone <https://github.com/usuario/Prontuario_migración_interna.git>
 
 ## Contacto
 
-Contacto: [@](mailto:correo@ejemplo.com)dvillasanao
+Contacto: @dvillasanao

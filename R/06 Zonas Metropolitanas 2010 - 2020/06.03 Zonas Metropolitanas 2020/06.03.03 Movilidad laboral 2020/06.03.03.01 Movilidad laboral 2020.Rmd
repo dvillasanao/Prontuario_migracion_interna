@@ -1,9 +1,10 @@
 ---
 title: "Zonas Metropolitanas 2020"
 subtitle: 'Movilidad laboral 2020'
-author: "CONAPO"
+author: "Diana Villasana Ocampo"
 output:
    html_document:
+      css: "../style.css"
       highlight: tango
       theme: flatly
       toc: yes
@@ -13,54 +14,6 @@ output:
 ---
 
 \usepackage{color}
-
-```{=html}
-<style>
-code.r{
-  font-size: 10px;
-}
-pre {
-  font-size: 12px
-}
-</style>
-
-<style>
-body {
-text-align: justify;
-font-style: normal;
-font-family: "Montserrat";
-font-size: 12px
-}
-h1.title {
-  font-size: 40px;
-  color: #000D3B;
-}
-h1 {
-  color: #B6854D;
-}
-h2 {
-  color: #172984;
-}
-h3 {
-  color: #172984;
-}
-</style>
-```
-
-```{=html}
-<style>
-.nav>li>a {
-    position: relative;
-    display: block;
-    padding: 10px 15px;
-    color: #0A2687;
-}
-.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
-    color: #ffffff;
-    background-color: #09C2BC;
-}
-</style>
-```
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
@@ -76,6 +29,7 @@ rm(list = ls())
 
 ```{r, echo=FALSE}
 setwd(here::here())
+source(paste0(here::here(), "/R/inst/MTrab_ZM_Funciones.R"))
 ```
 
 ```{r, echo=FALSE}
@@ -91,7 +45,7 @@ library(extrafont)
 windowsFonts()
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 # Librerías que se usaron en el documCVE_ENTo
 require(chorddiag)
 require(circlize)
@@ -338,7 +292,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de movilidad laboral a nivel municipal 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -422,29 +376,9 @@ ZM <- lapply(1:length(ZM_CF), function(x){
 
 ################################################################################
 ################################## Filtro ######################################
-Inmigrantes  <- lapply(1:length(ZM), function(x){
-                                            Migrantes %>%
-                                             as.data.frame() %>%
-                                              tibble::rownames_to_column(var = "rn") %>% 
-                                               melt(., id.vars = "rn", variable.name = "cn") %>%
-                                                mutate_if(is.factor, as.character) %>%
-                                                 mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                                  filter(value > 0) %>%
-                                                   group_by(rn) %>% 
-                                                    summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
-})
+Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 
-Emigrantes <- lapply(1:length(ZM), function(x){
-                                      Migrantes %>%
-                                       as.data.frame() %>%
-                                        tibble::rownames_to_column(var = "rn") %>% 
-                                         melt(., id.vars = "rn", variable.name = "cn") %>%
-                                          mutate_if(is.factor, as.character) %>%
-                                           mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                            filter(value > 0) %>%
-                                             group_by(cn) %>% 
-                                              summarise(Emigrantes = sum(value, na.rm = TRUE)) 
-})
+Emigrantes <- Emigrantes_function(ZM, Migrantes)
 ################################## Filtro ######################################
 #p <- data.frame(ZM = ZM_CF,
 #                filtro_municipio = tabla_municipios,
@@ -559,79 +493,11 @@ for(i in 1:length(ZM)){
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel municipal.RDS"))
 ```
 
-```{r tablas de matrices}
+```{r tablas de matrices municipio}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel municipal.RDS"))
 
-totales <- lapply(1:length(ZM), function(x){
-                #Se agrupan los totales
-                 full_join(
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              slice(nrow(.)) %>% 
-                               t() %>%
-                                as.data.frame()%>%
-                                 rownames_to_column(var = "name")  %>% 
-                                  rename("Total_Filas" = "1"),
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              rownames_to_column(var = "name") %>%
-                               select(name, Total) %>%
-                                mutate(name = str_replace(.$name, "1$", "Total")), 
-                           by = c("name")
-                           ) %>%
-                            rename("CVE_MUN" = "name",
-                                   "Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
-                                   "Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
-                             select(`Entran por trabajo`, CVE_MUN, `Salen por trabajo`)
-  }
-)
-porcentajes <- lapply(1:length(ZM), function(x){
-                           #Se agrupan los porcentajes
-                           full_join(
-                                     tabla1[[x]] %>%
-                                      as.data.frame() %>%
-                                       adorn_totals(c("col", "row"), 
-                                                    fill = "0", 
-                                                    na.rm = TRUE, 
-                                                    name = "Total",
-                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                        adorn_percentages("col",
-                                                          na.rm = TRUE) %>% 
-                                         rownames_to_column(var = "name") %>%
-                                          select(name, Total) %>%
-                                           mutate(name = str_replace(.$name, "1$", "Total")),
-                                     tabla1[[x]] %>%
-                                      as.data.frame() %>%
-                                       adorn_totals(c("row"), 
-                                                    fill = "0", 
-                                                    na.rm = TRUE, 
-                                                    name = "Total", 
-                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                        adorn_percentages("row", 
-                                                          na.rm = TRUE, 
-                                                         ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                         slice(nrow(.)) %>% 
-                                          t() %>%
-                                           as.data.frame()%>%
-                                            rownames_to_column(var = "name")  %>% 
-                                             rename("Total_Filas" = "1"), 
-                                     by = c("name")
-                                          ) %>%
-                            rename("CVE_MUN" = "name",
-                                   "%Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
-                                   "%Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
-                             select(`%Entran por trabajo`, CVE_MUN, `%Salen por trabajo`)
-                                   
-  }
-)
+total_tablas <- totales(tabla1, ZM)
+porcentajes_tablas <- porcentajes(tabla1, ZM)
 
 # Se guardan los totales de las matrices reducidas 
 wb <- createWorkbook()
@@ -651,136 +517,39 @@ tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
-tabla2 <- lapply(1:length(ZM_CF), function(x){
-                    # Paleta de colores
-                      groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
-                                              nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
-                       circos.clear()
-                        chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                      transparency = 0.4,
-                                       order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
-                                        grid.col = groupColors)  %>% 
-                         pull(col)
-  }
-)
+tabla2 <- color_chord_diagram(tabla1, ZM_CF = ZM_CF, paleta)
 ```
 
 ```{r grafico municipal, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM.pdf"), 
-          width = 15,
-          height = 10, 
-          family = "Montserrat Medium",
-          fallback_resolution = 400,
-          onefile = TRUE)
-for(i in 1:length(ZM_CF)){
-# Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
-
-circos.clear()
-circos.par(start.degree = 90, 
-           gap.degree = 2, 
-           clock.wise = FALSE,
-           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
-           track.margin = c(-0.07, 0.1),
-           points.overflow.warning = FALSE)
-
-par(mar = rep(0, 4))
-
-chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
-             grid.col = groupColors,
-             col = tabla2[[i]],
-             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
-             keep.diagonal = FALSE,
-             transparency =  0,
-             directional = 1,
-             direction.type = c("arrows", "diffHeight"), 
-             diffHeight  = -0.04, # adjust the starting end of the link
-             annotationTrack = "grid", 
-             annotationTrackHeight = c(0.05, 0.1),
-             preAllocateTracks = 1, 
-             big.gap = 40, # Gap between row sectors and column sectors.
-             link.arr.type = "big.arrow", 
-             link.lwd = 3,    # Line width width for link borders
-             link.lty = 1,
-             link.visible = TRUE,
-             link.largest.ontop = TRUE)
-
-# Add text and axis
-circos.trackPlotRegion(track.index = 1,
-                       track.height = 0.05,
-                       bg.border = NA, 
-                       panel.fun = function(x, y) {
-                                                   xlim = get.cell.meta.data("xlim")
-                                                   ylim = get.cell.meta.data("ylim")
-                                                   sector.name = get.cell.meta.data("sector.index")
-                                                  # Add names to the sector. 
-                                                   circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 0.1, 
-                                                               labels = sector.name, 
-                                                               facing = "clockwise",
-                                                               niceFacing = TRUE, 
-                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(9),
-                                                               col = "#170A3A",
-                                                               font = 1)
-                                                  # Add graduation on axis
-                                                   circos.axis(h = "top",
-                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
-                                                               major.tick.length = 0.5,
-                                                               minor.ticks = 4, 
-                                                               labels.cex = fontsize(6),
-                                                               sector.index = sector.name,
-                                                               track.index = 2,
-                                                               labels.niceFacing = TRUE,
-                                                               labels.pos.adjust = c(0, 0.8))
-                                                }
-  )
-}
-dev.off()
+file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM.pdf"
+ 
+## Gráficos a nivel municipal 
+chord_diagram_graph(file = file, 
+                    width = 15,
+                    height = 10,
+                    family = "Montserrat Medium",
+                    paleta = paleta,
+                    ZM_CF = ZM_CF,
+                    tabla1,
+                    tabla2,
+                    color_labels = "#170A3A",
+                    margin = c(0, 0, 0, 0))
 ```
 
 
 **Etiquetas**
 
 ```{r etiquetas_municipal}
-etiquetas  <- lapply(1:length(ZM_CF), function(x){
-                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
-                        p <-  tabla1[[x]] %>% 
-                               as.data.frame() %>%
-                                tibble::rownames_to_column(var = "rn") %>%
-                                 melt(., id.vars = "rn", variable.name = "cn") %>%
-                                  as.data.frame() %>% 
-                                   mutate(rn = str_wrap(.$rn, 100),
-                                          cn = str_wrap(.$cn, 100)) %>%
-                                    ggplot() + 
-                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
-                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  +  
-                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                             text = element_text(family = "Montserrat Medium"),
-                                             axis.text = element_blank(),
-                                             axis.title = element_blank(),
-                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
-                                             legend.key.size = unit(0.4, "cm"), 
-                                             legend.spacing.y = unit(0.4, "cm"),
-                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
-                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
-                                         guides(fill = guide_legend(ncol = 1)) + 
-                                          labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
-                                               color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
-                         leg <- get_legend(p)
-                         as_ggplot(leg)
- })
+file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas a nivel municipal.pdf"
 
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas a nivel municipal.pdf"), 
-          width = 7, height = 8, 
-          fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
-for(i in 1:length(ZM_CF)){
-  print(etiquetas[i])
-}
-dev.off()
+labels_chord_diagram(file = file, 
+                     width = 7, 
+                     height = 8, 
+                     family = "Montserrat Medium", 
+                     paleta = paleta, 
+                     ZM_CF , 
+                     tabla1, 
+                     NOM_ZM_CF)
 ```
 
 
@@ -1476,7 +1245,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-###################### Población de 5 años y más ###############################
+###################### Población ocupada #######################################
 Pob.ocupada <- mydata %>%
               as.data.frame() %>%
                mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -1542,7 +1311,7 @@ write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Municipal).RData"))
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Municipal).RData"))
 tabla[1:20,] %>%  
  as.data.frame() %>%
@@ -1651,7 +1420,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de movilidad laboral a nivel intramunicipal 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -1718,7 +1487,7 @@ saveWorkbook(wb,
 **Matriz de movilidad laboral en la Zona Metropolitana de Cuernavaca, 2015 - 2020**  
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 MR <- readRDS(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matrices de MTrab a nivel intramunicipal por ZM2020.RDS"))
 
 MR[["17.02"]] %>%  
@@ -1796,29 +1565,9 @@ ZM <- lapply(1:length(ZM_CF), function(x){
 
 ################################################################################
 ################################## Filtro ######################################
-Inmigrantes  <- lapply(1:length(ZM), function(x){
-                                            Migrantes %>%
-                                             as.data.frame() %>%
-                                              tibble::rownames_to_column(var = "rn") %>% 
-                                               melt(., id.vars = "rn", variable.name = "cn") %>%
-                                                mutate_if(is.factor, as.character) %>%
-                                                 mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                                  filter(value > 0) %>%
-                                                   group_by(rn) %>% 
-                                                    summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
-})
+Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 
-Emigrantes <- lapply(1:length(ZM), function(x){
-                                      Migrantes %>%
-                                       as.data.frame() %>%
-                                        tibble::rownames_to_column(var = "rn") %>% 
-                                         melt(., id.vars = "rn", variable.name = "cn") %>%
-                                          mutate_if(is.factor, as.character) %>%
-                                           mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                            filter(value > 0) %>%
-                                             group_by(cn) %>% 
-                                              summarise(Emigrantes = sum(value, na.rm = TRUE)) 
-})
+Emigrantes <- Emigrantes_function(ZM, Migrantes)
 
 
 ################################# Filtro #######################################
@@ -1891,80 +1640,12 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 ```
 
 
-```{r tablas de matrices}
+```{r tablas de matrices intramunicipal}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel intramunicipal.RDS"))
 
-totales <- lapply(1:length(ZM), function(x){
-                #Se agrupan los totales
-                 full_join(
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              slice(nrow(.)) %>% 
-                               t() %>%
-                                as.data.frame()%>%
-                                 rownames_to_column(var = "name")  %>% 
-                                  rename("Total_Filas" = "1"),
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              rownames_to_column(var = "name") %>%
-                               select(name, Total) %>%
-                                mutate(name = str_replace(.$name, "1$", "Total")), 
-                           by = c("name")
-                           ) %>%
-                            rename("CVE_MUN" = "name",
-                                   "Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
-                                   "Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
-                             select(`Entran por trabajo`, CVE_MUN, `Salen por trabajo`)
-  }
-)
-porcentajes <- lapply(1:length(ZM), function(x){
-                           #Se agrupan los porcentajes
-                           full_join(
-                                     tabla1[[x]] %>%
-                                      as.data.frame() %>%
-                                       adorn_totals(c("col", "row"), 
-                                                    fill = "0", 
-                                                    na.rm = TRUE, 
-                                                    name = "Total",
-                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                        adorn_percentages("col",
-                                                          na.rm = TRUE) %>% 
-                                         rownames_to_column(var = "name") %>%
-                                          select(name, Total) %>%
-                                           mutate(name = str_replace(.$name, "1$", "Total")),
-                                     tabla1[[x]] %>%
-                                      as.data.frame() %>%
-                                       adorn_totals(c("row"), 
-                                                    fill = "0", 
-                                                    na.rm = TRUE, 
-                                                    name = "Total", 
-                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                        adorn_percentages("row", 
-                                                          na.rm = TRUE, 
-                                                         ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                         slice(nrow(.)) %>% 
-                                          t() %>%
-                                           as.data.frame()%>%
-                                            rownames_to_column(var = "name")  %>% 
-                                             rename("Total_Filas" = "1"), 
-                                     by = c("name")
-                                          ) %>%
-                            rename("CVE_MUN" = "name",
-                                   "%Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
-                                   "%Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
-                             select(`%Entran por trabajo`, CVE_MUN, `%Salen por trabajo`)
-                                   
-  }
-)
-
+total_tablas <- totales(tabla1, ZM)
+porcentajes_tablas <- porcentajes(tabla1, ZM
+                                  
 # Se guardan los totales de las matrices reducidas 
 wb <- createWorkbook()
 for(i in 1:length(ZM)){
@@ -1983,135 +1664,39 @@ for(i in 1:length(ZM)){
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
-tabla2 <- lapply(1:length(ZM_CF), function(x){
-                    # Paleta de colores
-                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
-                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
-                        circos.clear()
-                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                       transparency = 0.4,
-                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
-                                         grid.col = groupColors)  %>%
-                          pull(col)
-  }
-)
+tabla2 <- color_chord_diagram(tabla1, ZM_CF = ZM_CF, paleta)
 ```
 
 
 ```{r grafico intramunicipal, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM  (Intramunicipal).pdf"), 
-          width = 15,
-          height = 10, 
-          family = "Montserrat Medium",
-          fallback_resolution = 400,
-          onefile = TRUE)
-for(i in 1:length(ZM_CF)){
-# Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
-
-circos.clear()
-circos.par(start.degree = 90, 
-           gap.degree = 2, 
-           clock.wise = FALSE,
-           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
-           track.margin = c(-0.07, 0.1),
-           points.overflow.warning = FALSE)
-
-par(mar = rep(0, 4))
-
-chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
-             grid.col = groupColors,
-             col = tabla2[[i]],
-             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
-             keep.diagonal = FALSE,
-             transparency =  0,
-             directional = 1,
-             direction.type = c("arrows", "diffHeight"), 
-             diffHeight  = -0.04, # adjust the starting end of the link
-             annotationTrack = "grid", 
-             annotationTrackHeight = c(0.05, 0.1),
-             preAllocateTracks = 1, 
-             big.gap = 40, # Gap between row sectors and column sectors.
-             link.arr.type = "big.arrow", 
-             link.lwd = 3,    # Line width width for link borders
-             link.lty = 1,
-             link.visible = TRUE,
-             link.largest.ontop = TRUE)
-
-# Add text and axis
-circos.trackPlotRegion(track.index = 1,
-                       track.height = 0.05,
-                       bg.border = NA, 
-                       panel.fun = function(x, y) {
-                                                   xlim = get.cell.meta.data("xlim")
-                                                   ylim = get.cell.meta.data("ylim")
-                                                   sector.name = get.cell.meta.data("sector.index")
-                                                  # Add names to the sector. 
-                                                   circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 0.1, 
-                                                               labels = sector.name, 
-                                                               facing = "clockwise",
-                                                               niceFacing = TRUE, 
-                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(9),
-                                                               col = "#170A3A",
-                                                               font = 1)
-                                                  # Add graduation on axis
-                                                   circos.axis(h = "top",
-                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
-                                                               major.tick.length = 0.5,
-                                                               minor.ticks = 4, 
-                                                               labels.cex = fontsize(6),
-                                                               sector.index = sector.name,
-                                                               track.index = 2,
-                                                               labels.niceFacing = TRUE,
-                                                               labels.pos.adjust = c(0, 0.8))
-                                                }
-  )
-}
-dev.off()
+file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM  (Intramunicipal).pdf"
+ 
+## Gráficos a nivel municipal 
+chord_diagram_graph(file = file, 
+                    width = 15,
+                    height = 10,
+                    family = "Montserrat Medium",
+                    paleta = paleta,
+                    ZM_CF = ZM_CF,
+                    tabla1,
+                    tabla2,
+                    color_labels = "#170A3A",
+                    margin = c(0, 0, 0, 0))
 ```
 
 **Etiquetas**
 
 ```{r etiquetas intramunicipal}
-etiquetas  <- lapply(1:length(ZM_CF), function(x){
-                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
-                        p <-  tabla1[[x]] %>% 
-                               as.data.frame() %>%
-                                tibble::rownames_to_column(var = "rn") %>%
-                                 melt(., id.vars = "rn", variable.name = "cn") %>%
-                                  as.data.frame() %>% 
-                                   mutate(rn = str_wrap(.$rn, 100),
-                                          cn = str_wrap(.$cn, 100)) %>%
-                                    ggplot() + 
-                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
-                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
-                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                             text = element_text(family = "Montserrat Medium"),
-                                             axis.text = element_blank(),
-                                             axis.title = element_blank(),
-                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
-                                             legend.key.size = unit(0.4, "cm"), 
-                                             legend.spacing.y = unit(0.4, "cm"),
-                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
-                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
-                                         guides(fill = guide_legend(ncol = 1)) + 
-                                          labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
-                                               color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
-                         leg <- get_legend(p)
-                         as_ggplot(leg)
- })
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel intramunicipal.pdf"), 
-          width = 7, height = 8, 
-          fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
-for(i in 1:length(ZM_CF)){
-  print(etiquetas[i])
-}
-dev.off()
+file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel intramunicipal.pdf"
+
+labels_chord_diagram(file = file, 
+                     width = 7, 
+                     height = 8, 
+                     family = "Montserrat Medium", 
+                     paleta = paleta, 
+                     ZM_CF , 
+                     tabla1, 
+                     NOM_ZM_CF)
 ```
 
 
@@ -2755,7 +2340,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-###################### Población de 5 años y más ###############################
+###################### Población ocupada #######################################
 Pob.ocupada <- mydata %>%
               as.data.frame() %>%
                mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -2822,7 +2407,7 @@ write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intramunicipal).RData"))
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intramunicipal).RData"))
 tabla[1:20,] %>%  
  as.data.frame() %>%
@@ -2930,7 +2515,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de movilidad laboral a nivel intermunicipal 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -3013,29 +2598,9 @@ ZM <- lapply(1:length(ZM_CF), function(x){
 })
 ################################################################################
 ################################## Filtro ######################################
-Inmigrantes  <- lapply(1:length(ZM), function(x){
-                                            Migrantes %>%
-                                             as.data.frame() %>%
-                                              tibble::rownames_to_column(var = "rn") %>% 
-                                               melt(., id.vars = "rn", variable.name = "cn") %>%
-                                                mutate_if(is.factor, as.character) %>%
-                                                 mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                                  filter(value > 0) %>%
-                                                   group_by(rn) %>% 
-                                                    summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
-})
+Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 
-Emigrantes <- lapply(1:length(ZM), function(x){
-                                      Migrantes %>%
-                                       as.data.frame() %>%
-                                        tibble::rownames_to_column(var = "rn") %>% 
-                                         melt(., id.vars = "rn", variable.name = "cn") %>%
-                                          mutate_if(is.factor, as.character) %>%
-                                           mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                            filter(value > 0) %>%
-                                             group_by(cn) %>% 
-                                              summarise(Emigrantes = sum(value, na.rm = TRUE)) 
-})
+Emigrantes <- Emigrantes_function(ZM, Migrantes)
 
 ################################## Filtro ######################################
 #p <- data.frame(ZM = ZM_CF,
@@ -3148,79 +2713,11 @@ for(i in 1:length(ZM)){
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel intermunicipal.RDS"))
 ```
 
-```{r tablas de matrices}
+```{r tablas de matrices intermunicipal, eval = FALSE}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel intermunicipal.RDS"))
 
-totales <- lapply(1:length(ZM), function(x){
-                #Se agrupan los totales
-                 full_join(
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              slice(nrow(.)) %>% 
-                               t() %>%
-                                as.data.frame()%>%
-                                 rownames_to_column(var = "name")  %>% 
-                                  rename("Total_Filas" = "1"),
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              rownames_to_column(var = "name") %>%
-                               select(name, Total) %>%
-                                mutate(name = str_replace(.$name, "1$", "Total")), 
-                           by = c("name")
-                           ) %>%
-                            rename("CVE_MUN" = "name",
-                                   "Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
-                                   "Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
-                             select(`Entran por trabajo`, CVE_MUN, `Salen por trabajo`)
-  }
-)
-porcentajes <- lapply(1:length(ZM), function(x){
-                           #Se agrupan los porcentajes
-                           full_join(
-                                     tabla1[[x]] %>%
-                                      as.data.frame() %>%
-                                       adorn_totals(c("col", "row"), 
-                                                    fill = "0", 
-                                                    na.rm = TRUE, 
-                                                    name = "Total",
-                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                        adorn_percentages("col",
-                                                          na.rm = TRUE) %>% 
-                                         rownames_to_column(var = "name") %>%
-                                          select(name, Total) %>%
-                                           mutate(name = str_replace(.$name, "1$", "Total")),
-                                     tabla1[[x]] %>%
-                                      as.data.frame() %>%
-                                       adorn_totals(c("row"), 
-                                                    fill = "0", 
-                                                    na.rm = TRUE, 
-                                                    name = "Total", 
-                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                        adorn_percentages("row", 
-                                                          na.rm = TRUE, 
-                                                         ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                         slice(nrow(.)) %>% 
-                                          t() %>%
-                                           as.data.frame()%>%
-                                            rownames_to_column(var = "name")  %>% 
-                                             rename("Total_Filas" = "1"), 
-                                     by = c("name")
-                                          ) %>%
-                            rename("CVE_MUN" = "name",
-                                   "%Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
-                                   "%Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
-                             select(`%Entran por trabajo`, CVE_MUN, `%Salen por trabajo`)
-                                   
-  }
-)
+total_tablas <- totales(tabla1, ZM)
+porcentajes_tablas <- porcentajes(tabla1, ZM)
 
 # Se guardan los totales de las matrices reducidas 
 wb <- createWorkbook()
@@ -3240,136 +2737,40 @@ tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
-tabla2 <- lapply(1:length(ZM_CF), function(x){
-                    # Paleta de colores
-                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
-                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
-                        circos.clear()
-                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                       transparency = 0.4,
-                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))),
-                                         grid.col = groupColors)  %>%
-                          pull(col)
-  }
-)
+tabla2 <- color_chord_diagram(tabla1, ZM_CF = ZM_CF, paleta)
 ```
 
 
 
 ```{r grafico intermunicipal, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM  (Intermunicipal).pdf"), 
-          width = 15,
-          height = 10, 
-          family = "Montserrat Medium",
-          fallback_resolution = 400,
-          onefile = TRUE)
-for(i in 1:length(ZM_CF)){
-# Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
-
-circos.clear()
-circos.par(start.degree = 90, 
-           gap.degree = 2, 
-           clock.wise = FALSE,
-           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
-           track.margin = c(-0.07, 0.1),
-           points.overflow.warning = FALSE)
-
-par(mar = rep(0, 4))
-
-chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
-             grid.col = groupColors,
-             col = tabla2[[i]],
-             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
-             keep.diagonal = FALSE,
-             transparency =  0,
-             directional = 1,
-             direction.type = c("arrows", "diffHeight"), 
-             diffHeight  = -0.04, # adjust the starting end of the link
-             annotationTrack = "grid", 
-             annotationTrackHeight = c(0.05, 0.1),
-             preAllocateTracks = 1, 
-             big.gap = 40, # Gap between row sectors and column sectors.
-             link.arr.type = "big.arrow", 
-             link.lwd = 3,    # Line width width for link borders
-             link.lty = 1,
-             link.visible = TRUE,
-             link.largest.ontop = TRUE)
-
-# Add text and axis
-circos.trackPlotRegion(track.index = 1,
-                       track.height = 0.05,
-                       bg.border = NA, 
-                       panel.fun = function(x, y) {
-                                                   xlim = get.cell.meta.data("xlim")
-                                                   ylim = get.cell.meta.data("ylim")
-                                                   sector.name = get.cell.meta.data("sector.index")
-                                                  # Add names to the sector. 
-                                                   circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 0.1, 
-                                                               labels = sector.name, 
-                                                               facing = "clockwise",
-                                                               niceFacing = TRUE, 
-                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(9),
-                                                               col = "#170A3A",
-                                                               font = 1)
-                                                  # Add graduation on axis
-                                                   circos.axis(h = "top",
-                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
-                                                               major.tick.length = 0.5,
-                                                               minor.ticks = 4, 
-                                                               labels.cex = fontsize(6),
-                                                               sector.index = sector.name,
-                                                               track.index = 2,
-                                                               labels.niceFacing = TRUE,
-                                                               labels.pos.adjust = c(0, 0.8))
-                                                }
-  )
-}
-dev.off()
+file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM  (Intermunicipal).pdf"
+ 
+## Gráficos a nivel municipal 
+chord_diagram_graph(file = file, 
+                    width = 15,
+                    height = 10,
+                    family = "Montserrat Medium",
+                    paleta = paleta,
+                    ZM_CF = ZM_CF,
+                    tabla1,
+                    tabla2,
+                    color_labels = "#170A3A",
+                    margin = c(0, 0, 0, 0))
 ```
 
 **Etiquetas**
 
-```{r etiquetas_intermunicipal}
-etiquetas  <- lapply(1:length(ZM_CF), function(x){
-                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
-                        p <-  tabla1[[x]] %>% 
-                               as.data.frame() %>%
-                                tibble::rownames_to_column(var = "rn") %>%
-                                 melt(., id.vars = "rn", variable.name = "cn") %>%
-                                  as.data.frame() %>% 
-                                   mutate(rn = str_wrap(.$rn, 100),
-                                          cn = str_wrap(.$cn, 100)) %>%
-                                    ggplot() + 
-                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
-                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
-                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                             text = element_text(family = "Montserrat Medium"),
-                                             axis.text = element_blank(),
-                                             axis.title = element_blank(),
-                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
-                                             legend.key.size = unit(0.4, "cm"), 
-                                             legend.spacing.y = unit(0.4, "cm"),
-                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
-                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
-                                         guides(fill = guide_legend(ncol = 1)) + 
-                                          labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
-                                               color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
-                         leg <- get_legend(p)
-                         as_ggplot(leg)
- })
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel intermunicipal.pdf"), 
-          width = 7, height = 8, 
-          fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
-for(i in 1:length(ZM_CF)){
-  print(etiquetas[i])
-}
-dev.off()
+```{r etiquetas_intermunicipal, eval = FALSE}
+file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel intermunicipal.pdf"
+
+labels_chord_diagram(file = file, 
+                     width = 7, 
+                     height = 8, 
+                     family = "Montserrat Medium", 
+                     paleta = paleta, 
+                     ZM_CF , 
+                     tabla1, 
+                     NOM_ZM_CF)
 ```
 
 #### Gráfico Sankey
@@ -4092,7 +3493,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-###################### Población de 5 años y más ###############################
+###################### Población ocupada #######################################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -4158,7 +3559,7 @@ write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metrop
 save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intermunicipal).RData"))
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intermunicipal).RData"))
 tabla[1:20,] %>%  
  as.data.frame() %>%
@@ -4266,7 +3667,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 **Matriz de Movilidad laboral hace 5 años a nivel municipal, 2015 - 2020**  
 
 <div style="height:500px;overflow:auto;">
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de Movilidad laboral a nivel metropolitano 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -4346,94 +3747,25 @@ tabla1 <- lapply(1, function(x){
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
-tabla2 <- lapply(1, function(x){
-                    # Paleta de colores
-                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
-                                               nm = unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))
-                        circos.clear()
-                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                       transparency = 0.4,
-                                        grid.col = groupColors)  %>%
-                          pull(col)
-  }
-)
+tabla2 <- color_chord_diagram(tabla1, ZM_CF = 1, paleta)
 ```
 
 
 
 ```{r, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM (metropolitano).pdf"), 
-          width = 10, height = 10, 
-          family = "Montserrat Medium",
-          fallback_resolution = 400,
-          onefile = TRUE)
+file =  "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab desagregado por ZM (metropolitano).pdf"
 
-for(i in 1){
-circos.clear()
-circos.par(start.degree = 90, 
-           gap.degree = 2, 
-           clock.wise = FALSE,
-           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
-           track.margin = c(-0.07, 0.1),
-           points.overflow.warning = FALSE)
-
-par(mar = rep(0, 4))
-
-# Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))
-                          
-chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
-             grid.col = groupColors,
-             col = tabla2[[i]],
-             #order = union(rownames(estados), colnames(estados)),
-             keep.diagonal = FALSE,
-             transparency =  0,
-             directional = 1,
-             direction.type = c("arrows", "diffHeight"), 
-             diffHeight  = -0.04, # adjust the starting end of the link
-             annotationTrack = "grid", 
-             annotationTrackHeight = c(0.05, 0.1),
-             preAllocateTracks = 1, 
-             big.gap = 40, # Gap between row sectors and column sectors.
-             link.arr.type = "big.arrow", 
-             link.lwd = 3,    # Line width width for link borders
-             link.lty = 1,
-             link.visible = TRUE,
-             link.largest.ontop = TRUE)
-
-# Add text and axis
-circos.trackPlotRegion(track.index = 1,
-                       track.height = 0.05,
-                       bg.border = NA, 
-                       panel.fun = function(x, y) {
-                                                   xlim = get.cell.meta.data("xlim")
-                                                   ylim = get.cell.meta.data("ylim")
-                                                   sector.name = get.cell.meta.data("sector.index")
-                                                  # Add names to the sector. 
-                                                   circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 0.1, 
-                                                               labels = sector.name, 
-                                                               facing = "clockwise",
-                                                               niceFacing = TRUE, 
-                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(7),
-                                                               col = "#170A3A",
-                                                               font = 1)
-                                                  # Add graduation on axis
-                                                   circos.axis(h = "top",
-                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
-                                                               major.tick.length = 0.5,
-                                                               minor.ticks = 4, 
-                                                               labels.cex = fontsize(5),
-                                                               sector.index = sector.name,
-                                                               track.index = 2,
-                                                               labels.niceFacing = TRUE,
-                                                               labels.pos.adjust = c(0, 0.8))
-                                                }
-  )
-}
-dev.off()
+## Gráficos a nivel intramunicipal 
+chord_diagram_graph(file = file, 
+                    width = 10,
+                    height = 10,
+                    family <- "Montserrat Medium",
+                    paleta = paleta,
+                    ZM_CF = 1,
+                    tabla1,
+                    tabla2,
+                    color_labels = "#170A3A",
+                    margin = c(0, 0, 0, 0))
 ```
 
 
@@ -4473,29 +3805,10 @@ NOM_ZM_CF <- ZM_2020 %>%
                distinct(CVE_ZM, NOM_ZM)
 ################################################################################
 ################################## Filtro ######################################
-Inmigrantes  <- lapply(1:length(ZM), function(x){
-                                            Migrantes %>%
-                                             as.data.frame() %>%
-                                              tibble::rownames_to_column(var = "rn") %>% 
-                                               melt(., id.vars = "rn", variable.name = "cn") %>%
-                                                mutate_if(is.factor, as.character) %>%
-                                                 mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                                  filter(value > 0) %>%
-                                                   group_by(rn) %>% 
-                                                    summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
-})
+Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 
-Emigrantes <- lapply(1:length(ZM), function(x){
-                                      Migrantes %>%
-                                       as.data.frame() %>%
-                                        tibble::rownames_to_column(var = "rn") %>% 
-                                         melt(., id.vars = "rn", variable.name = "cn") %>%
-                                          mutate_if(is.factor, as.character) %>%
-                                           mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                            filter(value > 0) %>%
-                                             group_by(cn) %>% 
-                                              summarise(Emigrantes = sum(value, na.rm = TRUE)) 
-})
+Emigrantes <- Emigrantes_function(ZM, Migrantes)
+
 ################################## Filtro ######################################
 #p <- data.frame(ZM = ZM,
  #               filtro_zm = filtro_mig)
@@ -4555,79 +3868,11 @@ for(i in 1:length(ZM)){
 saveRDS(tabla1, paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz MTrab a nivel metropolitano.RDS"))
 ```
 
-```{r tablas de matrices}
+```{r tablas de matrices metropolitano, eval = FALSE}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz MTrab a nivel metropolitano.RDS"))
 
-totales <- lapply(1:length(ZM), function(x){
-                #Se agrupan los totales
-                 full_join(
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              slice(nrow(.)) %>% 
-                               t() %>%
-                                as.data.frame()%>%
-                                 rownames_to_column(var = "name")  %>% 
-                                  rename("Total_Filas" = "1"),
-                           tabla1[[x]] %>%
-                            as.data.frame() %>%
-                             adorn_totals(c("row", "col"), 
-                                          fill = "-", 
-                                          na.rm = TRUE, 
-                                           ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                              rownames_to_column(var = "name") %>%
-                               select(name, Total) %>%
-                                mutate(name = str_replace(.$name, "1$", "Total")), 
-                           by = c("name")
-                           ) %>%
-                            rename("CVE_MUN" = "name",
-                                   "Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
-                                   "Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
-                             select(`Entran por trabajo`, CVE_MUN, `Salen por trabajo`)
-  }
-)
-porcentajes <- lapply(1:length(ZM), function(x){
-                           #Se agrupan los porcentajes
-                           full_join(
-                                     tabla1[[x]] %>%
-                                      as.data.frame() %>%
-                                       adorn_totals(c("col", "row"), 
-                                                    fill = "0", 
-                                                    na.rm = TRUE, 
-                                                    name = "Total",
-                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                        adorn_percentages("col",
-                                                          na.rm = TRUE) %>% 
-                                         rownames_to_column(var = "name") %>%
-                                          select(name, Total) %>%
-                                           mutate(name = str_replace(.$name, "1$", "Total")),
-                                     tabla1[[x]] %>%
-                                      as.data.frame() %>%
-                                       adorn_totals(c("row"), 
-                                                    fill = "0", 
-                                                    na.rm = TRUE, 
-                                                    name = "Total", 
-                                                    ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                        adorn_percentages("row", 
-                                                          na.rm = TRUE, 
-                                                         ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
-                                         slice(nrow(.)) %>% 
-                                          t() %>%
-                                           as.data.frame()%>%
-                                            rownames_to_column(var = "name")  %>% 
-                                             rename("Total_Filas" = "1"), 
-                                     by = c("name")
-                                          ) %>%
-                            rename("CVE_MUN" = "name",
-                                   "%Entran por trabajo" = "Total_Filas", # Población que entra a la entidad para trabajar
-                                   "%Salen por trabajo" = "Total") %>% # Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
-                             select(`%Entran por trabajo`, CVE_MUN, `%Salen por trabajo`)
-                                   
-  }
-)
+total_tablas <- totales(tabla1, ZM)
+porcentajes_tablas <- porcentajes(tabla1, ZM)
 
 # Se guardan los totales de las matrices reducidas 
 wb <- createWorkbook()
@@ -4647,148 +3892,598 @@ tabla1 <- readRDS(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitana
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
-tabla2 <- lapply(1:length(ZM_CF), function(x){
-                    # Paleta de colores
-                       groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
-                                               nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
-                        circos.clear()
-                         chordDiagram(x  = tabla1[[x]] %>% as.matrix(), 
-                                       transparency = 0.4,
-                                        order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
-                                         grid.col = groupColors)  %>%
-                          pull(col)
-  }
-)
+tabla2 <- color_chord_diagram(tabla1, ZM_CF = ZM_CF, paleta)
 ```
 
 ```{r grafico metropolitano, eval = FALSE, results='hide'}
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MEst desagregado por ZM (metropolitano)_individual.pdf"), 
-          width = 8,
-          height = 8, 
-          family = "Montserrat Medium",
-          fallback_resolution = 400,
-          onefile = TRUE)
-for(i in 1:length(ZM_CF)){
-# Paleta de colores
-groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                        nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
-circos.clear()
-circos.par(start.degree = 90, 
-           gap.degree = 2, 
-           clock.wise = FALSE,
-           #track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior
-           track.margin = c(-0.07, 0.1),
-           points.overflow.warning = FALSE)
-
-par(mar = rep(0, 4))
-
-chordDiagram(x  =  tabla1[[i]] %>% as.matrix(), 
-             grid.col = groupColors,
-             col = tabla2[[i]],
-             order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
-             keep.diagonal = FALSE,
-             transparency =  0,
-             directional = 1,
-             direction.type = c("arrows", "diffHeight"), 
-             diffHeight  = -0.04, # adjust the starting end of the link
-             annotationTrack = "grid", 
-             annotationTrackHeight = c(0.05, 0.1),
-             preAllocateTracks = 1, 
-             big.gap = 40, # Gap between row sectors and column sectors.
-             link.arr.type = "big.arrow", 
-             link.lwd = 3,    # Line width width for link borders
-             link.lty = 1,
-             link.visible = TRUE,
-             link.largest.ontop = TRUE)
-
-# Add text and axis
-circos.trackPlotRegion(track.index = 1,
-                       track.height = 0.05,
-                       bg.border = NA, 
-                       panel.fun = function(x, y) {
-                                                   xlim = get.cell.meta.data("xlim")
-                                                   ylim = get.cell.meta.data("ylim")
-                                                   sector.name = get.cell.meta.data("sector.index")
-                                                  # Add names to the sector. 
-                                                   circos.text(x = mean(xlim), 
-                                                               y = ylim[1] + 0.1, 
-                                                               labels = sector.name, 
-                                                               facing = "clockwise",
-                                                               niceFacing = TRUE, 
-                                                               adj = c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                                                               cex = fontsize(7),
-                                                               col = "#170A3A",
-                                                               font = 1)
-                                                  # Add graduation on axis
-                                                   circos.axis(h = "top",
-                                                               labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
-                                                               major.tick.length = 0.5,
-                                                               minor.ticks = 4, 
-                                                               labels.cex = fontsize(5),
-                                                               sector.index = sector.name,
-                                                               track.index = 2,
-                                                               labels.niceFacing = TRUE,
-                                                               labels.pos.adjust = c(0, 0.8))
-                                                }
-  )
-}
-dev.off()
+file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MEst desagregado por ZM (metropolitano)_individual.pdf"
+ 
+## Gráficos a nivel municipal 
+chord_diagram_graph(file = file, 
+                    width = 8,
+                    height = 8,
+                    family = "Montserrat Medium",
+                    paleta = paleta,
+                    ZM_CF = ZM_CF,
+                    tabla1,
+                    tabla2,
+                    color_labels = "#170A3A",
+                    margin = c(0, 0, 0, 0))
 ```
-
 
 **Etiquetas**
 
 ```{r etiquetas metropolitano}
-etiquetas  <- lapply(1:length(ZM_CF), function(x){
-                        orden <- str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE)
-                        p <-  tabla1[[x]] %>% 
-                               as.data.frame() %>%
-                                tibble::rownames_to_column(var = "rn") %>%
-                                 melt(., id.vars = "rn", variable.name = "cn") %>%
-                                  as.data.frame() %>% 
-                                   mutate(rn = str_wrap(.$rn, 100),
-                                          cn = str_wrap(.$cn, 100)) %>%
-                                    ggplot() + 
-                                     geom_bar(aes(x = value, fill = as.character(rn, orden)))  + 
-                                      geom_bar(aes(x = value, fill = as.character(cn, orden)))  + 
-                                       theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
-                                             text = element_text(family = "Montserrat Medium"),
-                                             axis.text = element_blank(),
-                                             axis.title = element_blank(),
-                                             strip.text = element_text(size = 9, face = "bold", family = "Montserrat Medium"),  
-                                             legend.key.size = unit(0.4, "cm"), 
-                                             legend.spacing.y = unit(0.4, "cm"),
-                                             legend.text = element_text(size = 7, family = "Montserrat Medium"),
-                                             legend.title = element_text(size = 8 , family = "Montserrat Medium")) + 
-                                        scale_fill_manual(values = colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]])))))) + 
-                                         guides(fill = guide_legend(ncol = 1)) + 
-                                          labs(fill = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100),
-                                               color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
-                         leg <- get_legend(p)
-                         as_ggplot(leg)
- })
-cairo_pdf(paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel metropolitano.pdf"), 
-          width = 7, height = 8, 
-          fallback_resolution = 400,
-          family = "montserrat", onefile = TRUE)
-for(i in 1:length(ZM_CF)){
-  print(etiquetas[i])
-}
-dev.off()
+file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZM a nivel metropolitano.pdf"
+
+labels_chord_diagram(file = file, 
+                     width = 7, 
+                     height = 8, 
+                     family = "Montserrat Medium", 
+                     paleta = paleta, 
+                     ZM_CF , 
+                     tabla1, 
+                     NOM_ZM_CF)
 ```
+
+### Indicadores
+
+Se realizan cálculos generales de migración    
+- Residentes  
+- Inmigrantes     
+- Emigrantes    
+- % Inmigrantes   
+- % Emigrante  
+-  Migración bruta   
+-  Migración Neta  
+- % Tasa de migración bruta   
+- % Tasa de migración neta    
+
+
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+
+```{r}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_ZM) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Población ocupada #######################################
+Pob.ocupada <- mydata %>%
+                as.data.frame() %>%
+                 mutate(EDAD = as.numeric(.$EDAD)) %>%
+                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                   group_by(CVE_ZM) %>%
+                    summarise(Pob.ocupada = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de movilidad laboral a nivel municipal 2020.RData"))
+
+ZM <- lapply(1:length(zm), function(x){
+                 ZM_2020 %>% 
+                  select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
+                   filter(CVE_ZM %in% zm[x])  %>% 
+                    pull(CVE_MUN)
+})
+
+
+Residentes <- lapply(1:length(zm), function(x){
+                                     Migrantes %>% 
+                                      as.data.frame() %>%
+                                       tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                        melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_TRABAJO") %>%
+                                         mutate_at(vars(3), as.numeric) %>%
+                                          filter(CVE_MUN == CVE_MUN_TRABAJO)  %>%
+                                           filter(CVE_MUN %in% ZM[[x]]) %>%
+                                            summarize(Residentes =  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+}
+)
+
+Residentes <- do.call(rbind.data.frame, Residentes)
+
+################################################################################
+############################### Inmigrantes ####################################
+
+## Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+Inmigrantes <- lapply(1:length(zm), function(x){
+                                     Migrantes %>% 
+                                      as.data.frame() %>%
+                                       tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                        melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_TRABAJO") %>%
+                                         mutate_at(vars(3), as.numeric) %>%
+                                          filter(CVE_MUN != CVE_MUN_TRABAJO)  %>%
+                                           filter(CVE_MUN %in% ZM[[x]]) %>%
+                                            summarize(Inmigrantes =  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+})
+
+Inmigrantes <- do.call(rbind.data.frame, Inmigrantes)
+
+################################################################################
+############################### Emigrantes #####################################
+
+## Población que entra a la entidad para trabajar
+Emigrantes <- lapply(1:length(zm), function(x){
+                                     Migrantes %>% 
+                                      t() %>%
+                                       as.data.frame() %>%
+                                        tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                         melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_TRABAJO") %>%
+                                          mutate_at(vars(3), as.numeric) %>%
+                                           filter(CVE_MUN != CVE_MUN_TRABAJO)  %>%
+                                           filter(CVE_MUN %in% ZM[[x]]) %>%
+                                            summarize(Emigrantes =  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+})
+
+Emigrantes <- do.call(rbind.data.frame, Emigrantes)
+
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.ocupada, by = c("CVE_ZM")) %>%
+          left_join(., Residentes, by = c("CVE_ZM")) %>%
+          left_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+          left_join(., Emigrantes, by = c("CVE_ZM")) %>%
+           mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                  Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                  Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.ocupada) / 2)) * 1000,
+                  Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.ocupada) / 2)) * 1000,
+                  Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                  Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Metropolitano) 2020.xlsx"), overwrite = TRUE)
+save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Metropolitano) 2020.RData"))
+```
+
+```{r, echo = FALSE, eval = TRUE}
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Metropolitano) 2020.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  movilidad laboral",  
+              subtitle = "Zonas Metropolitanas") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = "Montserrat Medium",
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+
+## Migración intrametropolitana {.tabset .tabset-pills}
+
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.   
+
+```{r, eval = FALSE}
+options(survey.lonely.psu = "adjust")
+
+MC <- mydata %>%
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
+              EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_TRAB_ZM_2020 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Trabajan en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
+                                )) %>%
+         filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+          filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana") %>%
+           svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/MC_intrametropolitana.RDS"))
+```
+
+### Matrices
+
+Se genera una matriz cruzada del lugar de residencia hace 5 años a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
+
+```{r, eval = FALSE}
+MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/MC_intrametropolitana.RDS"))
+
+Migrantes <- svytable(~CVE_MUN_TRABAJO + CVE_MUN, design = MC)
+```
+
+#### Matrices por zonas metropolitanas 
+
+```{r, eval = FALSE}
+load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de movilidad laboral a nivel intramunicipal 2020.RData"))
+
+MR <- NULL
+for(i in 1:length(zm)){
+tabla <- ZM_2020 %>%
+          select(CVE_ZM, CVE_MUN) %>%
+           filter(CVE_ZM %in% zm[i]) %>%
+            pull(CVE_MUN)
+
+MR[[paste0(zm[i])]] <- Migrantes %>%
+                        as.data.frame() %>%
+                         tibble::rownames_to_column(var = "CVE_MUN") %>%
+                          mutate_if(is.numeric, as.numeric) %>%
+                           select(CVE_MUN, all_of(tabla)) %>%
+                            filter(CVE_MUN %in% tabla)
+}
+
+# Se guardan en un objeto de R 
+saveRDS(MR, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matrices de MTrab a nivel intramunicipal por ZM2020.RDS"))
+
+# Se genera un Excel con todas las matrices por ZM
+wb <- createWorkbook()
+for(i in 1:length(zm)){
+addWorksheet(wb, paste0(zm[i]))
+writeData(wb, i, MR[[paste0(zm[i])]] %>% as.data.frame())
+saveWorkbook(wb, 
+              file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/Matrices de MTrab a nivel intramunicipal por ZM2020.xlsx"), 
+               overwrite = TRUE)
+}
+```
+
+**Matriz de movilidad laboral hace 5 años en la Zona Metropolitana de Cuernavaca, 2015 - 2020**  
+
+<div style="height:500px;overflow:auto;">
+```{r, echo = FALSE, eval = TRUE}
+MR <- readRDS(paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matrices de MTrab a nivel intramunicipal por ZM2020.RDS"))
+
+MR[["17.02"]] %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de movilidad laboral a nivel intramunicipal", 
+             subtitle = "Zona Metropolitana de Cuernavaca") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = "Montserrat Medium",
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "0") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
+</div>
+
+
+#### Indicadores
+
+Se realizan cálculos generales de migración    
+- Residentes  
+- Inmigrantes     
+- Emigrantes    
+- % Inmigrantes   
+- % Emigrante  
+-  Migración bruta   
+-  Migración Neta  
+- % Tasa de migración bruta   
+- % Tasa de migración neta    
+
+
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+
+```{r}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_ZM) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Población ocupada #######################################
+Pob.ocupada <- mydata %>%
+                as.data.frame() %>%
+                 mutate(EDAD = as.numeric(.$EDAD)) %>%
+                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                   group_by(CVE_ZM) %>%
+                    summarise(Pob.ocupada = sum(FACTOR))  
+
+################################################################################
+########################### Residentes #########################################
+MR <- readRDS(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matrices de Mtrab a nivel intramunicipal por ZM2020.RDS"))
+
+Residentes <- lapply(1:length(zm), function(x){
+                                     MR[[x]] %>% 
+                                      as.data.frame() %>%
+                                       melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_TRABAJO") %>%
+                                        mutate_at(vars(3), as.numeric) %>%
+                                         filter(CVE_MUN == CVE_MUN_TRABAJO)  %>%
+                                          summarize(Residentes =  sum(value, na.rm = TRUE)) %>% 
+                                           mutate(CVE_ZM = !!paste0(zm[x])) 
+}
+)
+
+Residentes <- do.call(rbind.data.frame, Residentes)
+
+################################################################################
+############################### Inmigrantes ####################################
+
+## Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+Inmigrantes <- lapply(1:length(zm), function(x){
+                                      MR[[x]] %>% 
+                                       as.data.frame() %>%
+                                        melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_TRABAJO") %>%
+                                         mutate_at(vars(3), as.numeric) %>%
+                                          filter(CVE_MUN != CVE_MUN_TRABAJO)  %>%
+                                           summarize(Inmigrantes =  sum(value, na.rm = TRUE)) %>% 
+                                            mutate(CVE_ZM = !!paste0(zm[x])) 
+})
+
+Inmigrantes <- do.call(rbind.data.frame, Inmigrantes)
+
+################################################################################
+############################### Emigrantes #####################################
+
+## Población que entra a la entidad para trabajar
+Emigrantes <- lapply(1:length(zm), function(x){
+                                    MR[[x]] %>% 
+                                     tibble::column_to_rownames(var = "CVE_MUN") %>%
+                                      t() %>%
+                                       as.data.frame() %>%
+                                        tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                         melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_TRABAJO") %>%
+                                          mutate_at(vars(3), as.numeric) %>%
+                                           filter(CVE_MUN != CVE_MUN_TRABAJO)  %>%
+                                            summarize(Emigrantes=  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+})
+
+Emigrantes <- do.call(rbind.data.frame, Emigrantes)
+
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.ocupada, by = c("CVE_ZM")) %>%
+          left_join(., Residentes, by = c("CVE_ZM")) %>%
+          left_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+          left_join(., Emigrantes, by = c("CVE_ZM")) %>%
+           mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                  Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                  Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.ocupada) / 2)) * 1000,
+                  Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.ocupada) / 2)) * 1000,
+                  Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                  Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intrametropolitano) 2020.xlsx"), overwrite = TRUE)
+save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intrametropolitano) 2020.RData"))
+```
+
+```{r, echo = FALSE, eval = TRUE}
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intrametropolitano) 2020.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  movilidad laboral",  
+              subtitle = "Zonas Intrametropolitano") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = "Montserrat Medium",
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+
+## Migración intermetropolitana {.tabset .tabset-pills}
+
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.   
+
+```{r, eval = FALSE}
+options(survey.lonely.psu = "adjust")
+
+MC <- mydata %>%
+       select(CVE_ENT, CVE_MUN, ENT_PAIS_RES_5A, MUN_RES_5A, CVE_MUN_TRABAJO, CVE_ZM, MC, CF, CVE_ZM_RES, M, EDAD, FACTOR, ESTRATO, UPM) %>%
+        # Se genera una indicadora de zm 
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_RES5A_ZM_2020 = ifelse(is.na(.$CVE_ZM_RES), '0', '1')) %>%
+        # Se clasifican a los migrantes internos 
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Residentes
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_RES ~ "Pertenecen a la Zona Metropolitana", #Migrantes que residen en la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_RES ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residen en otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian fuera de la zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian dentro de una zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Migrantes que no residen en la zona metropolitana
+                                )) %>%
+         filter(EDAD >= 5 & EDAD <= 130) %>%
+          filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>%
+           svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/MC_intermetropolitana.RDS"))
+```
+
+#### Indicadores
+
+Se realizan cálculos generales de migración    
+- Residentes  
+- Inmigrantes     
+- Emigrantes    
+- % Inmigrantes   
+- % Emigrante  
+-  Migración bruta   
+-  Migración Neta  
+- % Tasa de migración bruta   
+- % Tasa de migración neta    
+
+
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+
+```{r}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_ZM) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Población ocupada #######################################
+Pob.ocupada <- mydata %>%
+                as.data.frame() %>%
+                 mutate(EDAD = as.numeric(.$EDAD)) %>%
+                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                   group_by(CVE_ZM) %>%
+                    summarise(Pob.ocupada = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de movilidad laboral a nivel intermunicipal 2020.RData"))
+
+ZM <- lapply(1:length(zm), function(x){
+                    ZM_2020 %>% 
+                     select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
+                      filter(CVE_ZM %in% zm[x])  %>% 
+                      pull(CVE_MUN)
+})
+
+
+Residentes <- lapply(1:length(zm), function(x){
+                                     Migrantes %>% 
+                                      as.data.frame() %>%
+                                       tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                        melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_TRABAJO") %>%
+                                         mutate_at(vars(3), as.numeric) %>%
+                                          filter(CVE_MUN == CVE_MUN_TRABAJO)  %>%
+                                           filter(CVE_MUN %in% ZM[[x]]) %>%
+                                            summarize(Residentes =  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+}
+)
+
+Residentes <- do.call(rbind.data.frame, Residentes)
+
+################################################################################
+############################### Inmigrantes ####################################
+
+## Población que sale de su entidad de residencia y entra a otra demarcación por motivos de trabajo
+Inmigrantes <- lapply(1:length(zm), function(x){
+                                     Migrantes %>% 
+                                      as.data.frame() %>%
+                                       tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                        melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_TRABAJO") %>%
+                                         mutate_at(vars(3), as.numeric) %>%
+                                          filter(CVE_MUN != CVE_MUN_TRABAJO)  %>%
+                                           filter(CVE_MUN %in% ZM[[x]]) %>%
+                                            summarize(Inmigrantes =  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+})
+
+Inmigrantes <- do.call(rbind.data.frame, Inmigrantes)
+
+################################################################################
+############################### Emigrantes #####################################
+
+## Población que entra a la entidad para trabajar
+Emigrantes <- lapply(1:length(zm), function(x){
+                                     Migrantes %>% 
+                                      t() %>%
+                                       as.data.frame() %>%
+                                        tibble::rownames_to_column(var = "CVE_MUN") %>%
+                                         melt(., id.vars =  "CVE_MUN", variable.name = "CVE_MUN_TRABAJO") %>%
+                                          mutate_at(vars(3), as.numeric) %>%
+                                           filter(CVE_MUN != CVE_MUN_TRABAJO)  %>%
+                                           filter(CVE_MUN %in% ZM[[x]]) %>%
+                                            summarize(Emigrantes =  sum(value, na.rm = TRUE)) %>% 
+                                             mutate(CVE_ZM = !!paste0(zm[x])) 
+})
+
+Emigrantes <- do.call(rbind.data.frame, Emigrantes)
+
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.ocupada, by = c("CVE_ZM")) %>%
+          left_join(., Residentes, by = c("CVE_ZM")) %>%
+          left_join(., Inmigrantes, by = c("CVE_ZM")) %>%
+          left_join(., Emigrantes, by = c("CVE_ZM")) %>%
+           mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                  Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                  Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.ocupada) / 2)) * 1000,
+                  Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.ocupada) / 2)) * 1000,
+                  Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                  Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intermetropolitano) 2020.xlsx"), overwrite = TRUE)
+save(tabla, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intermetropolitano) 2020.RData"))
+```
+
+```{r, echo = FALSE, eval = TRUE}
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Indicadores de MTrab por ZM 2020 (Intermetropolitano) 2020.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  movilidad laboral",  
+              subtitle = "Zonas Intermetropolitano") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = "Montserrat Medium",
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
 
 # Referencias
 
 Librerias que se usaron en el documento
 
-```{r, echo = FALSE}
-sesion_info <- devtools::session_info()
+```{r, echo = FALSE, eval = TRUE}
+#sesion_info <- devtools::session_info()
+#saveRDS(sesion_info, file = paste0(here::here(), "/Output/sesion_info.RDS"))
+sesion_info <- readRDS(file = paste0(here::here(), "/Output/sesion_info.RDS"))
+require(knitr)
+require(kableExtra)
 kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),
                     c(package, loadedversion, source))) %>%
  kable_styling(font_size = 10, 
                bootstrap_options = c("condensed", "responsive", "bordered")) %>%
   kable_classic(full_width = TRUE, html_font = "montserrat") %>% 
-   scroll_box(width = "100%", height = "150px") %>%  
+   scroll_box(width = "100%", height = "400px") %>%  
     gsub("font-size: initial !important;", "font-size: 10pt !important;", .)
 ```
 
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img src="https://i.creativecommons.org/l/by/4.0/88x31.png" alt="Creative Commons Licence" style="border-width:0"/></a><br />This work by [**Diana Villasana Ocampo**]{xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName"} is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
