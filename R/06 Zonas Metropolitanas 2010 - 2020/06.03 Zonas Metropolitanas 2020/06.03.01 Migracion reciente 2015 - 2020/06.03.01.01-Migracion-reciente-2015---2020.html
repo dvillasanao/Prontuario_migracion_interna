@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="CONAPO" />
+<meta name="author" content="Diana Villasana Ocampo" />
 
 
 <title>Zonas Metropolitanas 2020</title>
@@ -1793,7 +1793,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Zonas Metropolitanas 2020</h1>
 <h3 class="subtitle">Migración reciente 2015 - 2020</h3>
-<h4 class="author">CONAPO</h4>
+<h4 class="author">Diana Villasana Ocampo</h4>
 
 </div>
 
@@ -2289,90 +2289,19 @@ que visualmente sean más interpretables.</p>
 <span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#paleta &lt;- colorRampPalette(pals::kovesi.linear_bmy_10_95_c78(100))(50)</span></span>
 <span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>paleta <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;#000C7D&quot;</span>, <span class="st">&quot;#00108D&quot;</span>, <span class="st">&quot;#02149C&quot;</span>, <span class="st">&quot;#1614A4&quot;</span>, <span class="st">&quot;#3012A6&quot;</span>, <span class="st">&quot;#5A0D9D&quot;</span>, <span class="st">&quot;#7A0895&quot;</span>, <span class="st">&quot;#910390&quot;</span>, <span class="st">&quot;#A7008A&quot;</span>, <span class="st">&quot;#BB0085&quot;</span>, <span class="st">&quot;#CE0080&quot;</span>, <span class="st">&quot;#DF047A&quot;</span>, <span class="st">&quot;#EE1774&quot;</span>, <span class="st">&quot;#FA2C6C&quot;</span>, <span class="st">&quot;#FD4364&quot;</span>, <span class="st">&quot;#FE595B&quot;</span>, <span class="st">&quot;#FF6F51&quot;</span>, <span class="st">&quot;#FF8445&quot;</span>,<span class="st">&quot;#FF9636&quot;</span>, <span class="st">&quot;#FFA72B&quot;</span>, <span class="st">&quot;#FFB622&quot;</span>)</span>
 <span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>tabla2 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(ZM_CF), <span class="cf">function</span>(x){</span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>                    <span class="co"># Paleta de colores</span></span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>                       groupColors <span class="ot">&lt;-</span> <span class="fu">setNames</span>(<span class="fu">colorRampPalette</span>(paleta)(<span class="fu">length</span>(<span class="fu">unique</span>(<span class="fu">c</span>(<span class="fu">colnames</span>(tabla1[[x]]), <span class="fu">rownames</span>(tabla1[[x]]))))),</span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>                                               <span class="at">nm =</span> <span class="fu">str_sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(<span class="fu">colnames</span>(tabla1[[x]]), <span class="fu">rownames</span>(tabla1[[x]]))), <span class="at">numeric =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>                        <span class="fu">circos.clear</span>()</span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>                         <span class="fu">chordDiagram</span>(<span class="at">x  =</span> tabla1[[x]] <span class="sc">%&gt;%</span> <span class="fu">as.matrix</span>(), </span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>                                       <span class="at">transparency =</span> <span class="fl">0.4</span>,</span>
-<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>                                        <span class="at">order =</span> <span class="fu">str_sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(<span class="fu">colnames</span>(tabla1[[x]]), <span class="fu">rownames</span>(tabla1[[x]]))), <span class="at">numeric =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>                                        <span class="at">grid.col =</span> groupColors)  <span class="sc">%&gt;%</span> </span>
-<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>                          <span class="fu">pull</span>(col)</span>
-<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>  }</span>
-<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>)</span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r fold-show"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">cairo_pdf</span>(<span class="fu">paste0</span>(here<span class="sc">::</span><span class="fu">here</span>(), <span class="st">&quot;/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/ChordDiagram de MR5a desagregado por ZM.pdf&quot;</span>), </span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>          <span class="at">width =</span> <span class="dv">15</span>,</span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>          <span class="at">height =</span> <span class="dv">10</span>, </span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>          <span class="at">family =</span> <span class="st">&quot;Montserrat Medium&quot;</span>,</span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>          <span class="at">fallback_resolution =</span> <span class="dv">400</span>,</span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>          <span class="at">onefile =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(ZM_CF)){</span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co"># Paleta de colores</span></span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>groupColors <span class="ot">&lt;-</span> <span class="fu">setNames</span>(<span class="fu">colorRampPalette</span>(paleta)(<span class="fu">length</span>(<span class="fu">unique</span>(<span class="fu">c</span>(<span class="fu">colnames</span>(tabla1[[i]]), <span class="fu">rownames</span>(tabla1[[i]]))))),</span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>                        <span class="at">nm =</span> <span class="fu">str_sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(<span class="fu">colnames</span>(tabla1[[i]]), <span class="fu">rownames</span>(tabla1[[i]]))), <span class="at">numeric =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a></span>
-<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="fu">circos.clear</span>()</span>
-<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a><span class="fu">circos.par</span>(<span class="at">start.degree =</span> <span class="dv">90</span>, </span>
-<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>           <span class="at">gap.degree =</span> <span class="dv">2</span>, </span>
-<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>           <span class="at">clock.wise =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>           <span class="co">#track.margin = c(-0.07, 0.07),  # círculo exterior | circulo interior</span></span>
-<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>           <span class="at">track.margin =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.07</span>, <span class="fl">0.1</span>),</span>
-<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>           <span class="at">points.overflow.warning =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a></span>
-<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">4</span>))</span>
-<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a></span>
-<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a><span class="fu">chordDiagram</span>(<span class="at">x  =</span>  tabla1[[i]] <span class="sc">%&gt;%</span> <span class="fu">as.matrix</span>(), </span>
-<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>             <span class="at">grid.col =</span> groupColors,</span>
-<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a>             <span class="at">col =</span> tabla2[[i]],</span>
-<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>             <span class="at">order =</span> <span class="fu">str_sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(<span class="fu">colnames</span>(tabla1[[i]]), <span class="fu">rownames</span>(tabla1[[i]])))),</span>
-<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a>             <span class="at">keep.diagonal =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a>             <span class="at">transparency =</span>  <span class="dv">0</span>,</span>
-<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a>             <span class="at">directional =</span> <span class="dv">1</span>,</span>
-<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a>             <span class="at">direction.type =</span> <span class="fu">c</span>(<span class="st">&quot;arrows&quot;</span>, <span class="st">&quot;diffHeight&quot;</span>), </span>
-<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a>             <span class="at">diffHeight  =</span> <span class="sc">-</span><span class="fl">0.04</span>, <span class="co"># adjust the starting end of the link</span></span>
-<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a>             <span class="at">annotationTrack =</span> <span class="st">&quot;grid&quot;</span>, </span>
-<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a>             <span class="at">annotationTrackHeight =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.1</span>),</span>
-<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a>             <span class="at">preAllocateTracks =</span> <span class="dv">1</span>, </span>
-<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a>             <span class="at">big.gap =</span> <span class="dv">40</span>, <span class="co"># Gap between row sectors and column sectors.</span></span>
-<span id="cb13-35"><a href="#cb13-35" tabindex="-1"></a>             <span class="at">link.arr.type =</span> <span class="st">&quot;big.arrow&quot;</span>, </span>
-<span id="cb13-36"><a href="#cb13-36" tabindex="-1"></a>             <span class="at">link.lwd =</span> <span class="dv">3</span>,    <span class="co"># Line width width for link borders</span></span>
-<span id="cb13-37"><a href="#cb13-37" tabindex="-1"></a>             <span class="at">link.lty =</span> <span class="dv">1</span>,</span>
-<span id="cb13-38"><a href="#cb13-38" tabindex="-1"></a>             <span class="at">link.visible =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb13-39"><a href="#cb13-39" tabindex="-1"></a>             <span class="at">link.largest.ontop =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-40"><a href="#cb13-40" tabindex="-1"></a></span>
-<span id="cb13-41"><a href="#cb13-41" tabindex="-1"></a><span class="co"># Add text and axis</span></span>
-<span id="cb13-42"><a href="#cb13-42" tabindex="-1"></a><span class="fu">circos.trackPlotRegion</span>(<span class="at">track.index =</span> <span class="dv">1</span>,</span>
-<span id="cb13-43"><a href="#cb13-43" tabindex="-1"></a>                       <span class="at">track.height =</span> <span class="fl">0.05</span>,</span>
-<span id="cb13-44"><a href="#cb13-44" tabindex="-1"></a>                       <span class="at">bg.border =</span> <span class="cn">NA</span>, </span>
-<span id="cb13-45"><a href="#cb13-45" tabindex="-1"></a>                       <span class="at">panel.fun =</span> <span class="cf">function</span>(x, y) {</span>
-<span id="cb13-46"><a href="#cb13-46" tabindex="-1"></a>                                                   xlim <span class="ot">=</span> <span class="fu">get.cell.meta.data</span>(<span class="st">&quot;xlim&quot;</span>)</span>
-<span id="cb13-47"><a href="#cb13-47" tabindex="-1"></a>                                                   ylim <span class="ot">=</span> <span class="fu">get.cell.meta.data</span>(<span class="st">&quot;ylim&quot;</span>)</span>
-<span id="cb13-48"><a href="#cb13-48" tabindex="-1"></a>                                                   sector.name <span class="ot">=</span> <span class="fu">get.cell.meta.data</span>(<span class="st">&quot;sector.index&quot;</span>)</span>
-<span id="cb13-49"><a href="#cb13-49" tabindex="-1"></a>                                                  <span class="co"># Add names to the sector. </span></span>
-<span id="cb13-50"><a href="#cb13-50" tabindex="-1"></a>                                                   <span class="fu">circos.text</span>(<span class="at">x =</span> <span class="fu">mean</span>(xlim), </span>
-<span id="cb13-51"><a href="#cb13-51" tabindex="-1"></a>                                                               <span class="at">y =</span> ylim[<span class="dv">1</span>] <span class="sc">+</span> <span class="fl">0.1</span>, </span>
-<span id="cb13-52"><a href="#cb13-52" tabindex="-1"></a>                                                               <span class="at">labels =</span> sector.name, </span>
-<span id="cb13-53"><a href="#cb13-53" tabindex="-1"></a>                                                               <span class="at">facing =</span> <span class="st">&quot;clockwise&quot;</span>,</span>
-<span id="cb13-54"><a href="#cb13-54" tabindex="-1"></a>                                                               <span class="at">niceFacing =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb13-55"><a href="#cb13-55" tabindex="-1"></a>                                                               <span class="at">adj =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.05</span>, <span class="fl">0.5</span>), <span class="co">#Ajuste de las etiquetas (x, y)</span></span>
-<span id="cb13-56"><a href="#cb13-56" tabindex="-1"></a>                                                               <span class="at">cex =</span> <span class="fu">fontsize</span>(<span class="dv">9</span>),</span>
-<span id="cb13-57"><a href="#cb13-57" tabindex="-1"></a>                                                               <span class="at">col =</span> <span class="st">&quot;#000C7D&quot;</span>,</span>
-<span id="cb13-58"><a href="#cb13-58" tabindex="-1"></a>                                                               <span class="at">font =</span> <span class="dv">1</span>)</span>
-<span id="cb13-59"><a href="#cb13-59" tabindex="-1"></a>                                                  <span class="co"># Add graduation on axis</span></span>
-<span id="cb13-60"><a href="#cb13-60" tabindex="-1"></a>                                                   <span class="fu">circos.axis</span>(<span class="at">h =</span> <span class="st">&quot;top&quot;</span>,</span>
-<span id="cb13-61"><a href="#cb13-61" tabindex="-1"></a>                                                               <span class="at">labels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">200</span>, <span class="dv">300</span>, <span class="dv">400</span>, <span class="dv">500</span>, <span class="fu">seq</span>(<span class="dv">1000</span>, <span class="dv">20000</span>, <span class="at">by =</span> <span class="dv">1000</span>)),</span>
-<span id="cb13-62"><a href="#cb13-62" tabindex="-1"></a>                                                               <span class="at">major.tick.length =</span> <span class="fl">0.5</span>,</span>
-<span id="cb13-63"><a href="#cb13-63" tabindex="-1"></a>                                                               <span class="at">minor.ticks =</span> <span class="dv">4</span>, </span>
-<span id="cb13-64"><a href="#cb13-64" tabindex="-1"></a>                                                               <span class="at">labels.cex =</span> <span class="fu">fontsize</span>(<span class="dv">6</span>),</span>
-<span id="cb13-65"><a href="#cb13-65" tabindex="-1"></a>                                                               <span class="at">sector.index =</span> sector.name,</span>
-<span id="cb13-66"><a href="#cb13-66" tabindex="-1"></a>                                                               <span class="at">track.index =</span> <span class="dv">2</span>,</span>
-<span id="cb13-67"><a href="#cb13-67" tabindex="-1"></a>                                                               <span class="at">labels.niceFacing =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb13-68"><a href="#cb13-68" tabindex="-1"></a>                                                               <span class="at">labels.pos.adjust =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.8</span>))</span>
-<span id="cb13-69"><a href="#cb13-69" tabindex="-1"></a>                                                }</span>
-<span id="cb13-70"><a href="#cb13-70" tabindex="-1"></a>  )</span>
-<span id="cb13-71"><a href="#cb13-71" tabindex="-1"></a>}</span>
-<span id="cb13-72"><a href="#cb13-72" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code></pre></div>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>tabla2 <span class="ot">&lt;-</span> <span class="fu">color_chord_diagramas</span>(tabla1, <span class="at">ZM_CF =</span> ZM_CF, paleta)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r fold-show"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co">#file = &quot;/Graficos/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/ChordDiagram de MR5a desagregado por ZM.pdf&quot;</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>file <span class="ot">=</span> <span class="st">&quot;/Graficos/Municipio/prueba.pdf&quot;</span> </span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="do">## Gráficos a nivel municipal </span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="fu">chord_diagram_graph</span>(<span class="at">file =</span> file, </span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>                    <span class="at">width =</span> <span class="dv">15</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>                    <span class="at">height =</span> <span class="dv">10</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>                    family <span class="ot">&lt;-</span> <span class="st">&quot;Montserrat Medium&quot;</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>                    <span class="at">paleta =</span> paleta,</span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>                    <span class="at">ZM_CF =</span> ZM_CF,</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>                    tabla1,</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>                    tabla2)</span></code></pre></div>
 <p><strong>Etiquetas</strong></p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r fold-show"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>etiquetas  <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(ZM_CF), <span class="cf">function</span>(x){</span>
 <span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>                        orden <span class="ot">&lt;-</span> <span class="fu">str_sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(<span class="fu">colnames</span>(tabla1[[x]]), <span class="fu">rownames</span>(tabla1[[x]]))), <span class="at">numeric =</span> <span class="cn">TRUE</span>)</span>

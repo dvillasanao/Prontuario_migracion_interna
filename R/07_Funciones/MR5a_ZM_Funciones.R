@@ -147,13 +147,14 @@ labels_chord_diagram <- function(file, width = 7, height = 9, family = "Montserr
                                         color = stringr::str_wrap(paste(NOM_ZM_CF[x, 1], NOM_ZM_CF[x, 2]), 100))
                             
                   leg <- cowplot::get_legend(p)
-                          cowplot::as_ggplot(leg)
-                })
+                  
+                  ggpubr::as_ggplot(leg)
+                  
+                  }
+                )
   
   # Guardar etiquetas en PDF
-  etiquetas_file <- paste0(here::here(), file)
-  
-  cairo_pdf(filename = etiquetas_file, 
+  cairo_pdf(filename = paste0(here::here(), file), 
             width = width, 
             height = height, 
             fallback_resolution = 400, 
