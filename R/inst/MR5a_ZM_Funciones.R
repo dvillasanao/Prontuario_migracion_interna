@@ -11,6 +11,39 @@ library(grDevices)
 library(janitor)
 library(tibble)
 
+################################################################################
+#                         Migration Functions                                  #
+################################################################################
+
+Inmigrantes_function <- function(ZM, Migrantes){
+                                  lapply(1:length(ZM), function(x){
+                                          Migrantes %>%
+                                           as.data.frame() %>%
+                                            tibble::rownames_to_column(var = "rn") %>% 
+                                             melt(., id.vars = "rn", variable.name = "cn") %>%
+                                              mutate_if(is.factor, as.character) %>%
+                                               mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
+                                                filter(value > 0) %>%
+                                                 group_by(rn) %>% 
+                                                  summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
+  })
+}
+
+
+
+Emigrantes_function <- function(ZM, Migrantes){
+                                  lapply(1:length(ZM), function(x){
+                                           Migrantes %>%
+                                            as.data.frame() %>%
+                                             tibble::rownames_to_column(var = "rn") %>% 
+                                              melt(., id.vars = "rn", variable.name = "cn") %>%
+                                               mutate_if(is.factor, as.character) %>%
+                                                mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
+                                                 filter(value > 0) %>%
+                                                  group_by(cn) %>% 
+                                                   summarise(Emigrantes = sum(value, na.rm = TRUE)) 
+  })
+}
 
 ################################################################################
 #                         Chord Diagram Colors                                 #

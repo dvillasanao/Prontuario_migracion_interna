@@ -64,7 +64,7 @@ h3 {
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
-                         eval = FALSE, class.source = "fold-show")
+                       eval = FALSE, class.source = "fold-show")
 knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 options(digits = 2, encoding = "UTF8")
 ```   
@@ -76,7 +76,7 @@ rm(list = ls())
 
 ```{r, echo=FALSE}
 setwd(here::here())
-source(paste0(here::here(), "/R/07_Funciones/MR5a_ZM_Funciones.R"))
+source(paste0(here::here(), "/R/inst/MR5a_ZM_Funciones.R"))
 ```
 
 
@@ -414,29 +414,37 @@ ZM <- lapply(1:length(ZM_CF), function(x){
 })
 ################################################################################
 ################################## Filtro ######################################
-Inmigrantes  <- lapply(1:length(ZM), function(x){
-                                            Migrantes %>%
-                                             as.data.frame() %>%
-                                              tibble::rownames_to_column(var = "rn") %>% 
-                                               melt(., id.vars = "rn", variable.name = "cn") %>%
-                                                mutate_if(is.factor, as.character) %>%
-                                                 mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                                  filter(value > 0) %>%
-                                                   group_by(rn) %>% 
-                                                    summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
+Inmigrantes_function <- function(ZM, Migrantes){
+                          lapply(1:length(ZM), function(x){
+                                    Migrantes %>%
+                                     as.data.frame() %>%
+                                      tibble::rownames_to_column(var = "rn") %>% 
+                                       melt(., id.vars = "rn", variable.name = "cn") %>%
+                                        mutate_if(is.factor, as.character) %>%
+                                         mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
+                                          filter(value > 0) %>%
+                                           group_by(rn) %>% 
+                                            summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
 })
+}
+Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 
-Emigrantes <- lapply(1:length(ZM), function(x){
-                                      Migrantes %>%
-                                       as.data.frame() %>%
-                                        tibble::rownames_to_column(var = "rn") %>% 
-                                         melt(., id.vars = "rn", variable.name = "cn") %>%
-                                          mutate_if(is.factor, as.character) %>%
-                                           mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                            filter(value > 0) %>%
-                                             group_by(cn) %>% 
-                                              summarise(Emigrantes = sum(value, na.rm = TRUE)) 
+Emigrantes_function <- function(ZM, Migrantes){
+                          lapply(1:length(ZM), function(x){
+                                    Migrantes %>%
+                                     as.data.frame() %>%
+                                      tibble::rownames_to_column(var = "rn") %>% 
+                                       melt(., id.vars = "rn", variable.name = "cn") %>%
+                                        mutate_if(is.factor, as.character) %>%
+                                         mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
+                                          filter(value > 0) %>%
+                                           group_by(cn) %>% 
+                                            summarise(Emigrantes = sum(value, na.rm = TRUE)) 
 })
+}
+Emigrantes <- Emigrantes_function(ZM, Migrantes)
+
+
 ################################## Filtro ######################################
 #p <- data.frame(ZM = ZM_CF,
  #               filtro_municipio = tabla_municipios,
@@ -1766,29 +1774,9 @@ ZM <- lapply(1:length(ZM_CF), function(x){
 
 ################################################################################
 ################################## Filtro ######################################
-Inmigrantes  <- lapply(1:length(ZM), function(x){
-                                            Migrantes %>%
-                                             as.data.frame() %>%
-                                              tibble::rownames_to_column(var = "rn") %>% 
-                                               melt(., id.vars = "rn", variable.name = "cn") %>%
-                                                mutate_if(is.factor, as.character) %>%
-                                                 mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                                  filter(value > 0) %>%
-                                                   group_by(rn) %>% 
-                                                    summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
-})
+Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 
-Emigrantes <- lapply(1:length(ZM), function(x){
-                                      Migrantes %>%
-                                       as.data.frame() %>%
-                                        tibble::rownames_to_column(var = "rn") %>% 
-                                         melt(., id.vars = "rn", variable.name = "cn") %>%
-                                          mutate_if(is.factor, as.character) %>%
-                                           mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                            filter(value > 0) %>%
-                                             group_by(cn) %>% 
-                                              summarise(Emigrantes = sum(value, na.rm = TRUE)) 
-})
+Emigrantes <- Emigrantes_function(ZM, Migrantes)
 
 ################################# Filtro #######################################
 ### Sacar el promedio de los flujos migratiorios para determinar como se van a grupar los estados 
@@ -2810,29 +2798,9 @@ ZM <- lapply(1:length(ZM_CF), function(x){
 })
 ################################################################################
 ################################## Filtro ######################################
-Inmigrantes  <- lapply(1:length(ZM), function(x){
-                                            Migrantes %>%
-                                             as.data.frame() %>%
-                                              tibble::rownames_to_column(var = "rn") %>% 
-                                               melt(., id.vars = "rn", variable.name = "cn") %>%
-                                                mutate_if(is.factor, as.character) %>%
-                                                 mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                                  filter(value > 0) %>%
-                                                   group_by(rn) %>% 
-                                                    summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
-})
+Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 
-Emigrantes <- lapply(1:length(ZM), function(x){
-                                      Migrantes %>%
-                                       as.data.frame() %>%
-                                        tibble::rownames_to_column(var = "rn") %>% 
-                                         melt(., id.vars = "rn", variable.name = "cn") %>%
-                                          mutate_if(is.factor, as.character) %>%
-                                           mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                            filter(value > 0) %>%
-                                             group_by(cn) %>% 
-                                              summarise(Emigrantes = sum(value, na.rm = TRUE)) 
-})
+Emigrantes <- Emigrantes_function(ZM, Migrantes)
 
 ################################## Filtro ######################################
 #p <- data.frame(ZM = ZM_CF,
@@ -4125,29 +4093,10 @@ NOM_ZM_CF <- ZM_2020 %>%
                distinct(CVE_ZM, NOM_ZM)
 ################################################################################
 ################################## Filtro ######################################
-Inmigrantes  <- lapply(1:length(ZM), function(x){
-                                            Migrantes %>%
-                                             as.data.frame() %>%
-                                              tibble::rownames_to_column(var = "rn") %>% 
-                                               melt(., id.vars = "rn", variable.name = "cn") %>%
-                                                mutate_if(is.factor, as.character) %>%
-                                                 mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                                  filter(value > 0) %>%
-                                                   group_by(rn) %>% 
-                                                    summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
-})
+Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 
-Emigrantes <- lapply(1:length(ZM), function(x){
-                                      Migrantes %>%
-                                       as.data.frame() %>%
-                                        tibble::rownames_to_column(var = "rn") %>% 
-                                         melt(., id.vars = "rn", variable.name = "cn") %>%
-                                          mutate_if(is.factor, as.character) %>%
-                                           mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
-                                            filter(value > 0) %>%
-                                             group_by(cn) %>% 
-                                              summarise(Emigrantes = sum(value, na.rm = TRUE)) 
-})
+Emigrantes <- Emigrantes_function(ZM, Migrantes)
+
 ################################## Filtro ######################################
 #p <- data.frame(ZM = ZM,
  #               filtro_zm = filtro_mig)
