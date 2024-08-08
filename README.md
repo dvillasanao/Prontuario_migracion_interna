@@ -48,7 +48,8 @@ movilidad, cada una con sus respectivos scripts y datos:
   - Migración reciente 2010-2015
   - Migración reciente 2015-2020
 - **Migración de nacimiento 2010 - 2020** (Nivel Estatal)
-  - Migración de nacimiento 2020
+  - Migración de nacimiento 2020 [\[Chord
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MNac2020.html)  
   - Migración de nacimiento 2015
   - Migración de nacimiento 2010
   - Migración de nacimiento 2000
