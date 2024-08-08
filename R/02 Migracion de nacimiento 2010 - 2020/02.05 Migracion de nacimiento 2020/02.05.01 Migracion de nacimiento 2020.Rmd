@@ -13,54 +13,6 @@ output:
 
 \usepackage{color}
 
-```{=html}
-<style>
-code.r{
-  font-size: 10px;
-}
-pre {
-  font-size: 12px
-}
-</style>
-
-<style>
-body {
-text-align: justify;
-font-style: normal;
-font-family: "Montserrat";
-font-size: 12px
-}
-h1.title {
-  font-size: 40px;
-  color: #000D3B;
-}
-h1 {
-  color: #B6854D;
-}
-h2 {
-  color: #172984;
-}
-h3 {
-  color: #172984;
-}
-</style>
-```
-
-```{=html}
-<style>
-.nav>li>a {
-    position: relative;
-    display: block;
-    padding: 10px 15px;
-    color: #0A2687;
-}
-.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
-    color: #ffffff;
-    background-color: #09C2BC;
-}
-</style>
-```
-
 ```{r, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
                          eval = FALSE, class.source = "fold-show")
@@ -92,7 +44,7 @@ library(extrafont)
 windowsFonts()
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE, results=FALSE}
 # Librerías que se usaron en el documCVE_ENTo
 require(chorddiag)
 require(circlize)
@@ -172,8 +124,6 @@ Se genera un vector con el nombre de las entidades llamado `estados` para facili
 # Claves de los estados
 estados <- sjlabelled::get_labels(mydata$CVE_ENT)
 nom_estados <- sjlabelled::get_labels(mydata$ENT)
-
-est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO", "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", "TAMS", "TLX", "VER", "YUC", "ZAC")
 
 nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza", "Colima", 
                   "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",    
@@ -266,7 +216,7 @@ save(Migrantes, file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimient
 **Matriz de migración en el lugar de nacimiento**
 
 ::: {style="height:500px;overflow:auto;"}
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -298,36 +248,62 @@ tabla %>%
 
 Gráfico dinámico de migración por lugar de nacimiento a nivel estatal.
 
-```{r, fig.width=7, fig.height=5, fig.align='center'}
+```{r, fig.width=5, fig.height=5, fig.align='center', eval = TRUE}
 #devtools::install_github("mattflor/chorddiag")
 require(chorddiag)
+library(htmltools)
 
 load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
 
 tabla <- Migrantes %>%
           sna::diag.remove(remove.val = 0) 
 
+names <- c("Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila", "Colima", 
+           "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",    
+           "México", "Michoacán", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", 
+           "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", 
+           "Veracruz", "Yucatán", "Zacatecas")
+
 # Paleta de colores
 #paleta <- colorRampPalette(LaCroixColoR::lacroix_palette("PassionFruit", n = 50, type = "continuous"))(25)
 paleta <- c("#C70E7B", "#D1207C", "#DC327D", "#E7467F", "#F25880", "#F86C7C", "#E58560", "#D49E46", "#C2B72A", "#B0D00F", "#9ADC0E", "#7CD332", "#60CA57", "#43C17B", "#25B99F", "#24ABAC", "#359CA8", "#468DA4", "#577DA1", "#686E9D", "#5D6093", "#4B5188", "#39437E", "#283573", "#172869")
 
 p <- chorddiag(tabla, 
+               groupNames = names,
                groupColors = paleta, 
                groupnamePadding = 10, 
-               height = 500, 
-               width = 500,
-               margin = 100,
+               #height = 700, 
+               #width = 700,
+               #margin = 0,
                groupThickness = 0.07,
-               groupPadding = 0.8,
-               groupnameFontsize = 10,
+               groupPadding = 3,
+               groupnameFontsize = 12,
                fadeLevel = 1,
-               chordedgeColor = "#D0D0CF", 
+               tickInterval = seq(0, 500000, 10000),
+               chordedgeColor = "transparent",
+               showZeroTooltips = FALSE,
                showTicks = TRUE)
 
-p
+# Ajusta las etiquetas usando JavaScript para modificar su posición
+p <- htmlwidgets::onRender(p, '
+  function(el, x) {
+    d3.selectAll(".group text")
+      .attr("text-anchor", "middle")
+      .attr("dx", "0")  
+      .attr("dy", "0.75em"); 
+  }
+')
 
-require(htmlwidgets)
-htmlwidgets::saveWidget(p, paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"), selfcontained = TRUE)
+# Crear un contenedor div y aplicar estilos CSS para centrarlo
+#p <- tags$div(style = "display: flex; justify-content: center; align-items: center;", p)
+
+p
+#require(htmlwidgets)
+#htmlwidgets::saveWidget(p, paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"), selfcontained = TRUE)
+
+require(mapview)
+p %>% 
+ mapshot(url = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"))
 #require(webshot)
 #webshot(url = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"),
  #         file = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.png"),
