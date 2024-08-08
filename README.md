@@ -64,7 +64,8 @@ movilidad, cada una con sus respectivos scripts y datos:
   - Migración de retorno 2010
   - Migración de retorno 2015
   - Migración de retorno 2020
-- **Zonas Metropolitanas 2010 - 2020** (Nivel Estatal y Municipal)
+- **Zonas Metropolitanas 2010 - 2020** (Nivel Estatal, Municipal y
+  Metropolitano)
   - Zonas Metropolitanas 2010
   - Zonas Metropolitanas 2015
   - Zonas Metropolitanas 2020
