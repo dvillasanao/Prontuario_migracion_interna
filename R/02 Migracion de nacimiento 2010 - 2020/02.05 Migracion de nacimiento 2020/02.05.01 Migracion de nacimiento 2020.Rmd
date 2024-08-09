@@ -29,6 +29,7 @@ rm(list = ls())
 setwd(here::here())
 source(paste0(here::here(), "/R/inst/chord_function.R"))
 source(paste0(here::here(), "/R/inst/margins_function.R"))
+source(paste0(here::here(), "/R/inst/migration_function.R"))
 ```
 
 
@@ -61,6 +62,7 @@ require(sna)
 require(expss)
 require(knitr)
 require(kableExtra)
+require(mapview)
 require(sjlabelled)
 require(gt)
 require(ggplot2)
@@ -296,7 +298,6 @@ p
 #require(htmlwidgets)
 #htmlwidgets::saveWidget(p, paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"), selfcontained = TRUE)
 
-require(mapview)
 p %>% 
  mapshot(url = paste0(here::here(),"/images/MNac_2020.html"))
 #require(webshot)
@@ -326,20 +327,25 @@ colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
 #svglite::svglite(paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2020/ChordDiagram de MR5a a nivel estatal.svg"), width = 20, height = 20)
 file = "/Graficos/Estado/02_Lugar de nacimiento/2020/ChordDiagram de MNac a nivel estatal.pdf"
 
-tabla2 <- color_chord_diagram(tabla1 = tabla, ZM_CF = 1, paleta)
+tabla2 <- color_chord_diagram(tabla1 = tabla, paleta)
 
-## Gráficos a nivel municipal 
+## Gráficos a nivel estatal 
 chord_diagram_graph(file = file, 
-                    width = 7,
-                    height = 7,
-                    family = "Montserrat Medium",
-                    paleta = paleta,
-                    ZM_CF = 1,
-                    tabla1 = tabla,
-                    tabla2 = tabla2,
+                    width = 7, 
+                    height = 7, 
+                    family = "Montserrat Medium", 
+                    paleta = paleta, 
+                    tabla1 = tabla, 
+                    tabla2 = tabla2, 
                     color_labels = "#000C7D",
                     transparency = 0.4,
-                    margin = c(0, 0, 0, 0))
+                    circo.text = 9,
+                    circos.axis.text = 6,
+                    adj.text = c(-0.05, 0.5),
+                    gap.degree = 2, 
+                    clock.wise = FALSE,
+                    track.margin = c(-0.07, 0.1),
+                    margin = rep(0, 4))
 ```
 
 ### Gráfico por estados
@@ -443,15 +449,22 @@ tabla2 <- color_chord_diagram(tabla1, paleta)
 ```{r grafico estatal, eval = FALSE, results='hide'}
 file = "/Graficos/Estado/02_Lugar de nacimiento/2020/ChordDiagram de MNac para cada estado.pdf"
 
-## Gráficos a nivel estatal
-chord_diagram_graph(file = file, 
-                    width = 8,
-                    height = 8,
-                    family = "Montserrat Medium",
-                    paleta = paleta,
-                    tabla1,
-                    tabla2,
-                    color_labels = "#000C7D",
+## Gráficos a nivel estatal 
+chord_diagram_graph(file, 
+                    width = 8, 
+                    height = 8, 
+                    family = "Montserrat Medium", 
+                    paleta = paleta, 
+                    tabla1 = tabla1, 
+                    tabla2 = tabla2,
+                    color_labels = "#000C7D"
+                    transparency = 0.4,
+                    circo.text = 9,
+                    circos.axis.text = 6,
+                    adj.text = c(-0.05, 0.5),
+                    gap.degree = 2, 
+                    clock.wise = FALSE,
+                    track.margin = c(-0.07, 0.1),
                     margin = c(0, 0, 0, 0))
 ```
 
