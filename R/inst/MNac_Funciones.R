@@ -89,10 +89,81 @@ chord_diagram_graph <- function(file,
             fallback_resolution = 400, 
             onefile = TRUE)
   
-  for (i in 1:length(ZM_CF)) {
+  # Determina si tabla1 y tabla2 son listas o data.frames únicos
+  is_list <- is.list(tabla1) && is.list(tabla2)
+  
+  if (is_list) {
+    for (i in 1:length(ZM_CF)) {
+      tabla <- tabla1[[i]]
+      color_table <- tabla2[[i]]
+      # Paleta de colores
+      groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla), rownames(tabla))))),
+                              nm = str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))
+      
+      circos.clear()
+      circos.par(start.degree = 90, 
+                 gap.degree = 2, 
+                 clock.wise = FALSE,
+                 track.margin = c(-0.07, 0.1),
+                 points.overflow.warning = FALSE)
+      
+      par(mar = margin)
+      
+      chordDiagram(x = as.matrix(tabla), 
+                   grid.col = groupColors,
+                   col = color_table,
+                   order = str_sort(unique(c(colnames(tabla), rownames(tabla)))),
+                   keep.diagonal = FALSE,
+                   transparency = 0,
+                   directional = 1,
+                   direction.type = c("arrows", "diffHeight"), 
+                   diffHeight = -0.04,
+                   annotationTrack = "grid", 
+                   annotationTrackHeight = c(0.05, 0.1),
+                   preAllocateTracks = 1, 
+                   big.gap = 40,
+                   link.arr.type = "big.arrow", 
+                   link.lwd = 3,
+                   link.lty = 1,
+                   link.visible = TRUE,
+                   link.largest.ontop = TRUE)
+      
+      # Añadir texto y eje
+      circos.trackPlotRegion(track.index = 1,
+                             track.height = 0.05,
+                             bg.border = NA, 
+                             panel.fun = function(x, y) {
+                               xlim = get.cell.meta.data("xlim")
+                               ylim = get.cell.meta.data("ylim")
+                               sector.name = get.cell.meta.data("sector.index")
+                               circos.text(x = mean(xlim), 
+                                           y = ylim[1] + 0.1, 
+                                           labels = sector.name, 
+                                           facing = "clockwise",
+                                           niceFacing = TRUE, 
+                                           adj = c(-0.05, 0.5),
+                                           cex = fontsize(9),
+                                           col = color_labels,
+                                           font = 1)
+                               circos.axis(h = "top",
+                                           labels = c(0, 10, 20, 50, 100, 200, 300, 400, 500, seq(1000, 20000, by = 1000)),
+                                           major.tick.length = 0.5,
+                                           minor.ticks = 4, 
+                                           labels.cex = fontsize(6),
+                                           sector.index = sector.name,
+                                           track.index = 2,
+                                           labels.niceFacing = TRUE,
+                                           labels.pos.adjust = c(0, 0.8))
+                             })
+    }
+  } else {
+    # Si tabla1 y tabla2 no son listas, simplemente usa los data frames directamente
+    tabla <- tabla1
+    color_table <- tabla2
+    
     # Paleta de colores
-    groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))))),
-                            nm = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]]))), numeric = TRUE))
+    groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla), rownames(tabla))))),
+                            nm = str_sort(unique(c(colnames(tabla), rownames(tabla))), numeric = TRUE))
     
     circos.clear()
     circos.par(start.degree = 90, 
@@ -103,10 +174,10 @@ chord_diagram_graph <- function(file,
     
     par(mar = margin)
     
-    chordDiagram(x = as.matrix(tabla1[[i]]), 
+    chordDiagram(x = as.matrix(tabla), 
                  grid.col = groupColors,
-                 col = tabla2[[i]],
-                 order = str_sort(unique(c(colnames(tabla1[[i]]), rownames(tabla1[[i]])))),
+                 col = color_table,
+                 order = str_sort(unique(c(colnames(tabla), rownames(tabla)))),
                  keep.diagonal = FALSE,
                  transparency = 0,
                  directional = 1,

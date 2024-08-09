@@ -228,7 +228,7 @@ totales <- function(tabla1, ZM) {
                                          ,,,,contains(str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))) %>%
                              slice(nrow(.)) %>% 
                               t() %>%
-                               as.data.frame()%>%
+                               as.data.frame() %>%
                                 rownames_to_column(var = "name")  %>% 
                                  rename("Total_Filas" = "1"),
                           tabla1[[x]] %>%
