@@ -30,6 +30,8 @@ rm(list = ls())
 ```{r, echo=FALSE}
 setwd(here::here())
 source(paste0(here::here(), "/R/inst/MEst_ZM_Funciones.R"))
+source(paste0(here::here(), "/R/inst/chord_function.R"))
+source(paste0(here::here(), "/R/inst/margins_function.R"))
 ```
 
 
@@ -402,46 +404,15 @@ filtro_out <- read.xlsx(paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 
 ################################################################################
 ################################################################################
-tabla1 <- lapply(1:length(ZM_CF), function(x){
-                                    # filtro de municipios de la ZM
-                                      filtro  <- Inmigrantes[[x]] %>%
-                                                  full_join(., Emigrantes[[x]], by = c("rn" = "cn")) %>%
-                                                    mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-                                                     filter(value > filtro_mig[x]) %>%   ## Cambia el filtro de los municipios de la Zonas Metropolitanas
-                                                      pull(rn)
-                                      
-                                    # filtro de estados
-                                     filtro_est <- Inmigrantes[[x]] %>%
-                                                    full_join(., Emigrantes[[x]], by = c("rn" = "cn")) %>%
-                                                     filter(rn %nin% ZM[[x]]) %>%
-                                                      mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-                                                       mutate(rn = substr(.$rn, 1, 3)) %>%
-                                                        group_by(rn) %>%
-                                                         summarise(value = sum(value)) %>%
-                                                          filter(value >= filtro_out[x]) %>% 
-                                                           pull(rn)
-                                     
-                                     Migrantes %>%
-                                      as.data.frame() %>%
-                                       tibble::rownames_to_column(var = "rn") %>% 
-                                        melt(., id.vars = "rn", variable.name = "cn") %>%
-                                         mutate_if(is.factor, as.character) %>%
-                                          filter(.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]) %>%
-                                           mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>% 
-                                            mutate(rn = case_when(.$rn %in% ZM[[x]] & .$rn %in% filtro  ~ substr(.$rn, 2, nchar(.$rn)),
-                                                                  .$rn %in% ZM[[x]] & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZM"), 100),
-                                                                  .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 100),
-                                                                  .$rn %nin% ZM[[x]] & substr(.$rn, 1, 3) %nin% filtro_est ~ "Otros estados"),
-                                                 
-                                                   cn = case_when(.$cn %in% ZM[[x]] & .$cn %in% filtro  ~ substr(.$cn, 2, nchar(.$cn)),
-                                                                  .$cn %in% ZM[[x]] & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZM"), 100),
-                                                                  .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 100),
-                                                                  .$cn %nin% ZM[[x]] & substr(.$cn, 1, 3) %nin% filtro_est ~ "Otros estados")) %>%
-                                            filter(value > 0) %>%
-                                             dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
-                                              column_to_rownames(., var = "rn") 
-  }
-)
+tabla1 <- migration_flows_metropolitan(tabla = Migrantes, 
+                                       filtro_zm = ZM, 
+                                       filtro_mig = filtro_mig, 
+                                       filtro_out = filtro_out, 
+                                       Emigrantes = Emigrantes, 
+                                       Inmigrantes = Inmigrantes, 
+                                       category_group = estados, 
+                                       category_names = nom_estados,
+                                       group = "Otros estados")
 
 ## Se sacan los flujos migratorios que pertencen a otros estados
 #tabla_estados <- sapply(1:length(ZM_CF), function(i){

@@ -75,6 +75,9 @@ rm(list = ls())
 
 ```{r, echo=FALSE}
 setwd(here::here())
+source(paste0(here::here(), "/R/inst/MEst_ZM_Funciones.R"))
+source(paste0(here::here(), "/R/inst/chord_function.R"))
+source(paste0(here::here(), "/R/inst/margins_function.R"))
 ```
 
 ```{r, echo=FALSE}
