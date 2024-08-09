@@ -694,6 +694,7 @@ filtro_est <- Inmigrantes %>%
                       pull(rn)
 
 ################################################################################
+tabla1 <- 
 tabla1 <- Migrantes %>%
            as.data.frame() %>%
             tibble::rownames_to_column(var = "rn") %>% 
