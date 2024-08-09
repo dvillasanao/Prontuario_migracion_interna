@@ -13,7 +13,10 @@ library(tibble)
 ################################################################################
 
 # Función para calcular totales con parámetros personalizados
-totales <- function(tabla1, Inmigrantes = "Salen por estudio", Clave = "CVE_MUN", Emigrantes = "Entran por estudio") {
+totales <- function(tabla1, 
+                    Inmigrantes = "Salen por estudio", 
+                    Clave = "CVE_MUN", 
+                    Emigrantes = "Entran por estudio") {
   lapply(1:length(tabla1), function(x) {
     # Agrupación de totales
     datos_totales <- full_join(
@@ -48,7 +51,10 @@ totales <- function(tabla1, Inmigrantes = "Salen por estudio", Clave = "CVE_MUN"
 }
 
 # Función para calcular porcentajes con parámetros personalizados
-porcentajes <- function(tabla1, Inmigrantes = "%Salen por estudio", Clave = "CVE_MUN", Emigrantes = "%Entran por estudio") {
+porcentajes <- function(tabla1, 
+                        Inmigrantes = "%Salen por estudio", 
+                        Clave = "CVE_MUN", 
+                        Emigrantes = "%Entran por estudio") {
   lapply(1:length(tabla1), function(x) {
     # Agrupación de porcentajes
     datos_porcentajes <- full_join(

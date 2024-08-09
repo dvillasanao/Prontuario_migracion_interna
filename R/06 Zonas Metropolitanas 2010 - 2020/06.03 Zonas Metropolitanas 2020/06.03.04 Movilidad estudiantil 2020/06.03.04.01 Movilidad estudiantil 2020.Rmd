@@ -32,6 +32,7 @@ setwd(here::here())
 source(paste0(here::here(), "/R/inst/MEst_ZM_Funciones.R"))
 source(paste0(here::here(), "/R/inst/chord_function.R"))
 source(paste0(here::here(), "/R/inst/margins_function.R"))
+source(paste0(here::here(), "/R/inst/migration_function.R"))
 ```
 
 
@@ -656,6 +657,8 @@ ZM <- ZM_2020 %>%
 
 ################################################################################
 ################################## Filtro ######################################
+Inmigrantes <- Inmigrantes_function(ZM = ZM, 
+                                    tabla = Migrantes)
 Inmigrantes  <- Migrantes %>%
                  as.data.frame() %>%
                   tibble::rownames_to_column(var = "rn") %>% 
@@ -666,6 +669,8 @@ Inmigrantes  <- Migrantes %>%
                        group_by(rn) %>% 
                         summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
 
+p <- Emigrantes_function(ZM = ZM, 
+                                    tabla = Migrantes)
 Emigrantes <- Migrantes %>%
                as.data.frame() %>%
                 tibble::rownames_to_column(var = "rn") %>% 
@@ -694,26 +699,15 @@ filtro_est <- Inmigrantes %>%
                       pull(rn)
 
 ################################################################################
-tabla1 <- 
-tabla1 <- Migrantes %>%
-           as.data.frame() %>%
-            tibble::rownames_to_column(var = "rn") %>% 
-             melt(., id.vars = "rn", variable.name = "cn") %>%
-              mutate_if(is.factor, as.character) %>%
-              filter(.$rn %in% ZM | .$cn %in% ZM) %>%
-               mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM| .$cn %in% ZM), value, 0)) %>% 
-                mutate(rn = case_when(.$rn %in% ZM & .$rn %in% filtro  ~ substr(.$rn, 2, nchar(.$rn)),
-                                      .$rn %in% ZM & .$rn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$rn, 1, 3))], "ZMVM"), 50),
-                                      .$rn %nin% ZM & substr(.$rn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$rn, 1, 3))]), 50),
-                                      .$rn %nin% ZM & substr(.$rn, 1, 3) %nin% filtro_est ~ "Otros estados"),
-                                                 
-                       cn = case_when(.$cn %in% ZM & .$cn %in% filtro  ~ substr(.$cn, 2, nchar(.$cn)),
-                                      .$cn %in% ZM & .$cn %nin% filtro ~ str_wrap(paste(estados[as.numeric(substr(.$cn, 1, 3))], "ZMVM"), 50),
-                                      .$cn %nin% ZM & substr(.$cn, 1, 3) %in% filtro_est ~ str_wrap(paste0(nom_estados[as.numeric(substr(.$cn, 1, 3))]), 50),
-                                      .$cn %nin% ZM & substr(.$cn, 1, 3) %nin% filtro_est ~ "Otros estados")) %>%
-                 filter(value > 0) %>%
-                  dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
-                   column_to_rownames(., var = "rn") 
+tabla1 <- migration_flows_metropolitan_city(tabla = Migrantes, 
+                                            filtro_zm = ZM, 
+                                            filtro_municipios = filtro, 
+                                            filtro_estados = filtro_est, 
+                                            category_group = estados, 
+                                            category_names = nom_estados,
+                                            group = "Otros estados") %>%
+           dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
+            column_to_rownames(., var = "rn") 
 ```
 
 
