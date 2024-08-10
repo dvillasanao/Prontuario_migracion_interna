@@ -1435,7 +1435,8 @@ tabla2 <- color_chord_diagram(tabla1 = tabla1, paleta)
 
 ```{r grafico intramunicipal, eval = FALSE, results='hide'}
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst desagregado por ZM (Intramunicipal).pdf"
- 
+
+file = "/Graficos/prueba.pdf"
 ## Gráficos a nivel intramunicipal 
 chord_diagram_graph(file = file, 
                     width = 15, 
@@ -1448,9 +1449,10 @@ chord_diagram_graph(file = file,
                     transparency = 0.4,
                     circo.text = 9,
                     circos.axis.text = 6,
+                    adj.text = c(-0.05, 0.5),
                     gap.degree = 2, 
                     clock.wise = FALSE,
-                    track.margin = c(-0.07, 0.1),,
+                    track.margin = c(-0.07, 0.1),
                     margin = rep(0, 4))
 ```
 
@@ -1459,14 +1461,14 @@ chord_diagram_graph(file = file,
 ```{r etiquetas intramunicipal}
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Etiquetas ZM a nivel intramunicipal.pdf"
 
-labels_chord_diagram(file = file, 
+file = "/Graficos/prueba.pdf"
+labels_chord_diagram(file, 
                      width = 7, 
-                     height = 8, 
+                     height = 9, 
                      family = "Montserrat Medium", 
                      paleta = paleta, 
-                     ZM_CF , 
-                     tabla1, 
-                     NOM_ZM_CF)
+                     tabla1 = tabla1, 
+                     labels = paste(NOM_ZM_CF[,1], NOM_ZM_CF[,2]))
 ```
 
 
