@@ -164,6 +164,41 @@ migration_flows_metropolitan <- function(tabla = Migrantes,
   })
 }
 
+intramunicipal_flows_metropolitan <- function(tabla = Migrantes, 
+                                               filtro_zm = ZM, 
+                                               filtro_mig, 
+                                               Emigrantes, 
+                                               Inmigrantes, 
+                                               category_group = estados, 
+                                               category_names = nom_estados,
+                                               group = "Otros municipios"){
+  
+                                                lapply(1:length(filtro_zm), function(x){
+                                                        filtro  <- Inmigrantes[[x]] %>%
+                                                                    full_join(., Emigrantes[[x]], by = c("rn" = "cn")) %>%
+                                                                     mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+                                                                      filter(value < filtro_mig[x]) %>% 
+                                                                       pull(rn)
+                                                        
+                                                          Migrantes %>%
+                                                           as.data.frame() %>%
+                                                            tibble::rownames_to_column(var = "rn") %>% 
+                                                             melt(., id.vars = "rn", variable.name = "cn") %>%
+                                                              mutate_if(is.factor, as.character) %>%
+                                                               filter(.$rn %in% filtro_zm[[x]] | .$cn %in% filtro_zm[[x]]) %>%
+                                                                mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% filtro_zm[[x]] | .$cn %in% filtro_zm[[x]]), value, 0)) %>% 
+                                                                 mutate(rn = ifelse(.$rn %in% filtro, 
+                                                                                    stringr::str_wrap(paste0(substr(as.character(.$rn), 1, 3), " ", group, " (", category_group[as.numeric(substr(as.character(.$rn), 1, 3))], ")"), 100), 
+                                                                                    substr(.$rn, 2, nchar(.$rn))),
+                                                                        cn = ifelse(.$cn %in% filtro, 
+                                                                                    stringr::str_wrap(paste0(substr(as.character(.$cn), 1, 3),  " ", group, " (", category_group[as.numeric(substr(as.character(.$cn), 1, 3))], ")"), 100), 
+                                                                                    substr(.$cn, 2, nchar(.$cn)))) %>%
+                                                                  filter(value > 0) %>%
+                                                                   dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
+                                                                    column_to_rownames(., var = "rn") 
+                                                })
+}
+
 migration_flows_metropolitan_city <- function(tabla = Migrantes, 
                                               filtro_zm = ZM, 
                                               filtro_municipios, 

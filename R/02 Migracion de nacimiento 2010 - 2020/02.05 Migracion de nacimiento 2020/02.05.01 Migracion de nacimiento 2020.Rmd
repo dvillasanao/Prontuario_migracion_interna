@@ -427,8 +427,8 @@ porcentajes_tablas <- porcentajes(tabla1 = tabla1,
 wb <- createWorkbook()
 for(i in 1:32){
      addWorksheet(wb, paste(est[i]))
-     writeData(wb, i, totales[[i]], colNames = TRUE, startCol = 1)
-     writeData(wb, i, porcentajes[[i]], colNames = TRUE, startCol = 5)
+     writeData(wb, i, total_tablas[[i]], colNames = TRUE, startCol = 1)
+     writeData(wb, i, porcentajes_tablas[[i]], colNames = TRUE, startCol = 5)
      saveWorkbook(wb, 
                   file = paste0(here::here(), "/Output/Estado/02_Lugar de nacimiento/2020/Matriz MNac por estados_2020_Reduccion_Totales.xlsx"), 
                overwrite = TRUE)

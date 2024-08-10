@@ -210,7 +210,7 @@ labels_chord_diagram <- function(file,
                                  tabla1 = NULL, 
                                  labels = NULL) {
                              # Determina si tabla1 y tabla2 son listas o data.frames únicos
-                              is_list <- is.list(tabla[[1]]) 
+                              is_list <- is.list(tabla1[[1]]) 
                               
                               if (is_list) {
                                 ## Labels Chord Diagram 
@@ -424,14 +424,16 @@ chord_diagram_graph_zmvm <- function(file,
                                                    padding = c(-0.5, 0, -0.2, 0), 
                                                    niceFacing = TRUE)
                                   
-                                  highlight.sector(group4, 
-                                                   track.index = 1, 
-                                                   col = groupColors[group4.col], 
-                                                   text = group4.text, 
-                                                   cex = 1.5, 
-                                                   text.col = "white", 
-                                                   padding = c(-0.5, 0, -0.2, 0), 
-                                                   niceFacing = TRUE)
+                                  if (!is.null(group4)) {
+                                    highlight.sector(group4, 
+                                                     track.index = 1, 
+                                                     col = groupColors[group4.col], 
+                                                     text = group4.text, 
+                                                     cex = 1.5, 
+                                                     text.col = "white", 
+                                                     padding = c(-0.5, 0, -0.2, 0), 
+                                                     niceFacing = TRUE)
+                                  }
                                   
                                   dev.off()
 }
