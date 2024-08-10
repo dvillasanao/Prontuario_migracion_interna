@@ -80,14 +80,7 @@ chord_diagram_graph_zmvm(file = file,
                          group4.col = 30)
 
 file = "/Graficos/prueba.pdf"
-labels_chord_diagram(file, 
-                     width = 7, 
-                     height = 9, 
-                     family = "Montserrat Medium", 
-                     paleta = paleta, 
-                     tabla1 = NULL, 
-                     labels = NULL)
-
+                     
 labels_chord_diagram(file = file, 
                      width = 7, 
                      height = 8, 
