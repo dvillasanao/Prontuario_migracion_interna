@@ -1368,6 +1368,9 @@ tabla1 <- intramunicipal_flows_metropolitan(filtro_zm = ZM,
                                             Inmigrantes = Inmigrantes, 
                                             category_group = estados, 
                                             group = "Otros municipios")
+tabla1 <- purrr::map(tabla1, ~ .x %>%
+           dcast(rn ~ cn, value.var = "value", sum, na.rm = TRUE) %>%
+            column_to_rownames(var = "rn"))
 
 ## Se sacan los flujos migratorios que pertencen a otros municipios
 #tabla_municipios <- sapply(1:length(ZM_CF), function(i){
@@ -1404,8 +1407,15 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 ```{r tablas de matrices intramunicipal}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel intramunicipal.RDS"))
 
-total_tablas <- totales(tabla1, ZM)
-porcentajes_tablas <- porcentajes(tabla1, ZM)
+total_tablas <- totales(tabla1 = tabla1, 
+                        Clave = "CVE_ZM", 
+                        Inmigrantes = "Salen por estudio",  
+                        Emigrantes = "Entran por estudio")
+
+porcentajes_tablas <- porcentajes(tabla1 = tabla1, 
+                                  Clave = "CVE_ZM", 
+                                  Inmigrantes = "%Salen por estudio",  
+                                  Emigrantes = "%Entran por estudio")
 
 # Se guardan los totales de las matrices reducidas 
 wb <- createWorkbook()
@@ -1593,6 +1603,7 @@ ZM <- ZM_2020 %>%
         filter(CVE_ZM %in% "09.01")  %>% 
          mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>% 
           pull(NOM_MUN)
+
 ################################################################################
 ################################## Filtro ######################################
 Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
@@ -1621,9 +1632,6 @@ tabla1 <- migration_flows_metropolitan_city(tabla = Migrantes,
 
 
 ```{r}
-# Paleta de colores
-groupColors <- paste0(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))), "7F")
-
 # Paleta de colores
 #paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
 paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
@@ -2258,9 +2266,15 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 ```{r tablas de matrices intermunicipal}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel intermunicipal.RDS"))
 
-total_tablas <- totales(tabla1, ZM)
+total_tablas <- totales(tabla1 = tabla1, 
+                        Clave = "CVE_MUN", 
+                        Inmigrantes = "Salen por estudio",  
+                        Emigrantes = "Entran por estudio")
 
-porcentajes_tablas <- porcentajes(tabla1, ZM)
+porcentajes_tablas <- porcentajes(tabla1 = tabla1, 
+                                  Clave = "CVE_MUN", 
+                                  Inmigrantes = "%Salen por estudio",  
+                                  Emigrantes = "%Entran por estudio")
 
 # Se guardan los totales de las matrices reducidas 
 wb <- createWorkbook()
@@ -3217,8 +3231,15 @@ saveRDS(tabla1, paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/
 ```{r tablas de matrices metropolitano}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Matriz MEst a nivel metropolitano.RDS"))
 
-total_tablas <- totales(tabla1, ZM)
-porcentajes_tablas <- porcentajes(tabla1, ZM)
+total_tablas <- totales(tabla1 = tabla1, 
+                        Clave = "CVE_ZM", 
+                        Inmigrantes = "Salen por estudio",  
+                        Emigrantes = "Entran por estudio")
+
+porcentajes_tablas <- porcentajes(tabla1 = tabla1, 
+                                  Clave = "CVE_ENT", 
+                                  Inmigrantes = "%Salen por estudio",  
+                                  Emigrantes = "%Entran por estudio")
 
 # Se guardan los totales de las matrices reducidas 
 wb <- createWorkbook()
@@ -3495,10 +3516,10 @@ Residentes <- lapply(1:length(zm), function(x){
                                          filter(CVE_MUN == CVE_MUN_ASI)  %>%
                                           summarize(Residentes =  sum(value, na.rm = TRUE)) %>% 
                                            mutate(CVE_ZM = !!paste0(zm[x])) 
-}
-)
+})
 
 Residentes <- do.call(rbind.data.frame, Residentes)
+
 ################################################################################
 ############################### Inmigrantes ####################################
 
@@ -3514,6 +3535,7 @@ Inmigrantes <- lapply(1:length(zm), function(x){
 })
 
 Inmigrantes <- do.call(rbind.data.frame, Inmigrantes)
+
 ################################################################################
 ############################### Emigrantes #####################################
 
@@ -3659,10 +3681,10 @@ Residentes <- lapply(1:length(zm), function(x){
                                            filter(CVE_MUN %in% ZM[[x]]) %>%
                                             summarize(Residentes =  sum(value, na.rm = TRUE)) %>% 
                                              mutate(CVE_ZM = !!paste0(zm[x])) 
-}
-)
+})
 
 Residentes <- do.call(rbind.data.frame, Residentes)
+
 ################################################################################
 ############################### Inmigrantes ####################################
 
@@ -3680,6 +3702,7 @@ Inmigrantes <- lapply(1:length(zm), function(x){
 })
 
 Inmigrantes <- do.call(rbind.data.frame, Inmigrantes)
+
 ################################################################################
 ############################### Emigrantes #####################################
 
