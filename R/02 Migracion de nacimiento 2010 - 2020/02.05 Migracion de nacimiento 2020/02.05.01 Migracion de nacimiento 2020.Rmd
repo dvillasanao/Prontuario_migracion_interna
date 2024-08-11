@@ -248,7 +248,6 @@ Gráfico dinámico de migración por lugar de nacimiento a nivel estatal.
 ```{r, fig.width=5, fig.height=5, fig.align='center', eval = TRUE}
 #devtools::install_github("mattflor/chorddiag")
 require(chorddiag)
-library(htmltools)
 
 load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
 
@@ -319,7 +318,6 @@ tabla <- Migrantes %>%
 rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
 colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
 
-
 paleta <- c("#C70E7B", "#D1207C", "#DC327D", "#E7467F", "#F25880", "#F86C7C", "#E58560", "#D49E46", "#C2B72A", "#B0D00F", "#9ADC0E", "#7CD332", "#60CA57", "#43C17B", "#25B99F", "#24ABAC", "#359CA8", "#468DA4", "#577DA1", "#686E9D", "#5D6093", "#4B5188", "#39437E", "#283573", "#172869")
 
 tabla2 <- color_chord_diagram(tabla1 = tabla, paleta)
@@ -362,7 +360,6 @@ tabla <- Migrantes %>%
 
 rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
 colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
-
 
 # Nombre de los estados 
 estado <- stringr::str_wrap(nom_estados, 100)
@@ -669,8 +666,8 @@ Pob.Total <- mydata %>%
 ########################### Residentes #########################################
 load(file = paste0(here::here(), "/Bases/Estado/02_Lugar de nacimiento/2020/Matriz de migracion de nacimiento 2020.RData"))
 
-rownames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
-colnames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
+rownames(Migrantes) <- estados
+colnames(Migrantes) <- estados
 
 Residentes <- Migrantes %>%
                rownames_to_column() %>%
