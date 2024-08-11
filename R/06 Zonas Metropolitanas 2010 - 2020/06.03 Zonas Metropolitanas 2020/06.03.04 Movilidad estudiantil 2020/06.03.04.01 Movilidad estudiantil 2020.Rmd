@@ -358,7 +358,6 @@ colnames <- colnames(Migrantes) %>%
 rownames(Migrantes) <- rownames
 colnames(Migrantes) <- colnames
 
-
 # Nombre de las Zonas Metropolitanas
 NOM_ZM <- stringr::str_wrap(nom_zm, 100)
 
@@ -469,7 +468,6 @@ for(i in 1:length(ZM)){
                   file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Matriz MEst nivel municipal_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
-
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel municipal.RDS"))
 ```
 
@@ -802,7 +800,6 @@ tabla1 <- tabla %>%
            dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
             column_to_rownames(., var = "rn") 
 
-
 # Grupo 1
 grupo1 <- tabla %>%
            filter(substr(.$rn, 1, 2) == "09") %>%
@@ -818,7 +815,6 @@ grupo3 <- tabla %>%
            filter(substr(.$rn, 1, 2) == "13") %>%
             pull(rn) %>%
              unique()
-
 # Grupo 4
 grupo4 <- tabla %>%
            filter(substr(.$rn, 1, 2) %nin% c("09", "15", "13")) %>%
@@ -1344,7 +1340,6 @@ ZM <- lapply(1:length(ZM_CF), function(x){
                        mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>% 
                         pull(NOM_MUN)
 })
-
 ################################################################################
 ################################## Filtro ######################################
 Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
@@ -1403,7 +1398,6 @@ for(i in 1:length(ZM)){
                   file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Matriz MEst nivel intramunicipal_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
-
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel intramunicipal.RDS"))
 ```
 
@@ -1599,7 +1593,6 @@ ZM <- ZM_2020 %>%
         filter(CVE_ZM %in% "09.01")  %>% 
          mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>% 
           pull(NOM_MUN)
-
 ################################################################################
 ################################## Filtro ######################################
 Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
@@ -1723,7 +1716,6 @@ grupo2 <- tabla %>%
            filter(substr(.$rn, 1, 2) == "15") %>%
             pull(rn) %>%
              unique()
-
 # Grupo 3
 grupo3 <- tabla %>%
            filter(substr(.$rn, 1, 2) == "13") %>%
@@ -1823,8 +1815,8 @@ filtro  <- Inmigrantes %>%
              mutate(value = Inmigrantes + Emigrantes) %>%
               filter(value < 30000) %>% 
                pull(rn)
-#########################################################################################
 
+#########################################################################################
 tabla <- Migrantes %>%
           as.data.frame() %>%
            tibble::rownames_to_column(var = "rn") %>% 
@@ -2153,7 +2145,6 @@ colnames <- colnames(Migrantes) %>%
 rownames(Migrantes) <- rownames
 colnames(Migrantes) <- colnames
 
-
 # Nombre de las Zonas Metropolitanas
 NOM_ZM <- stringr::str_wrap(nom_zm, 100)
 
@@ -2245,7 +2236,6 @@ tabla1 <- migration_flows_metropolitan(tabla = Migrantes,
 #                              }
 #                                           })
 
-
 ## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:length(ZM)){
@@ -2262,7 +2252,6 @@ for(i in 1:length(ZM)){
                   file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Matriz MEst nivel intermunicipal_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
-
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel intermunicipal.RDS"))
 ```
 
@@ -2270,6 +2259,7 @@ saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropol
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel intermunicipal.RDS"))
 
 total_tablas <- totales(tabla1, ZM)
+
 porcentajes_tablas <- porcentajes(tabla1, ZM)
 
 # Se guardan los totales de las matrices reducidas 
@@ -2348,7 +2338,6 @@ tabla <- Migrantes %>%
             melt(., id.vars = "rn", variable.name = "cn") %>%
              mutate_if(is.factor, as.character)
              
-
 tabla1 <- lapply(1:length(ZM_CF), function(x){
                                    ZM <- ZM_2020 %>%
                                           select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
@@ -2457,7 +2446,6 @@ colnames <- colnames(Migrantes) %>%
 rownames(Migrantes) <- rownames
 colnames(Migrantes) <- colnames
 
-
 ## Se toma como referencia a la Zona Metropolitana del Valle de México
 ZM <- ZM_2020 %>% 
        select(CVE_ZM, CVE_MUN, NOM_MUN) %>%
@@ -2472,9 +2460,9 @@ Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 Emigrantes <- Emigrantes_function(ZM, Migrantes)
 
 ################################## Filtro ######################################
-filtro  <- Inmigrantes %>%
-            full_join(., Emigrantes, by = c("rn" = "cn")) %>%
-             filter(rn %in% ZM) %>%
+filtro <- Inmigrantes %>%
+           full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+            filter(rn %in% ZM) %>%
               mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
                filter(value > 500) %>% 
                 pull(rn)
@@ -3200,7 +3188,6 @@ filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
                pull(filtro_zm)
 
 ################################################################################
-
 tabla1 <- metropolitan_flows(tabla = Migrantes, 
                              filtro_zm = ZM, 
                              filtro_mig = filtro_mig, 
@@ -3339,7 +3326,6 @@ ZM <- lapply(1:length(zm), function(x){
                     pull(CVE_MUN)
 })
 
-
 Residentes <- lapply(1:length(zm), function(x){
                                      Migrantes %>% 
                                       as.data.frame() %>%
@@ -3350,7 +3336,7 @@ Residentes <- lapply(1:length(zm), function(x){
                                            filter(CVE_MUN %in% ZM[[x]]) %>%
                                             summarize(Residentes =  sum(value, na.rm = TRUE)) %>% 
                                              mutate(CVE_ZM = !!paste0(zm[x])) 
-}
+  }
 )
 
 Residentes <- do.call(rbind.data.frame, Residentes)
@@ -3391,7 +3377,6 @@ Emigrantes <- lapply(1:length(zm), function(x){
 })
 
 Emigrantes <- do.call(rbind.data.frame, Emigrantes)
-
 
 tabla <- Pob.Total %>%
           left_join(., Pob.3ymas, by = c("CVE_ZM")) %>%
@@ -3514,7 +3499,6 @@ Residentes <- lapply(1:length(zm), function(x){
 )
 
 Residentes <- do.call(rbind.data.frame, Residentes)
-
 ################################################################################
 ############################### Inmigrantes ####################################
 
@@ -3530,7 +3514,6 @@ Inmigrantes <- lapply(1:length(zm), function(x){
 })
 
 Inmigrantes <- do.call(rbind.data.frame, Inmigrantes)
-
 ################################################################################
 ############################### Emigrantes #####################################
 
@@ -3549,7 +3532,6 @@ Emigrantes <- lapply(1:length(zm), function(x){
 })
 
 Emigrantes <- do.call(rbind.data.frame, Emigrantes)
-
 
 tabla <- Pob.Total %>%
           left_join(., Pob.3ymas, by = c("CVE_ZM")) %>%
@@ -3667,7 +3649,6 @@ ZM <- lapply(1:length(zm), function(x){
                        pull(CVE_MUN)
 })
 
-
 Residentes <- lapply(1:length(zm), function(x){
                                      Migrantes %>% 
                                       as.data.frame() %>%
@@ -3682,7 +3663,6 @@ Residentes <- lapply(1:length(zm), function(x){
 )
 
 Residentes <- do.call(rbind.data.frame, Residentes)
-
 ################################################################################
 ############################### Inmigrantes ####################################
 
@@ -3700,7 +3680,6 @@ Inmigrantes <- lapply(1:length(zm), function(x){
 })
 
 Inmigrantes <- do.call(rbind.data.frame, Inmigrantes)
-
 ################################################################################
 ############################### Emigrantes #####################################
 
@@ -3719,7 +3698,6 @@ Emigrantes <- lapply(1:length(zm), function(x){
 })
 
 Emigrantes <- do.call(rbind.data.frame, Emigrantes)
-
 
 tabla <- Pob.Total %>%
           left_join(., Pob.3ymas, by = c("CVE_ZM")) %>%
@@ -3769,9 +3747,7 @@ tabla[1:20,] %>%
 Librerias que se usaron en el documento
 
 ```{r, echo = FALSE, eval = TRUE}
-#sesion_info <- devtools::session_info()
-#saveRDS(sesion_info, file = paste0(here::here(), "/Output/sesion_info.RDS"))
-sesion_info <- readRDS(file = paste0(here::here(), "/Output/sesion_info.RDS"))
+sesion_info <- devtools::session_info()
 require(knitr)
 require(kableExtra)
 kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),

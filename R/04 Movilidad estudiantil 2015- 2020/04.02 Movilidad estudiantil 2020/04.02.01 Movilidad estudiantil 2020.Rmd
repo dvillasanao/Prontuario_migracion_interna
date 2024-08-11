@@ -136,6 +136,7 @@ Se genera un vector con las claves de los municipios, pero es importante hacer n
 ```{r}
 # Claves de los estados
 estados <- sjlabelled::get_labels(mydata$CVE_ENT)
+
 nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza", "Colima", 
                   "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",        
                   "México", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", 
@@ -145,7 +146,6 @@ nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "C
 est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO",
          "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", 
          "TAMS", "TLX", "VER", "YUC", "ZAC")
-
 
 # Claves de los municipios
 MUN <- readRDS(paste0(here::here(), "/Bases/municipios_2020.RDS"))
@@ -418,6 +418,7 @@ tabla1 <- migration_flows_states(tabla = tabla,
                                  filtro_est = filtro_est, 
                                  category = estado, 
                                  group = "Otro estados")
+
 ## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:32){
@@ -781,7 +782,9 @@ tabla <- Pob.Total %>%
                    Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
                    Eficacia = Mig.Neta - Mig.Bruta)
 
-write.xlsx(tabla, file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2020/Indicadores de MEst a nivel estatal 2020.xlsx"), overwrite = TRUE)
+write.xlsx(tabla, 
+           file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2020/Indicadores de MEst a nivel estatal 2020.xlsx"), 
+           overwrite = TRUE)
 
 save(tabla, file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2020/Indicadores de MEst a nivel estatal 2020.RData"))
 ```
@@ -1069,7 +1072,6 @@ for(i in 1:32){
                   file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2020/Matriz MEst a nivel municipal_Reduccion.xlsx"), 
                overwrite = TRUE)
 }
-
 saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2020/Tabla MEst a nivel municipal.RDS"))
 ```
 
@@ -1137,6 +1139,7 @@ chord_diagram_graph(file = file,
 
 ```{r etiquetas_municipal}
 file = "/Graficos/Municipio/04_Movilidad estudiantil/2020/Etiquetas a nivel municipal.pdf"
+
 labels_chord_diagram(file = file, 
                      width = 7, 
                      height = 10, 
@@ -1459,7 +1462,6 @@ tabla1 <- migration_flows_municipality(tabla = tabla,
                                        category_names = nom_estados,
                                        group_mun = "Otros municipios",
                                        group_est = NULL)
-
 ################################################################################
 #tabla_municipios <- sapply(1:32, function(x)
 #                                   tabla1[[x]] %>%
@@ -2009,7 +2011,6 @@ filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Municipio/04_Movilidad estu
 filtro_out <- read.xlsx(paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2020/Filtro a nivel intermunicipal.xlsx"), colNames = TRUE) %>%
                pull(filtro_estado)
 
-
 ################################################################################
 ## Se generan los filtros correspondientes a la matriz cuadrada por estados 
 tabla <- Migrantes %>%
@@ -2028,7 +2029,6 @@ tabla1 <- migration_flows_municipality(tabla = tabla,
                                        category_names = nom_estados,
                                        group_mun = "Otros municipios",
                                        group_est = "Otros estados")
-
 ################################################################################
 ## Se sacan los flujos migratorios que pertencen a otros estados
 #tabla_estados <- sapply(1:32, function(i){
@@ -2401,10 +2401,7 @@ tabla[1:20,] %>%
 Librerias que se usaron en el documento
 
 ```{r, echo = FALSE, eval = TRUE}
-#sesion_info <- devtools::session_info()
-#saveRDS(sesion_info, file = paste0(here::here(), "/Output/sesion_info.RDS"))
-sesion_info <- readRDS(file = paste0(here::here(), "/Output/sesion_info.RDS"))
-require(knitr)
+sesion_info <- devtools::session_info()
 require(kableExtra)
 kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),
                     c(package, loadedversion, source))) %>%
