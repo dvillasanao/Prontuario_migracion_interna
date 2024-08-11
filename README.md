@@ -51,11 +51,17 @@ movilidad, cada una con sus respectivos scripts y datos:
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/01%20Migracion%20reciente%202010%20-%202020/01.04%20Migracion%20reciente%202015%20-%202020/01.04.01-Migracion-reciente-2015-2020.html)  
 - **Migración de nacimiento 2010 - 2020** (Nivel Estatal)
   - Migración de nacimiento 2020 [\[Chord
-    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MNac2020.html)
-    [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R//02%20Migracion%20de%20nacimiento%202010%20-%202020/02.05%20Migracion%20de%20nacimiento%202020/02.05.01-Migracion-de-nacimiento-2020.html)  
-  - Migración de nacimiento 2015
-  - Migración de nacimiento 2010
-  - Migración de nacimiento 2000
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MNac_2020.html)
+    [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/02%20Migracion%20de%20nacimiento%202010%20-%202020/02.05%20Migracion%20de%20nacimiento%202020/02.05.01-Migracion-de-nacimiento-2020.html)  
+  - Migración de nacimiento 2015 [\[Chord
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MNac_2015.html)
+    [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/02%20Migracion%20de%20nacimiento%202010%20-%202020/02.04%20Migracion%20de%20nacimiento%202015/02.04.01-Migracion-de-nacimiento-2015.html)
+  - Migración de nacimiento 2010 [\[Chord
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MNac_2010.html)
+    [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/02%20Migracion%20de%20nacimiento%202010%20-%202020/02.03%20Migracion%20de%20nacimiento%202010/02.03.01-Migracion-de-nacimiento-2010.html)
+  - Migración de nacimiento 2000 [\[Chord
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MNac_2000.html)
+    [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/02%20Migracion%20de%20nacimiento%202010%20-%202020/02.02%20Migracion%20de%20nacimiento%202000/02.02.01-Migracion-de-nacimiento-2000.html)
   - Migración de nacimiento 1990
 - **Movilidad laboral 2010 - 2020** (Nivel Estatal y Municipal)
   - Movilidad laboral 2010
