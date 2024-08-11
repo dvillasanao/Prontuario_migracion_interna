@@ -17,25 +17,25 @@ library(grDevices)
 
 color_chord_diagram <- function(tabla1 = NULL, 
                                 paleta = paleta) {
-  # Si tabla1 no es una lista, conviértelo en una lista con un solo elemento
-  if (!is.list(tabla1)) {
-    groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))),
-                            nm = str_sort(unique(c(colnames(tabla1), rownames(tabla1))), numeric = TRUE))
-    return(groupColors)
-  } else {
-  # Aplica la función a cada elemento de la lista
-  lapply(1:length(tabla1), function(x) {
-    # Paleta de colores
-    groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
-                            nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
-    
-    circos.clear()
-    chordDiagram(x = tabla1[[x]] %>% as.matrix(), 
-                 transparency = 0.4,
-                 order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
-                 grid.col = groupColors) %>% 
-      pull(col)
-  })
+                                  # Si tabla1 no es una lista, conviértelo en una lista con un solo elemento
+                                  if (!is.list(tabla1)) {
+                                         groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1), rownames(tabla1))))),
+                                                                 nm = str_sort(unique(c(colnames(tabla1), rownames(tabla1))), numeric = TRUE))
+                                      return(groupColors)
+                                  } else {
+                                      # Aplica la función a cada elemento de la lista
+                                      lapply(1:length(tabla1), function(x) {
+                                                # Paleta de colores
+                                                groupColors <- setNames(colorRampPalette(paleta)(length(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))))),
+                                                                        nm = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE))
+                                                
+                                                circos.clear()
+                                                chordDiagram(x = tabla1[[x]] %>% as.matrix(), 
+                                                             transparency = 0.4,
+                                                             order = str_sort(unique(c(colnames(tabla1[[x]]), rownames(tabla1[[x]]))), numeric = TRUE),
+                                                             grid.col = groupColors) %>% 
+                                                 pull(col)
+                                        })
   }
 }
 
@@ -56,6 +56,7 @@ chord_diagram_graph <- function(file,
                                 circo.text = 9,
                                 circos.axis.text = 6,
                                 adj.text = c(-0.05, 0.5),
+                                adj.ylim = 0.1,
                                 gap.degree = 2, 
                                 clock.wise = FALSE,
                                 track.margin = c(-0.07, 0.1),
@@ -117,7 +118,7 @@ chord_diagram_graph <- function(file,
                                ylim = get.cell.meta.data("ylim")
                                sector.name = get.cell.meta.data("sector.index")
                                circos.text(x = mean(xlim), 
-                                           y = ylim[1] + 0.1, 
+                                           y = ylim[1] + adj.ylim, 
                                            labels = sector.name, 
                                            facing = "clockwise",
                                            niceFacing = TRUE, 
@@ -177,7 +178,7 @@ chord_diagram_graph <- function(file,
                              ylim = get.cell.meta.data("ylim")
                              sector.name = get.cell.meta.data("sector.index")
                              circos.text(x = mean(xlim), 
-                                         y = ylim[1] + 0.1, 
+                                         y = ylim[1] + adj.ylim, 
                                          labels = sector.name, 
                                          facing = "clockwise",
                                          niceFacing = TRUE, 
@@ -314,6 +315,7 @@ chord_diagram_graph_zmvm <- function(file,
                                      clock.wise = TRUE,
                                      track.margin = c(-0.2, 0.2),
                                      adj.text = c(-0.01, 0.5),
+                                     adj.ylim = 1,
                                      margin = rep(0, 4),
                                      group1 = NULL, 
                                      group1.text = NULL,
@@ -377,7 +379,7 @@ chord_diagram_graph_zmvm <- function(file,
                                                                                      ylim = get.cell.meta.data("ylim")
                                                                                      sector.name = get.cell.meta.data("sector.index")
                                                                                      circos.text(x = mean(xlim), 
-                                                                                                 y = ylim[1] + 1, 
+                                                                                                 y = ylim[1] +  adj.ylim, 
                                                                                                  labels = sector.name, 
                                                                                                  facing = "clockwise",
                                                                                                  niceFacing = TRUE, 
@@ -397,6 +399,7 @@ chord_diagram_graph_zmvm <- function(file,
                                                          })
                                   
                                   # Resaltar sectores específicos
+                                  if (!is.null(group1)) {
                                   highlight.sector(group1, 
                                                    track.index = 1, 
                                                    col = groupColors[group1.col], 
@@ -405,7 +408,8 @@ chord_diagram_graph_zmvm <- function(file,
                                                    text.col = "white", 
                                                    padding = c(-0.5, 0, -0.2, 0), 
                                                    niceFacing = TRUE)
-                                  
+                                  }
+                                  if (!is.null(group2)) {
                                   highlight.sector(group2, 
                                                    track.index = 1, 
                                                    col = groupColors[group2.col], 
@@ -414,7 +418,8 @@ chord_diagram_graph_zmvm <- function(file,
                                                    text.col = "white",
                                                    padding = c(-0.5, 0, -0.2, 0), 
                                                    niceFacing = TRUE)
-                                  
+                                  }
+                                  if (!is.null(group3)) {
                                   highlight.sector(group3, 
                                                    track.index = 1, 
                                                    col = groupColors[group3.col], 
@@ -423,7 +428,7 @@ chord_diagram_graph_zmvm <- function(file,
                                                    text.col = "white", 
                                                    padding = c(-0.5, 0, -0.2, 0), 
                                                    niceFacing = TRUE)
-                                  
+                                  }
                                   if (!is.null(group4)) {
                                     highlight.sector(group4, 
                                                      track.index = 1, 

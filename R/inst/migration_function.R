@@ -16,7 +16,7 @@ Inmigrantes_function <- function(ZM, tabla){
                                           tibble::rownames_to_column(var = "rn") %>% 
                                            melt(., id.vars = "rn", variable.name = "cn") %>%
                                             mutate_if(is.factor, as.character) %>%
-                                             mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM | .$cn %in% ZM), value, 0)) %>%
+                                             mutate(value = ifelse((rn != cn) & (rn %in% ZM | cn %in% ZM), value, 0)) %>%
                                               filter(value > 0) %>%
                                                group_by(rn) %>% 
                                                 summarise(Inmigrantes = sum(value, na.rm = TRUE))   
@@ -28,7 +28,7 @@ Inmigrantes_function <- function(ZM, tabla){
                                                 tibble::rownames_to_column(var = "rn") %>% 
                                                  melt(., id.vars = "rn", variable.name = "cn") %>%
                                                   mutate_if(is.factor, as.character) %>%
-                                                   mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
+                                                   mutate(value = ifelse((rn != cn) & (rn %in% ZM[[x]] | cn %in% ZM[[x]]), value, 0)) %>%
                                                     filter(value > 0) %>%
                                                      group_by(rn) %>% 
                                                       summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
@@ -44,7 +44,7 @@ Emigrantes_function <- function(ZM, tabla){
                                           tibble::rownames_to_column(var = "rn") %>% 
                                            melt(., id.vars = "rn", variable.name = "cn") %>%
                                             mutate_if(is.factor, as.character) %>%
-                                             mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM | .$cn %in% ZM), value, 0)) %>%
+                                             mutate(value = ifelse((rn != cn) & (rn %in% ZM | cn %in% ZM), value, 0)) %>%
                                               filter(value > 0) %>%
                                                group_by(cn) %>% 
                                                 summarise(Emigrantes = sum(value, na.rm = TRUE)) 
@@ -55,7 +55,7 @@ Emigrantes_function <- function(ZM, tabla){
                                                tibble::rownames_to_column(var = "rn") %>% 
                                                 melt(., id.vars = "rn", variable.name = "cn") %>%
                                                  mutate_if(is.factor, as.character) %>%
-                                                  mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% ZM[[x]] | .$cn %in% ZM[[x]]), value, 0)) %>%
+                                                  mutate(value = ifelse((rn != cn) & (rn %in% ZM[[x]] | cn %in% ZM[[x]]), value, 0)) %>%
                                                    filter(value > 0) %>%
                                                     group_by(cn) %>% 
                                                      summarise(Emigrantes = sum(value, na.rm = TRUE)) 
@@ -165,68 +165,141 @@ migration_flows_metropolitan <- function(tabla = Migrantes,
 }
 
 intramunicipal_flows_metropolitan <- function(tabla = Migrantes, 
-                                               filtro_zm = ZM, 
-                                               filtro_mig, 
-                                               Emigrantes, 
-                                               Inmigrantes, 
-                                               category_group = estados, 
-                                               category_names = nom_estados,
-                                               group = "Otros municipios"){
-  
-                                                lapply(1:length(filtro_zm), function(x){
-                                                        filtro  <- Inmigrantes[[x]] %>%
-                                                                    full_join(., Emigrantes[[x]], by = c("rn" = "cn")) %>%
-                                                                     mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
-                                                                      filter(value < filtro_mig[x]) %>% 
-                                                                       pull(rn)
-                                                        
-                                                          Migrantes %>%
-                                                           as.data.frame() %>%
-                                                            tibble::rownames_to_column(var = "rn") %>% 
-                                                             melt(., id.vars = "rn", variable.name = "cn") %>%
-                                                              mutate_if(is.factor, as.character) %>%
-                                                               filter(.$rn %in% filtro_zm[[x]] | .$cn %in% filtro_zm[[x]]) %>%
-                                                                mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% filtro_zm[[x]] | .$cn %in% filtro_zm[[x]]), value, 0)) %>% 
-                                                                 mutate(rn = ifelse(.$rn %in% filtro, 
-                                                                                    stringr::str_wrap(paste0(substr(as.character(.$rn), 1, 3), " ", group, " (", category_group[as.numeric(substr(as.character(.$rn), 1, 3))], ")"), 100), 
-                                                                                    substr(.$rn, 2, nchar(.$rn))),
-                                                                        cn = ifelse(.$cn %in% filtro, 
-                                                                                    stringr::str_wrap(paste0(substr(as.character(.$cn), 1, 3),  " ", group, " (", category_group[as.numeric(substr(as.character(.$cn), 1, 3))], ")"), 100), 
-                                                                                    substr(.$cn, 2, nchar(.$cn)))) %>%
-                                                                  filter(value > 0) %>%
-                                                                   dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
-                                                                    column_to_rownames(., var = "rn") 
-                                                })
+                                              filtro_zm = ZM, 
+                                              filtro_mig = NULL, 
+                                              Emigrantes = NULL, 
+                                              Inmigrantes= NULL, 
+                                              category_group = estados, 
+                                              category_names = nom_estados,
+                                              group = "Otros municipios"){
+                                                  # Si tabla1 no es una lista, conviértelo en una lista con un solo elemento
+                                                  # Caso de la ZMVM
+                                                  if (!is.list(ZM)) {
+                                                        tabla %>%
+                                                         as.data.frame() %>%
+                                                          tibble::rownames_to_column(var = "rn") %>% 
+                                                           melt(., id.vars = "rn", variable.name = "cn") %>%
+                                                            mutate_if(is.factor, as.character) %>%
+                                                             filter(rn %in% ZM | cn %in% ZM) %>%
+                                                              mutate(value = ifelse((rn != cn) & (rn %in% ZM | cn %in% ZM), value, 0)) %>% 
+                                                               mutate(rn = ifelse(rn %in% filtro_mig, 
+                                                                                  stringr::str_wrap(paste0(substr(as.character(rn), 1, 3), " ", group, " (", category_group[as.numeric(substr(as.character(rn), 1, 3))], ")"), 100),
+                                                                                  substr(rn, 2, nchar(rn))),
+                                                                      cn = ifelse(cn %in% filtro, 
+                                                                                  stringr::str_wrap(paste0(substr(as.character(cn), 1, 3), " ", group, " (", category_group[as.numeric(substr(as.character(cn), 1, 3))], ")"), 100),
+                                                                                  substr(cn, 2, nchar(cn)))) %>%
+                                                                filter(value > 0) 
+                                                    
+                                                  } else {
+                                                      lapply(1:length(filtro_zm), function(x){
+                                                              filtro  <- Inmigrantes[[x]] %>%
+                                                                          full_join(., Emigrantes[[x]], by = c("rn" = "cn")) %>%
+                                                                           mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+                                                                            filter(value < filtro_mig[x]) %>% 
+                                                                             pull(rn)
+                                                              
+                                                                Migrantes %>%
+                                                                 as.data.frame() %>%
+                                                                  tibble::rownames_to_column(var = "rn") %>% 
+                                                                   melt(., id.vars = "rn", variable.name = "cn") %>%
+                                                                    mutate_if(is.factor, as.character) %>%
+                                                                     filter(rn %in% filtro_zm[[x]] | cn %in% filtro_zm[[x]]) %>%
+                                                                      mutate(value = ifelse((rn != cn) & (rn %in% filtro_zm[[x]] | cn %in% filtro_zm[[x]]), value, 0)) %>% 
+                                                                       mutate(rn = ifelse(rn %in% filtro, 
+                                                                                          stringr::str_wrap(paste0(substr(as.character(rn), 1, 3), " ", group, " (", category_group[as.numeric(substr(as.character(rn), 1, 3))], ")"), 100), 
+                                                                                          substr(rn, 2, nchar(rn))),
+                                                                              cn = ifelse(cn %in% filtro, 
+                                                                                          stringr::str_wrap(paste0(substr(as.character(cn), 1, 3),  " ", group, " (", category_group[as.numeric(substr(as.character(cn), 1, 3))], ")"), 100), 
+                                                                                          substr(cn, 2, nchar(cn)))) %>%
+                                                                        filter(value > 0) 
+                                                      })
+                                                    }
 }
 
 migration_flows_metropolitan_city <- function(tabla = Migrantes, 
                                               filtro_zm = ZM, 
-                                              filtro_municipios, 
-                                              filtro_estados, 
+                                              filtro_municipios = NULL, 
+                                              filtro_estados = NULL, 
                                               category_group = estados, 
                                               category_names = nom_estados,
-                                              group = "Otros estados"){
-  
-                                                tabla %>%
-                                                 as.data.frame() %>%
-                                                  tibble::rownames_to_column(var = "rn") %>%
-                                                   melt(id.vars = "rn", variable.name = "cn") %>%
-                                                    mutate_if(is.factor, as.character) %>%
-                                                     filter(rn %in% filtro_zm | cn %in% filtro_zm) %>%
-                                                      mutate(value = ifelse(rn != cn & (rn %in% filtro_zm | cn %in% filtro_zm), value, 0)) %>%
-                                                       mutate(
-                                                             rn = case_when(
-                                                                            rn %in% filtro_zm & rn %in% filtro_municipios ~ substr(rn, 2, nchar(rn)),
-                                                                            rn %in% filtro_zm & rn %nin% filtro_municipios ~  str_wrap(paste(substr(category_group[as.numeric(substr(rn, 1, 3))], 2, 3), "ZMVM"), 100),
-                                                                            rn %nin% filtro_zm & substr(rn, 1, 3) %in% filtro_estados ~ str_wrap(paste0(category_names[as.numeric(substr(rn, 1, 3))]), 100),
-                                                                            rn %nin% filtro_zm & substr(.$rn, 1, 3) %nin% filtro_estados ~ group
-                                                                            ),
-                                                            cn = case_when(
-                                                                           cn %in% filtro_zm & cn %in% filtro_municipios ~ substr(cn, 2, nchar(cn)),
-                                                                           cn %in% filtro_zm & cn %nin% filtro_municipios ~ str_wrap(paste(substr(category_group[as.numeric(substr(cn, 1, 3))], 2, 3), "ZMVM"), 100),
-                                                                           cn %nin% filtro_zm & substr(cn, 1, 3) %in% filtro_estados ~ str_wrap(paste0(category_names[as.numeric(substr(cn, 1, 3))]), 100),
-                                                                           cn %nin% filtro_zm & substr(cn, 1, 3) %nin% filtro_estados ~ group
-                                                                           )) %>%
-                                                        filter(value > 0) 
+                                              group = "Otros estados"){ 
+                                                    # Migración intramunicipal
+                                                    # Si tabla1 no es una lista, conviértelo en una lista con un solo elemento
+                                                    # Caso de la ZMVM
+                                                    if (!is.list(filtro_zm) && is.null(filtro_municipios)) {
+                                                         tabla %>%
+                                                          as.data.frame() %>%
+                                                           tibble::rownames_to_column(var = "rn") %>% 
+                                                            melt(., id.vars = "rn", variable.name = "cn") %>%
+                                                             mutate_if(is.factor, as.character) %>%
+                                                              filter(rn %in% filtro_zm | cn %in% filtro_zm) %>%
+                                                               mutate(value = ifelse((rn != cn) & (rn %in% filtro_zm | cn %in% filtro_zm), value, 0)) %>% 
+                                                                mutate(rn = ifelse(rn %in% filtro_municipios, 
+                                                                                   stringr::str_wrap(paste(substr(as.character(rn), 2, 3), group), 100),
+                                                                                    substr(rn, 2, nchar(rn))),
+                                                                       cn = ifelse(cn %in% filtro_municipios, 
+                                                                                   stringr::str_wrap(paste(substr(as.character(cn), 2, 3), group), 100),
+                                                                                   substr(cn, 2, nchar(cn)))) %>%
+                                                                 filter(value > 0) 
+                                                    } else { 
+                                                        # Migración municipal y intermunicipal
+                                                        tabla %>%
+                                                         as.data.frame() %>%
+                                                          tibble::rownames_to_column(var = "rn") %>%
+                                                           melt(id.vars = "rn", variable.name = "cn") %>%
+                                                            mutate_if(is.factor, as.character) %>%
+                                                             filter(rn %in% filtro_zm | cn %in% filtro_zm) %>%
+                                                              mutate(value = ifelse(rn != cn & (rn %in% filtro_zm | cn %in% filtro_zm), value, 0)) %>%
+                                                               mutate(
+                                                                     rn = case_when(
+                                                                                    rn %in% filtro_zm & rn %in% filtro_municipios ~ substr(rn, 2, nchar(rn)),
+                                                                                    rn %in% filtro_zm & rn %nin% filtro_municipios ~  str_wrap(paste(substr(category_group[as.numeric(substr(rn, 1, 3))], 2, 3), "ZMVM"), 100),
+                                                                                    rn %nin% filtro_zm & substr(rn, 1, 3) %in% filtro_estados ~ str_wrap(paste0(category_names[as.numeric(substr(rn, 1, 3))]), 100),
+                                                                                    rn %nin% filtro_zm & substr(rn, 1, 3) %nin% filtro_estados ~ group
+                                                                                    ),
+                                                                    cn = case_when(
+                                                                                   cn %in% filtro_zm & cn %in% filtro_municipios ~ substr(cn, 2, nchar(cn)),
+                                                                                   cn %in% filtro_zm & cn %nin% filtro_municipios ~ str_wrap(paste(substr(category_group[as.numeric(substr(cn, 1, 3))], 2, 3), "ZMVM"), 100),
+                                                                                   cn %nin% filtro_zm & substr(cn, 1, 3) %in% filtro_estados ~ str_wrap(paste0(category_names[as.numeric(substr(cn, 1, 3))]), 100),
+                                                                                   cn %nin% filtro_zm & substr(cn, 1, 3) %nin% filtro_estados ~ group
+                                                                                   )) %>%
+                                                                filter(value > 0) 
+                                                    }
 }
 
+
+metropolitan_flows <- function(tabla = Migrantes, 
+                               filtro_zm = ZM, 
+                               filtro_mig = NULL, 
+                               Emigrantes, 
+                               Inmigrantes, 
+                               group = "Otras zonas metropolitanas"){
+                                    lapply(1:length(filtro_zm), function(x){
+                                              # filtro de las zonas metropolitanas
+                                              filtro <- Inmigrantes[[x]] %>%
+                                                         full_join(., Emigrantes[[x]], by = c("rn" = "cn")) %>%
+                                                          filter(rn %nin% filtro_zm[[x]]) %>%
+                                                           mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+                                                            mutate(rn = substr(.$rn, 1, 5)) %>%
+                                                             group_by(rn) %>%
+                                                              summarise(value = sum(value)) %>%
+                                                               filter(value >= filtro_mig[x]) %>% 
+                                                                pull(rn)
+                                              tabla %>%
+                                               as.data.frame() %>%
+                                                tibble::rownames_to_column(var = "rn") %>% 
+                                                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                                                  mutate_if(is.factor, as.character) %>%
+                                                   filter(.$rn %in% filtro_zm[[x]] | .$cn %in% filtro_zm[[x]]) %>%
+                                                    mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% filtro_zm[[x]] | .$cn %in% filtro_zm[[x]]), value, 0)) %>% 
+                                                     mutate(rn = case_when(.$rn %in% filtro_zm[[x]] ~ .$rn,
+                                                                           .$rn %nin% filtro_zm[[x]] & substr(.$rn, 1, 5) %in% filtro ~ .$rn,
+                                                                           .$rn %nin% filtro_zm[[x]] & substr(.$rn, 1, 5) %nin% filtro ~ "Otras zonas metropolitanas"),
+                                                            cn = case_when(.$cn %in% filtro_zm[[x]] ~ .$cn,
+                                                                           .$cn %nin% filtro_zm[[x]] & substr(.$cn, 1, 5) %in% filtro ~ .$cn,
+                                                                           .$cn %nin% filtro_zm[[x]] & substr(.$cn, 1, 5) %nin% filtro ~ "Otras zonas metropolitanas")) %>%
+                                                      filter(value > 0) %>%
+                                                       dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%
+                                                        column_to_rownames(., var = "rn") 
+                                })
+}

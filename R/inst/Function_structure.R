@@ -13,11 +13,21 @@ tabla1 <- migration_flows_metropolitan(tabla = Migrantes,
                                        group = "Otros estados")
 
 tabla1 <- intramunicipal_flows_metropolitan(filtro_zm = ZM, 
-                                            filtro_mig = filtro_mig, 
-                                            Emigrantes = Emigrantes,
-                                            Inmigrantes = Inmigrantes, 
+                                            filtro_mig = filtro, 
+                                            Emigrantes = NULL,
+                                            Inmigrantes = NULL, 
                                             category_group = estados, 
                                             group = "Otros municipios")
+tabla1 <- migration_flows_metropolitan_city(tabla = Migrantes, 
+                                            filtro_zm = ZM, 
+                                            filtro_municipios = filtro, 
+                                            filtro_estados = NULL, 
+                                            category_group = estados, 
+                                            category_names = nom_estados,
+                                            group = "ZMVM") %>%
+            dcast(., rn ~ cn, value.var = "value", sum,  na.rm = TRUE) %>%                        
+            column_to_rownames(., var = "rn")    
+
 
 total_tablas <- totales(tabla1 = tabla1, 
                         Clave = "CVE_ENT", 
@@ -33,24 +43,26 @@ tabla2 <- color_chord_diagram(tabla1 = tabla, paleta)
 
 file = "/Graficos/prueba.pdf"
 ## Gráficos a nivel estatal 
-chord_diagram_graph(file, 
-                    width = 15, 
-                    height = 10, 
+chord_diagram_graph(file = file, 
+                    width = 7, 
+                    height = 7, 
                     family = "Montserrat Medium", 
                     paleta = paleta, 
                     tabla1 = tabla1, 
-                    tabla2 = tabla2,
-                    color_labels = "black",
-                    transparency = 0.4,
-                    circo.text = 9,
-                    circos.axis.text = 6,
-                    adj.text = c(-0.05, 0.5),
-                    gap.degree = 2, 
-                    clock.wise = FALSE,
-                    track.margin = c(-0.07, 0.1),
-                    margin = c(0, 0, 0, 0))
+                    tabla2 = tabla2, 
+                    color_labels = "#000C7D",
+                    transparency = 0.25,
+                    circo.text = 7,
+                    circos.axis.text = 5,
+                    adj.text =c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                    adj.ylim = 0.2,
+                    gap.degree = 3, 
+                    clock.wise = TRUE,
+                    track.margin = c(-0.2, 0.2),
+                    margin = rep(1.5, 4))
 
 ## Gráficos a nivel zona metropolitana (ZMVM)
+file = "/Graficos/prueba.pdf"
 chord_diagram_graph_zmvm(file = file, 
                          width = 10, 
                          height = 10, 
@@ -62,6 +74,7 @@ chord_diagram_graph_zmvm(file = file,
                          circo.text = 9,
                          circos.axis.text = 7,
                          adj.text = c(-0.01, 0.5),
+                         adj.ylim = 0.2,
                          gap.degree = 3, 
                          clock.wise = TRUE,
                          track.margin = c(-0.2, 0.2),
@@ -80,13 +93,10 @@ chord_diagram_graph_zmvm(file = file,
                          group4.col = 30)
 
 file = "/Graficos/prueba.pdf"
-                     
 labels_chord_diagram(file = file, 
                      width = 7, 
                      height = 8, 
                      family = "Montserrat Medium", 
                      paleta = paleta, 
                      tabla1 = tabla1, 
-                     labels = NOM_ZM_CF)
-
-
+                     labels = paste(NOM_ZM_CF[,1], NOM_ZM_CF[,2]))
