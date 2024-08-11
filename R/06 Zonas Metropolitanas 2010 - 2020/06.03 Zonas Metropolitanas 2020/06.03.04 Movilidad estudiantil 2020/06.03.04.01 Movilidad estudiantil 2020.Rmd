@@ -127,11 +127,13 @@ ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"),
 ```
 
 
-Se asignan las claves de las zonas metropolitanas de acuerdo a las diferentes variables de interes:
-- Residencia hace 5 años 
-- Laboral
-- Estudiantil 
-- Nacimiento
+Se asignan las claves de las zonas metropolitanas de acuerdo a las diferentes variables de interes:    
+
+- Residencia hace 5 años   
+- Laboral   
+- Estudiantil   
+- Nacimiento  
+- Retorno    
 
 ```{r, eval = FALSE}
 mydata <- mydata %>%
@@ -159,7 +161,7 @@ mydata <- mydata %>%
 save(mydata, file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2020.RData"))          
 ```
 
-✔️A partir  de aquí se pueden correr los códidos 👇.
+✔️A partir  de aquí se pueden correr los códidos 👇.    
 Se carga el archivo `Migracion por Zonas Metropolitanas_2020.RData`.   
 
 ```{r}
