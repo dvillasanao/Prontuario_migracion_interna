@@ -1,7 +1,7 @@
 ---
 title: "Zonas Metropolitanas 2020"
 subtitle: 'Movilidad estudiantil 2020'
-author: "CONAPO"
+author: "Diana Villasana Ocampo"
 output:
    html_document:
       css: "../style.css"
@@ -1461,7 +1461,6 @@ chord_diagram_graph(file = file,
 ```{r etiquetas intramunicipal}
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Etiquetas ZM a nivel intramunicipal.pdf"
 
-file = "/Graficos/prueba.pdf"
 labels_chord_diagram(file, 
                      width = 7, 
                      height = 9, 
