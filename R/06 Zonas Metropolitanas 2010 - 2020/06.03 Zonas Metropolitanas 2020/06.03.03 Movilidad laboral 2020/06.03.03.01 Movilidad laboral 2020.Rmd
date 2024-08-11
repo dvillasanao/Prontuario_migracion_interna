@@ -1337,7 +1337,8 @@ filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
                pull(filtro_municipio)
 
 ################################################################################
-tabla1 <- intramunicipal_flows_metropolitan(filtro_zm = ZM, 
+tabla1 <- intramunicipal_flows_metropolitan(tabla = Migrantes,
+                                            filtro_zm = ZM, 
                                             filtro_mig = filtro_mig, 
                                             Emigrantes = Emigrantes,
                                             Inmigrantes = Inmigrantes, 

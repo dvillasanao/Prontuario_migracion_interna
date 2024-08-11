@@ -34,6 +34,18 @@ tabla1 <- intramunicipal_flows_metropolitan(filtro_zm = ZM,
                                             Inmigrantes = NULL, 
                                             category_group = estados, 
                                             group = "Otros municipios")
+tabla1 <- intramunicipal_flows_metropolitan(tabla = Migrantes,
+                                            filtro_zm = ZM, 
+                                            filtro_mig = filtro_mig, 
+                                            Emigrantes = Emigrantes,
+                                            Inmigrantes = Inmigrantes, 
+                                            category_group = estados, 
+                                            group = "Otros municipios")
+
+tabla1 <- purrr::map(tabla1, ~ .x %>%
+                       dcast(rn ~ cn, value.var = "value", sum, na.rm = TRUE) %>%
+                       column_to_rownames(var = "rn"))
+
 tabla1 <- migration_flows_metropolitan_city(tabla = Migrantes, 
                                             filtro_zm = ZM, 
                                             filtro_municipios = filtro, 
