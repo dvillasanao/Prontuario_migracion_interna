@@ -70,7 +70,9 @@ movilidad, cada una con sus respectivos scripts y datos:
 - **Migración de retorno 2010 - 2020** (Nivel Estatal y Municipal)
   - Migración de retorno 2010
   - Migración de retorno 2015
-  - Migración de retorno 2020
+  - Migración de retorno 2020 [\[Chord
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2020.html)
+    [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.04%20Migracion%20de%20retorno%202020/05.04.01-Migracion-de-retorno-2020.html)
 - **Zonas Metropolitanas 2010 - 2020** (Nivel Estatal, Municipal y
   Metropolitano)
   - Zonas Metropolitanas 2010
