@@ -61,7 +61,8 @@ movilidad, cada una con sus respectivos scripts y datos:
   - Movilidad laboral 2020
 - **Movilidad estudiantil 2010 - 2020** (Nivel Estatal y Municipal)
   - Movilidad estudiantil 2015
-  - Movilidad estudiantil 2020
+  - Movilidad estudiantil 2020 [\[Chord
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MEst_2020.html)[\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/04%20Movilidad%20estudiantil%202015-%202020/04.02%20Movilidad%20estudiantil%202020/04.02.01-Movilidad-estudiantil-2020.html)
 - **Migración de retorno 2010 - 2020** (Nivel Estatal y Municipal)
   - Migración de retorno 2010
   - Migración de retorno 2015
