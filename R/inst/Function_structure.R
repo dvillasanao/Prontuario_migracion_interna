@@ -2,6 +2,22 @@ Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
 
 Emigrantes <- Emigrantes_function(ZM, Migrantes)
 
+tabla1 <- migration_flows_states(tabla = tabla, 
+                                 filtro_mig = filtro_mig, 
+                                 filtro_est = filtro_est, 
+                                 category = estado, 
+                                 group = "Otro estados")
+
+tabla1 <- migration_flows_municipality(tabla = tabla, 
+                                       filtro_mun = filtro,
+                                       filtro_est = filtro_est,
+                                       filtro_mig = filtro_mig, 
+                                       filtro_out = filtro_out, 
+                                       category_group = estados, 
+                                       category_names = nom_estados,
+                                       group_mun = "Otros municipios",
+                                       group_est = "Otros estados")
+
 tabla1 <- migration_flows_metropolitan(tabla = Migrantes, 
                                        filtro_zm = ZM, 
                                        filtro_mig = filtro_mig, 
@@ -38,28 +54,37 @@ porcentajes_tablas <- porcentajes(tabla1 = tabla1,
                                   Clave = "CVE_ENT", 
                                   Inmigrantes = "%Inmigrantes",  
                                   Emigrantes = "%Emigrantes")
+total_tablas <- totales(tabla1 = tabla1, 
+                        Clave = "CVE_ENT", 
+                        Inmigrantes = "Salen por estudio",  
+                        Emigrantes = "Entran por estudio")
 
-tabla2 <- color_chord_diagram(tabla1 = tabla, paleta)
+porcentajes_tablas <- porcentajes(tabla1 = tabla1, 
+                                  Clave = "CVE_ENT", 
+                                  Inmigrantes = "%Salen por estudio",  
+                                  Emigrantes = "%Entran por estudio")
+
+tabla2 <- color_chord_diagram(tabla1 = tabla1, paleta)
 
 file = "/Graficos/prueba.pdf"
 ## Gráficos a nivel estatal 
 chord_diagram_graph(file = file, 
-                    width = 7, 
-                    height = 7, 
+                    width = 8, 
+                    height = 8, 
                     family = "Montserrat Medium", 
                     paleta = paleta, 
                     tabla1 = tabla1, 
                     tabla2 = tabla2, 
                     color_labels = "#000C7D",
-                    transparency = 0.25,
-                    circo.text = 7,
-                    circos.axis.text = 5,
+                    transparency = 0.2,
+                    circo.text = 9,
+                    circos.axis.text = 6,
                     adj.text =c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
-                    adj.ylim = 0.2,
-                    gap.degree = 3, 
+                    adj.ylim = 0.1,
+                    gap.degree = 2, 
                     clock.wise = TRUE,
-                    track.margin = c(-0.2, 0.2),
-                    margin = rep(1.5, 4))
+                    track.margin = c(-0.07, 0.1),
+                    margin = rep(0, 4))
 
 ## Gráficos a nivel zona metropolitana (ZMVM)
 file = "/Graficos/prueba.pdf"
@@ -100,3 +125,12 @@ labels_chord_diagram(file = file,
                      paleta = paleta, 
                      tabla1 = tabla1, 
                      labels = paste(NOM_ZM_CF[,1], NOM_ZM_CF[,2]))
+
+file = "/Graficos/prueba.pdf"
+labels_chord_diagram(file = file, 
+                     width = 7, 
+                     height = 8, 
+                     family = "Montserrat Medium", 
+                     paleta = paleta, 
+                     tabla1 = tabla1, 
+                     labels = nom_estados)

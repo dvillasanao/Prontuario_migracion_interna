@@ -34,7 +34,7 @@ source(paste0(here::here(), "/R/inst/migration_function.R"))
 
 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, results=FALSE}
 #Font Stlye
 require(showtext)
 library(extrafont)
@@ -80,9 +80,9 @@ registerDoMC(cores = 18)
 ```
 
 
-**Cuestionario Ampliado del Censo de Población y Vivienda 2020**
+**Cuestionario Ampliado del Censo de Población y Vivienda 2020**   
 
-El cuestionario ampliado se guarda en un un archivo `.RData`. 
+El cuestionario ampliado se guarda en un un archivo `.RData`.  
 
 ```{r, eval = FALSE}
 data <- read_sav("~/Personas_Censo 2020.SAV")
@@ -90,9 +90,9 @@ save(data,
       file = paste0(here::here(),"/Bases/Censo_Personas_2020.RData"))
 ```
 
-Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.     
 
-La variable `mydata` contiene **15 015 683 observaciones** y **18 variables**.
+La variable `mydata` contiene **15 015 683 observaciones** y **18 variables**.   
 
 ```{r, eval = FALSE}
 load(paste0(here::here(),"/Bases/Censo_Personas_2020.RData"))
@@ -104,8 +104,8 @@ mydata <- data %>%
 save(mydata, file = paste0(here::here(),"/Bases/02_Migracion de lugar de nacimiento_2020.RData"))
 ```
 
-✔️A partir de aquí se pueden correr los códidos 👇.
-Se carga el archivo `Migracion interna_2020.RData`.
+✔️A partir de aquí se pueden correr los códidos 👇.    
+Se carga el archivo `Migracion de lugar de nacimiento_2020.RData`.     
 
 ```{r}
 load(file = paste0(here::here(), "/Bases/02_Migracion de lugar de nacimiento_2020.RData"))
@@ -118,9 +118,9 @@ mydata <- mydata %>%
               ungroup()
 ```
 
-**Entidades**
+**Entidades**    
 
-Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento. Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.
+Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento. Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.      
 
 ```{r}
 # Claves de los estados
@@ -135,9 +135,9 @@ est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO
 levels(mydata$NOM_ENT) <- estados
 ```
 
-**Población total**
+**Población total**    
 
-Se identifica a la población total dentro del cuestionario ampliado.
+Se identifica a la población total dentro del cuestionario ampliado.   
 
 ```{r}
 Pob.total <- mydata %>%
@@ -163,7 +163,7 @@ Pob.total %>%
 
 # Muestro Complejo
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a toda la población.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a toda la población.   
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -295,13 +295,13 @@ p <- htmlwidgets::onRender(p, '
 #p <- tags$div(style = "display: flex; justify-content: center; align-items: center;", p)
 
 p
-#require(htmlwidgets)
+
 #htmlwidgets::saveWidget(p, paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"), selfcontained = TRUE)
 
 p %>% 
  mapshot(url = paste0(here::here(),"/images/MNac_2020.html"))
-#require(webshot)
-#webshot(url = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"),
+
+#webshot::webshot(url = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.html"),
  #         file = paste0(here::here(),"/Graficos/Estado/02_Lugar de nacimiento/2020/MNac a nivel estatal 2020.png"),
   #                cliprect = "viewport")
 ```
@@ -326,7 +326,7 @@ colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
 
 #svglite::svglite(paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2020/ChordDiagram de MR5a a nivel estatal.svg"), width = 20, height = 20)
 file = "/Graficos/Estado/02_Lugar de nacimiento/2020/ChordDiagram de MNac a nivel estatal.pdf"
-
+file = "/Graficos/prueba.pdf"
 tabla2 <- color_chord_diagram(tabla1 = tabla, paleta)
 
 ## Gráficos a nivel estatal 
@@ -342,6 +342,7 @@ chord_diagram_graph(file = file,
                     circo.text = 9,
                     circos.axis.text = 6,
                     adj.text = c(-0.05, 0.5),
+                    adj.ylim = 0.1,
                     gap.degree = 2, 
                     clock.wise = FALSE,
                     track.margin = c(-0.07, 0.1),
@@ -457,11 +458,12 @@ chord_diagram_graph(file,
                     paleta = paleta, 
                     tabla1 = tabla1, 
                     tabla2 = tabla2,
-                    color_labels = "#000C7D"
+                    color_labels = "#000C7D",
                     transparency = 0.4,
                     circo.text = 9,
                     circos.axis.text = 6,
                     adj.text = c(-0.05, 0.5),
+                    adj.ylim = 0.2,
                     gap.degree = 2, 
                     clock.wise = FALSE,
                     track.margin = c(-0.07, 0.1),
