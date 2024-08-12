@@ -17,8 +17,8 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FAL
                          eval = FALSE, class.source = "fold-show")
 knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 options(digits = 2, encoding = "UTF8")
-```   
- 
+```
+
 ```{r, echo=FALSE}
 rm(list = ls())
 ```
@@ -76,10 +76,9 @@ require(doMC)
 registerDoMC(cores = 18)
 ```
 
- 
-**Cuestionario Ampliado del Censo de Población y Vivienda 2020**    
+**Cuestionario Ampliado del Censo de Población y Vivienda 2020**
 
-El cuestionario ampliado se guarda en un un archivo `.RData`.   
+El cuestionario ampliado se guarda en un un archivo `.RData`.
 
 ```{r, eval = FALSE}
 data <- read_sav("~/Personas_Censo 2020.SAV")
@@ -87,19 +86,19 @@ save(data,
       file = paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
 ```
 
-Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.   
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.
 
-La variable `mydata` contiene **15 015 683 observaciones** y **27 variables**.   
+**Posibles variables que se pueden contemplar en la movilidad estudiantil**
 
-**Posibles variables que se pueden contemplar en la movilidad estudiantil**   
+-   `SEXO`
+-   `NIVACAD` ¿Cuál fue el último año o grado aprobado por (NOMBRE) en la escuela?
+-   `TIE_TRASLADO_ESCU`
+-   `MED_TRASLADO_ESC1`
+-   `MED_TRASLADO_ESC2`
+-   `MED_TRASLADO_ESC3`
+-   `NOMCAR_C`
 
--   `SEXO`\
--   `NIVACAD` ¿Cuál fue el último año o grado aprobado por (NOMBRE) en la escuela?\
--   `TIE_TRASLADO_ESCU`\
--   `MED_TRASLADO_ESC1`\
--   `MED_TRASLADO_ESC2`\
--   `MED_TRASLADO_ESC3`\
--   `NOMCAR_C`\
+La variable `mydata` contiene **15 015 683 observaciones** y **27 variables**.
 
 ```{r, eval = FALSE}
 load(paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
@@ -113,8 +112,8 @@ mydata <- data %>%
 save(mydata, file = paste0(here::here(), "/Bases/04_Movilidad estudiantil_2020.RData"))
 ```
 
-✔️A partir de aquí se pueden correr los códidos 👇.   
-Se carga el archivo `Movilidad estudiantil_2020.RData`.    
+✔️A partir de aquí se pueden correr los códidos 👇.\
+Se carga el archivo `Movilidad estudiantil_2020.RData`.
 
 ```{r}
 load(file = paste0(here::here(), "/Bases/04_Movilidad estudiantil_2020.RData"))
@@ -127,11 +126,11 @@ mydata <- mydata %>%
               ungroup()
 ```
 
-**Entidades**  
+**Entidades**
 
 Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento.\
 Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.\
-Se genera un vector con las claves de los municipios, pero es importante hacer notar que tres municipios no entraron el muestreo del Cuestionario Ampliado.   
+Se genera un vector con las claves de los municipios, pero es importante hacer notar que tres municipios no entraron el muestreo del Cuestionario Ampliado.
 
 ```{r}
 # Claves de los estados
@@ -156,12 +155,11 @@ municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 levels(mydata$NOM_ENT) <- estados
 ```
 
+**Población estudiantil de 3 años y más**
 
-**Población estudiantil de 3 años y más**  
+Se identifica a la población estudiantil de 3 años y más.
 
-Se identifica a la población estudiantil de 3 años y más.   
-
-`filter(EDAD >= 3 & EDAD <= 130)'.`  
+`filter(EDAD >= 3 & EDAD <= 130)'.`
 
 ```{r}
 Pob.3ymas <- mydata %>%
@@ -171,7 +169,7 @@ Pob.3ymas <- mydata %>%
                  filter(ENT_PAIS_ASI %in% estados)  # Filtro del lugar de trabajo dentro del país. 
 ```
 
-**Población de 3 años y más**  
+**Población de 3 años y más**
 
 ```{r, echo = FALSE}
 # Población de 3 años y más
@@ -192,7 +190,6 @@ as.integer(tabla) %>%
                  table.font.size = 8) %>%  
        as_raw_html()
 ```
-
 
 # Nivel estatal {.tabset .tabset-pills}
 
@@ -221,9 +218,9 @@ MC <- readRDS(file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiant
 Migrantes <- svytable(~ENT_PAIS_ASI + CVE_ENT, design = MC) 
 ```
 
-La función `cross_cases()` de la paquetería `expss`  se utiliza para crear tablas de contingencia cruzadas a partir de dos o más variables categóricas. Utilizando el comando `weight`, permite ponderar las observaciones "factores de expansión" en la tabla.   
+La función `cross_cases()` de la paquetería `expss` se utiliza para crear tablas de contingencia cruzadas a partir de dos o más variables categóricas. Utilizando el comando `weight`, permite ponderar las observaciones "factores de expansión" en la tabla.
 
-Se quita la diagonal a la matriz cruadrada con la función `diag.remove()` de la paquetería `sna`, donde esta función reemplaza los elementos de la diagonal principal de una matriz por un valor nulo o por el valor especifico.   
+Se quita la diagonal a la matriz cruadrada con la función `diag.remove()` de la paquetería `sna`, donde esta función reemplaza los elementos de la diagonal principal de una matriz por un valor nulo o por el valor especifico.
 
 ```{r}
 Migrantes <- Migrantes %>%
@@ -339,9 +336,6 @@ p %>%
 ### ChordDiagram
 
 ```{r, eval = FALSE}
-#paleta <- colorRampPalette(pals::ocean.matter(100))(50)
-paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
-
 load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2020/Matriz de MEst a nivel estatal 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -351,6 +345,9 @@ rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
 colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
 
 # Paleta de colores
+#paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
+
 tabla2 <- color_chord_diagram(tabla1 = tabla, paleta)
 ```
 
@@ -473,7 +470,6 @@ paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB
 tabla2 <- color_chord_diagram(tabla1 = tabla1, paleta)
 ```
 
-
 ```{r grafico estatal, eval = FALSE, results='hide'}
 file = "/Graficos/Estado/04_Movilidad estudiantil/2020/ChordDiagram de MEst para cada estado.pdf"
 
@@ -511,8 +507,6 @@ labels_chord_diagram(file = file,
                      labels = paste(nom_estados))
 ```
 
-
-
 ### Gráfico Sankey
 
 #### Población estudiantil de 3 años y más
@@ -538,7 +532,6 @@ tabla <- Migrantes %>%
                      cn = forcats::fct_relevel(.$cn, nom_estados)) %>%
                filter(value >= 0)  
 ```
-
 
 ```{r, eval = FALSE}
 p <- tabla %>% 
@@ -690,19 +683,27 @@ ggexport(list = p, width = 14, height = 10, dpi = 400, filename = path)
 
 ## Indicadores {.tabset .tabset-pills}
 
-Se realizan cálculos generales de movilidad\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- $\%$ Inmigrantes\
-- $\%$ Emigrante\
-- Migración bruta\
-- Migración Neta\
-- $\%$ Tasa de movilidad bruta\
-- $\%$ Tasa de movilidad neta
+Se realizan cálculos generales de movilidad:
+
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   $\%$ Inmigrantes
+
+-   $\%$ %Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   $\%$ Tasa de movilidad bruta
+
+-   $\%$ Tasa de movilidad neta
 
 Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
-
 
 ```{r}
 ################################################################################
@@ -714,8 +715,6 @@ Pob.Total <- mydata %>%
 
 ################################################################################
 ###################### Pob. estudiantil de 3 años y más ########################
-estados <- sjlabelled::get_labels(mydata$CVE_ENT)
-
 Pob.3ymas <- mydata %>%
               as.data.frame() %>%
                mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -728,8 +727,8 @@ Pob.3ymas <- mydata %>%
 ########################### Residentes #########################################
 load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2020/Matriz de MEst a nivel estatal 2020.RData"))
 
-rownames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
-colnames(Migrantes) <- str_pad(rep(1:32), width = 3, pad = "0")
+rownames(Migrantes) <- estados
+colnames(Migrantes) <- estados
 
 Residentes <- Migrantes %>%
                rownames_to_column() %>%
@@ -819,7 +818,7 @@ tabla %>%
 
 ## Movilidad estudiantil {.tabset .tabset-pills}
 
-### Matrices 
+### Matrices
 
 ```{r, eval = FALSE}
 ### Municipios que no pertenecen en la muestra
@@ -865,7 +864,6 @@ MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudi
 Migrantes <- svytable(~CVE_MUN_ASI + CVE_MUN, design = MC) 
 ```
 
-
 Se genera la matriz cuadrada y se le asignan los nombres de los estados.
 
 ```{r, eval = FALSE}
@@ -905,10 +903,9 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2020/Matriz de movilidad estudiantil a nivel municipal 2020.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de movilidad estudiantil hace 3 años a nivel municipal, 2015 - 2020**
+**Matriz de movilidad estudiantil a nivel municipal, 2020**
 
-<div style="height:500px;overflow:auto;">
-
+::: {style="height:500px;overflow:auto;"}
 ```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2020/Matriz de movilidad estudiantil a nivel municipal 2020.RData"))
 
@@ -936,10 +933,11 @@ tabla[1:30, 1:30] %>%
       tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
        as_raw_html()
 ```
+:::
 
 ### Gráficos {.tabset .tabset-pills}
 
-#### ChordDiagram 
+#### ChordDiagram
 
 Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
 
@@ -1149,21 +1147,29 @@ labels_chord_diagram(file = file,
                      labels = nom_estados)
 ```
 
-
 ### Indicadores {.tabset .tabset-pills}
 
-Se realizan cálculos generales de movilidad\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- $\%$ Inmigrantes\
-- $\%$ Emigrante\
-- Migración bruta\
-- Migración Neta\
-- $\%$ Tasa de movilidad bruta\
-- $\%$ Tasa de movilidad neta
+Se realizan cálculos generales de movilidad:
 
-Dada la cantidad de datos a calcular para la obtención de los indicadores. La obtención de los indicadores se realiza de manera directa, es decir, partiendo de la matriz cuadrada original.
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   $\%$ Inmigrantes
+
+-   $\%$ %Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   $\%$ Tasa de movilidad bruta
+
+-   $\%$ Tasa de movilidad neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
 
 ```{r, eval = FALSE}
 ################################################################################
@@ -1264,10 +1270,9 @@ tabla[1:20,] %>%
            as_raw_html()
 ```
 
-
 ## Movilidad intramunicipal {.tabset .tabset-pills}
 
-### Matrices 
+### Matrices
 
 ```{r, eval = FALSE}
 ### Municipios que no pertenecen en la muestra
@@ -1355,10 +1360,9 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2020/Matriz de movilidad estudiantil a nivel intramunicipal 2020.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de movilidad estudiantil hace 5 años a nivel municipal, 2015 - 2020**
+**Matriz de movilidad estudiantil a nivel municipal, 2015 - 2020**
 
-<div style="height:500px;overflow:auto;">
-
+::: {style="height:500px;overflow:auto;"}
 ```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2020/Matriz de movilidad estudiantil a nivel intramunicipal 2020.RData"))
 
@@ -1386,10 +1390,11 @@ tabla[1:30, 1:30] %>%
       tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
        as_raw_html()
 ```
+:::
 
 ### Gráficos {.tabset .tabset-pills}
 
-#### ChordDiagram 
+#### ChordDiagram
 
 Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
 
@@ -1462,6 +1467,7 @@ tabla1 <- migration_flows_municipality(tabla = tabla,
                                        category_names = nom_estados,
                                        group_mun = "Otros municipios",
                                        group_est = NULL)
+
 ################################################################################
 #tabla_municipios <- sapply(1:32, function(x)
 #                                   tabla1[[x]] %>%
@@ -1473,8 +1479,6 @@ tabla1 <- migration_flows_municipality(tabla = tabla,
 #                                        select(Total) %>% 
 #                                         summarise(mean = mean(Total)) %>%
 #                                          pull(mean))
-
-## Se sacan los flujos migratorios que pertencen a otros municipios
 
 ## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
 wb <- createWorkbook()
@@ -1521,7 +1525,6 @@ for(i in 1:32){
 }
 ```
 
-
 **Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
 
 ```{r, eval = FALSE}
@@ -1534,11 +1537,10 @@ paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB
 tabla2 <- color_chord_diagram(tabla1 = tabla1, paleta)
 ```
 
-
 ```{r grafico intramunicipal, eval = FALSE, results='hide'}
 file = "/Graficos/Municipio/04_Movilidad estudiantil/2020/ChordDiagram de MEst desagregado a nivel intramunicipal.pdf"
 
-## Gráficos a nivel estatal 
+## Gráficos a nivel intramunicipal
 chord_diagram_graph(file = file, 
                     width = 15, 
                     height = 10, 
@@ -1558,7 +1560,6 @@ chord_diagram_graph(file = file,
                     margin = rep(0, 4))
 ```
 
-
 **Etiquetas**
 
 ```{r etiquetas_intramunicipal}
@@ -1572,7 +1573,6 @@ labels_chord_diagram(file = file,
                      tabla1 = tabla1, 
                      labels = nom_estados)
 ```
-
 
 #### Gráfico Sankey
 
@@ -1631,7 +1631,6 @@ tabla1 <- lapply(1:32, function(x){
   }
 )
 ```
-
 
 ```{r, eval = FALSE}
 p <- lapply(1:32, function(x){
@@ -1696,20 +1695,29 @@ path = paste0(here::here(), "/Graficos/Municipio/04_Movilidad estudiantil/2020/G
 ggexport(list = p, width = 18, height = 10, dpi = 400, filename = path)
 ```
 
-
 ### Indicadores {.tabset .tabset-pills}
 
-Se realizan cálculos generales de movilidad\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- $\%$ Inmigrantes\
-- $\%$ Emigrante\
-- Migración bruta\
-- Migración Neta\
-- $\%$ Tasa de movilidad bruta\
-- $\%$ Tasa de movilidad neta
-Dada la cantidad de datos a calcular para la obtención de los indicadores. La obtención de los indicadores se realiza de manera directa, es decir, partiendo de la matriz cuadrada original.
+Se realizan cálculos generales de movilidad:
+
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   $\%$ Inmigrantes
+
+-   $\%$ %Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   $\%$ Tasa de movilidad bruta
+
+-   $\%$ Tasa de movilidad neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
 
 ```{r, eval = FALSE}
 ################################################################################
@@ -1812,10 +1820,9 @@ tabla[1:20,] %>%
            as_raw_html()
 ```
 
-
 ## Movilidad intermunicipal {.tabset .tabset-pills}
 
-### Matrices 
+### Matrices
 
 ```{r, eval = FALSE}
 ### Municipios que no pertenecen en la muestra
@@ -1905,7 +1912,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estu
 
 **Matriz de movilidad estudiantil a nivel municipal, 2020**
 
-<div style="height:500px;overflow:auto;">
+::: {style="height:500px;overflow:auto;"}
 ```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2020/Matriz de movilidad estudiantil a nivel intermunicipal 2020.RData"))
 
@@ -1933,10 +1940,11 @@ tabla[1:30, 1:30] %>%
       tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
        as_raw_html()
 ```
+:::
 
 ### Gráficos {.tabset .tabset-pills}
 
-#### ChordDiagram 
+#### ChordDiagram
 
 Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
 
@@ -2029,6 +2037,7 @@ tabla1 <- migration_flows_municipality(tabla = tabla,
                                        category_names = nom_estados,
                                        group_mun = "Otros municipios",
                                        group_est = "Otros estados")
+
 ################################################################################
 ## Se sacan los flujos migratorios que pertencen a otros estados
 #tabla_estados <- sapply(1:32, function(i){
@@ -2057,7 +2066,6 @@ tabla1 <- migration_flows_municipality(tabla = tabla,
 #                                       mutate(Total = .$Total/50) %>%
 #                                        pull(Total)
 #  })
-################################################################################
 
 ## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
 wb <- createWorkbook()
@@ -2103,7 +2111,6 @@ for(i in 1:32){
                overwrite = TRUE)
 }
 ```
-
 
 **Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
 
@@ -2153,7 +2160,6 @@ labels_chord_diagram(file = file,
                      tabla1 = tabla1, 
                      labels = nom_estados)
 ```
-
 
 #### Gráfico Sankey
 
@@ -2211,7 +2217,6 @@ tabla1 <- lapply(1:32, function(x){
   }
 )
 ```
-
 
 ```{r, eval = FALSE}
 p <- lapply(1:32, function(x){
@@ -2276,21 +2281,29 @@ path = paste0(here::here(), "/Graficos/Municipio/04_Movilidad estudiantil/2020/G
 ggexport(list = p, width = 18, height = 10, dpi = 400, filename = path)
 ```
 
-
 ### Indicadores {.tabset .tabset-pills}
 
-Se realizan cálculos generales de movilidad\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- $\%$ Inmigrantes\
-- $\%$ Emigrante\
-- Migración bruta\
-- Migración Neta\
-- $\%$ Tasa de movilidad bruta\
-- $\%$ Tasa de movilidad neta
+Se realizan cálculos generales de movilidad:
 
-Dada la cantidad de datos a calcular para la obtención de los indicadores. La obtención de los indicadores se realiza de manera directa, es decir, partiendo de la matriz cuadrada original.
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   $\%$ Inmigrantes
+
+-   $\%$ %Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   $\%$ Tasa de movilidad bruta
+
+-   $\%$ Tasa de movilidad neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
 
 ```{r, eval = FALSE}
 ################################################################################
@@ -2394,7 +2407,6 @@ tabla[1:20,] %>%
           tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
            as_raw_html()
 ```
-
 
 # Referencias
 
