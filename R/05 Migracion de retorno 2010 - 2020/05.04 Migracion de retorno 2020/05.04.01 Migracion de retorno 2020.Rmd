@@ -552,7 +552,6 @@ labels_chord_diagram(file = file,
                      labels = nom_estados)
 ```
 
-
 ### Gráfico Sankey
 
 ```{r, eval = FALSE}
@@ -793,16 +792,17 @@ ggexport(p, width = 14, height = 10, dpi = 400, filename = path, device = "cairo
 
 ## Indicadores {.tabset .tabset-pills}
 
-Se realizan cálculos generales de movilidad\
-+ Residentes\
-+ Inmigrantes\
-+ Emigrantes\
-+ $\%$ Inmigrantes\
-+ $\%$ Emigrante\
-+ Migración bruta\
-+ Migración Neta\
-+ $\%$ Tasa de movilidad bruta\
-+ $\%$ Tasa de movilidad neta
+Se realizan cálculos generales de movilidad
+
+-   Residentes
+-   Inmigrantes
+-   Emigrantes
+-   $\%$ Inmigrantes
+-   $\%$ Emigrantes
+-   Migración bruta
+-   Migración Neta
+-   $\%$ Tasa de movilidad bruta
+-   $\%$ Tasa de movilidad neta
 
 Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora
 
@@ -813,7 +813,7 @@ MC <- mydata  %>%
          mutate(EDAD = as.numeric(.$EDAD)) %>%
           filter(EDAD >= 5 & EDAD <= 130)  %>%
            # Se reclasifica la variable de residencia hace 5 años
-           mutate(ENT_PAIS_RES_5A = case_when(.$ENT_PAIS_RES_5A %in% estados ~.$ENT_PAIS_RES_5A)) %>%
+           mutate(ENT_PAIS_RES_5A = case_when(.$ENT_PAIS_RES_5A %in% estados ~ .$ENT_PAIS_RES_5A)) %>%
             mutate(M = 1) %>% # Residentes 
              mutate(Migrantes.Retorno = case_when(.$CVE_ENT !=.$ENT_PAIS_RES_5A  & (EDAD >= 5 & EDAD <= 130) & I_Migrante_Retorno %in% "Migrante de retorno" ~ .$ENT_PAIS_RES_5A),
                     Inmigrantes = case_when(.$CVE_ENT !=.$ENT_PAIS_RES_5A  & (EDAD >= 5 & EDAD <= 130) & I_Migrante_Retorno %in% "Inmigrante" ~ .$ENT_PAIS_RES_5A),
