@@ -76,9 +76,9 @@ require(doMC)
 registerDoMC(cores = 18)
 ```
 
-**Cuestionario Ampliado del Censo de Población y Vivienda 2020**  
+**Cuestionario Ampliado del Censo de Población y Vivienda 2020**
 
-El cuestionario ampliado se guarda en un un archivo `.RData`.  
+El cuestionario ampliado se guarda en un un archivo `.RData`.
 
 ```{r, eval = FALSE}
 data <- read_sav("~/Personas_Censo 2020.SAV")
@@ -86,25 +86,57 @@ save(data,
       file = paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
 ```
 
-Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos. 
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.
 
-La variable `mydata` contiene **15 015 683 observaciones** y **33 variables**.  
+**Posibles variables que se pueden contemplar en la migración laboral**
 
-**Posibles variables que se pueden contemplar en la migración laboral**  
+-    `EDAD`
 
--   `NIVACAD` ¿Cuál fue el último año o grado aprobado por (NOMBRE) en la escuela?\
--   `CONACT` Situación laboral\
--   `OCUPACION_C` Cuál fue la ocupación de (NOMBRE) la semana pasada? Por ejemplo: técnico electricista, maestra de primaria, vendedora de frutas, albañil, mecánico de autos\
--   `SITTRA` Situación de trabajo\
--   `VACACIONES`\
--   `SERVICIO_MEDICO`\
--   `INCAP_SUELDO`
--   `INGTRMEN`\
--   `ACTIVIDADES_C` ¿A qué se dedica el negocio, empresa o lugar donde trabajó (NOMBRE)? Por ejemplo: hacer muebles de madera, hacer escobas, reparar autos, vender ropa usada, armar televisores..\
--   `TIE_TRASLADO_TRAB`\
--   `MED_TRASLADO_TRAB1`\
--   `MED_TRASLADO_TRAB2`\
--   `MED_TRASLADO_TRAB3`
+-    `SEXO`
+
+-    `AFRODES`
+
+-    `HLENGUA`
+
+-    `QDIALECT_INALI`
+
+-    `PERTE_INDIGENA`
+
+-    `NIVACAD` ¿Cuál fue el último año o grado aprobado por (NOMBRE) en la escuela?
+
+-    `ALFABET`
+
+-    `SITUA_CONYUGAL`
+
+-    `HIJOS_NAC_VIVOS`
+
+-    `NIVACAD` ¿Cuál fue el último año o grado aprobado por (NOMBRE) en la escuela?
+
+-    `CONACT` Situación laboral
+
+-    `OCUPACION_C` Cuál fue la ocupación de (NOMBRE) la semana pasada? Por ejemplo: técnico electricista, maestra de primaria, vendedora de frutas, albañil, mecánico de autos
+
+-    `SITTRA` Situación de trabajo
+
+-    `VACACIONES`
+
+-    `SERVICIO_MEDICO`
+
+-    `INCAP_SUELDO`
+
+-    `INGTRMEN`
+
+-    `ACTIVIDADES_C` ¿A qué se dedica el negocio, empresa o lugar donde trabajó (NOMBRE)? Por ejemplo: hacer muebles de madera, hacer escobas, reparar autos, vender ropa usada, armar televisores..
+
+-    `TIE_TRASLADO_TRAB`
+
+-    `MED_TRASLADO_TRAB1`
+
+-    `MED_TRASLADO_TRAB2`
+
+-    `MED_TRASLADO_TRAB3`   
+
+La variable `mydata` contiene **15 015 683 observaciones** y **33 variables**.
 
 ```{r, eval = FALSE}
 load(paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
@@ -119,8 +151,8 @@ mydata <- data %>%
 save(mydata, file = paste0(here::here(), "/Bases/03_Movilidad laboral_2020.RData"))
 ```
 
-✔️A partir de aquí se pueden correr los códidos 👇.   
-Se carga el archivo `Migracion laboral_2020.RData`.   
+✔️A partir de aquí se pueden correr los códidos 👇.\
+Se carga el archivo `Migracion laboral_2020.RData`.
 
 ```{r}
 load(file = paste0(here::here(), "/Bases/03_Movilidad laboral_2020.RData"))
@@ -134,7 +166,7 @@ mydata <- mydata %>%
               ungroup()
 ```
 
-**Entidades**     
+**Entidades**
 
 Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento.\
 Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.\
@@ -163,11 +195,11 @@ municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 levels(mydata$NOM_ENT) <- estados
 ```
 
-**Población ocupada de 12 años y más**   
+**Población ocupada de 12 años y más**
 
-Se identifica a la población ocupada de 12 años y más. 
+Se identifica a la población ocupada de 12 años y más.
 
-`filter((EDAD >= 12 & EDAD != 999) & (CONACT >= 10 & CONACT <= 20))'.`   
+`filter((EDAD >= 12 & EDAD != 999) & (CONACT >= 10 & CONACT <= 20))'.`
 
 ```{r}
 # Clave de los estados
@@ -205,7 +237,7 @@ as.integer(tabla) %>%
        as_raw_html()
 ```
 
-**Población economicámente activa de 12 años y más**    
+**Población economicámente activa de 12 años y más**
 
 ```{r, echo = FALSE}
 # Población economicámente activa de 12 años y más
@@ -231,11 +263,11 @@ as.integer(tabla) %>%
        as_raw_html()
 ```
 
-# Nivel estatal {.tabset .tabset-pills}  
+# Nivel estatal {.tabset .tabset-pills}
 
-## Migración laboral {.tabset .tabset-pills}  
+## Migración laboral {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 15 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 12 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -377,9 +409,6 @@ p %>%
 ### ChordDiagram
 
 ```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
-#paleta <- colorRampPalette(pals::ocean.matter(100))(50)
-paleta <- colorRampPalette(c("#230A3A", "#250A3A", "#2E1047", "#2A004D", "#3B004D", "#4D004B", "#501551", "#550252", "#660762", "#7D1D6B", "#871D62","#952664", "#A6236C",  "#AF3766", "#AE2A5E", "#B53C52", "#C33B5D", "#CA3F56", "#D24949", "#DB5854", "#DE5435", "#E45B2F", "#E86328", "#ED6B21", "#ED8861", "#F4A472", "#EBB56B", "#ECC763", "#E8B94B", "#D4A432"))(50)
-
 load(file = paste0(here::here(), "/Bases/Estado/03_Movilidad laboral/2020/Matriz de MTrab a nivel estatal 2020.RData"))
 
 tabla <- Migrantes %>%
@@ -389,12 +418,13 @@ rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
 colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
 
 # Paleta de colores
+#paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- colorRampPalette(c("#230A3A", "#250A3A", "#2E1047", "#2A004D", "#3B004D", "#4D004B", "#501551", "#550252", "#660762", "#7D1D6B", "#871D62","#952664", "#A6236C",  "#AF3766", "#AE2A5E", "#B53C52", "#C33B5D", "#CA3F56", "#D24949", "#DB5854", "#DE5435", "#E45B2F", "#E86328", "#ED6B21", "#ED8861", "#F4A472", "#EBB56B", "#ECC763", "#E8B94B", "#D4A432"))(50)
+
 tabla2 <- color_chord_diagram(tabla1 = tabla, paleta)
 ```
 
-
 ```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
-#svglite::svglite(paste0(here::here(), "/Graficos/Estado/03_Movilidad laboral/2020/ChordDiagram de MTrab a nivel estatal.svg"), width = 20, height = 20)
 file = "/Graficos/Estado/03_Movilidad laboral/2020/ChordDiagram de MTrab a nivel estatal.pdf"
 
 ## Gráficos a nivel estatal 
@@ -560,7 +590,7 @@ Migrantes <- Migrantes %>%
 rownames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
 colnames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
 
-# Matiz migración interna (Población de 5 años y más)
+# Matiz migración laboral (Población de 12 años y más)
 tabla <- Migrantes %>% 
           as.data.frame() %>%
            tibble::rownames_to_column(var = "rn") %>%
@@ -722,15 +752,24 @@ ggexport(list = p, width = 14, height = 10, dpi = 400, filename = path)
 ## Indicadores {.tabset .tabset-pills}
 
 Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- % Inmigrantes\
-- % Emigrante\
-- Migración bruta\
-- Migración Neta\
-- % Tasa de migración bruta\
-- % Tasa de migración neta
+
+-   Residentes
+
+-   Inmigrantes
+
+-    Emigrantes
+
+-    % Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
 
 Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
 
@@ -931,10 +970,9 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/03_Movilidad laboral/2020/Matriz de movilidad laboral a nivel municipal 2020.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de migración laboral hace 5 años a nivel municipal, 2015 - 2020**
+**Matriz de migración laboral a nivel municipal, 2015 - 2020**
 
 <div style="height:500px;overflow:auto;">
-
 ```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/03_Movilidad laboral/2020/Matriz de movilidad laboral a nivel municipal 2020.RData"))
 
@@ -962,6 +1000,7 @@ tabla[1:30, 1:30] %>%
       tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
        as_raw_html()
 ```
+</div>
 
 ### Gráficos {.tabset .tabset-pills}
 
@@ -1182,17 +1221,26 @@ labels_chord_diagram(file = file,
 ### Indicadores {.tabset .tabset-pills}
 
 Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- % Inmigrantes\
-- % Emigrante\
-- Migración Bruta\
-- Migración Neta\
-- % Tasa de migración bruta\
-- % Tasa de migración neta
 
-Dada la cantidad de datos a calcular para la obtención de los indicadores. La obtención de los indicadores se realiza de manera directa, es decir, partiendo de la matriz cuadrada original.
+-   Residentes
+
+-   Inmigrantes
+
+-    Emigrantes
+
+-    % Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
 
 ```{r, eval = FALSE}
 ################################################################################
@@ -1203,7 +1251,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-############# Población ocupada de 15 años y más ###############################
+############# Población ocupada de 12 años y más ###############################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -1386,10 +1434,9 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/03_Movilidad laboral/2020/Matriz de movilidad laboral a nivel intramunicipal 2020.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de migración laboral hace 5 años a nivel municipal, 2020**
+**Matriz de migración laboral a nivel municipal, 2020**
 
 <div style="height:500px;overflow:auto;">
-
 ```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/03_Movilidad laboral/2020/Matriz de movilidad laboral a nivel intramunicipal 2020.RData"))
 
@@ -1417,6 +1464,7 @@ tabla[1:30, 1:30] %>%
       tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
        as_raw_html()
 ```
+</div>
 
 ### Gráficos {.tabset .tabset-pills}
 
@@ -1579,7 +1627,7 @@ chord_diagram_graph(file = file,
                     paleta = paleta, 
                     tabla1 = tabla1, 
                     tabla2 = tabla2, 
-                    color_labels = "#000C7D",
+                    color_labels = "#230A3A",
                     transparency = 0,
                     circo.text = 9,
                     circos.axis.text = 6,
@@ -1712,17 +1760,26 @@ ggexport(list = p, width = 18, height = 10, dpi = 400, filename = path)
 ### Indicadores {.tabset .tabset-pills}
 
 Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- % Inmigrantes\
-- % Emigrante\
-- Migración Bruta\
-- Migración Neta\
-- % Tasa de migración bruta\
-- % Tasa de migración neta
 
-Dada la cantidad de datos a calcular para la obtención de los indicadores. La obtención de los indicadores se realiza de manera directa, es decir, partiendo de la matriz cuadrada original.
+-   Residentes
+
+-   Inmigrantes
+
+-    Emigrantes
+
+-    % Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
 
 ```{r, eval = FALSE}
 ################################################################################
@@ -1733,7 +1790,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-################## Población ocupada de 15 años y más ##########################
+################## Población ocupada de 12 años y más ##########################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -1915,10 +1972,9 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/03_Movilidad laboral/2020/Matriz de movilidad laboral a nivel intermunicipal 2020.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de migración laboral hace 5 años a nivel municipal, 2020**
+**Matriz de migración laboral a nivel municipal, 2020**
 
 <div style="height:500px;overflow:auto;">
-
 ```{r, echo = FALSE, eval = TRUE}
 load(paste0(here::here(), "/Output/Municipio/03_Movilidad laboral/2020/Matriz de movilidad laboral a nivel intermunicipal 2020.RData"))
 
@@ -1946,6 +2002,7 @@ tabla[1:30, 1:30] %>%
       tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
        as_raw_html()
 ```
+</div>
 
 ### Gráficos {.tabset .tabset-pills}
 
@@ -2287,17 +2344,26 @@ ggexport(list = p, width = 18, height = 10, dpi = 400, filename = path)
 ### Indicadores {.tabset .tabset-pills}
 
 Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- $\%$ Inmigrantes\
-- $\%$ Emigrante\
-- Migración Bruta\
-- Migración Neta\
-- $\%$ Tasa de migración bruta\
-- $\%$ Tasa de migración neta  
 
-Dada la cantidad de datos a calcular para la obtención de los indicadores. La obtención de los indicadores se realiza de manera directa, es decir, partiendo de la matriz cuadrada original.   
+-   Residentes
+
+-   Inmigrantes
+
+-    Emigrantes
+
+-    % Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
 
 ```{r, eval = FALSE}
 ################################################################################
@@ -2308,7 +2374,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-################## Población ocupada de 15 años y más ##########################
+################## Población ocupada de 12 años y más ##########################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -2396,11 +2462,9 @@ tabla[1:20,] %>%
           as_raw_html()
 ```
 
+# Referencias {.tabset .tabset-pills}
 
-
-# Referencias {.tabset .tabset-pills}    
-
-Librerias que se usaron en el documento   
+Librerias que se usaron en el documento
 
 ```{r, echo = FALSE, eval = TRUE}
 sesion_info <- devtools::session_info()
@@ -2413,8 +2477,5 @@ kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(att
    scroll_box(width = "100%", height = "400px") %>%  
     gsub("font-size: initial !important;", "font-size: 10pt !important;", .)
 ```
-
-
-
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img src="https://i.creativecommons.org/l/by/4.0/88x31.png" alt="Creative Commons Licence" style="border-width:0"/></a><br />This work by [**Diana Villasana Ocampo**]{xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName"} is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
