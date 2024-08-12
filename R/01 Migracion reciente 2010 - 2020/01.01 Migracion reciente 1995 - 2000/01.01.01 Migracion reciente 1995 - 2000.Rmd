@@ -327,7 +327,7 @@ p <- htmlwidgets::onRender(p, '
 p
 
 p %>% 
- mapview::mapshot(url = paste0(here::here(),"/images/MR5a_2010.html"))
+ mapview::mapshot(url = paste0(here::here(),"/images/MR5a_2000.html"))
 
 #htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/01_Migracion reciente/2000/MR5a a nivel estatal 1995-2000.html"), selfcontained = TRUE)
 #require(webshot)
