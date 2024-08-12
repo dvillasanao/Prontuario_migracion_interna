@@ -127,8 +127,6 @@ Se asignan las claves de las zonas metropolitanas de acuerdo a las diferentes va
 
 -   Estudiantil
 
--   Nacimiento
-
 ```{r, eval = FALSE}
 mydata <- mydata %>%
            # Zonas Metropolitanas por residenicia
@@ -155,9 +153,9 @@ mydata <- mydata %>%
 save(mydata, file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2020.RData"))          
 ```
 
-✔️A partir de aquí se pueden correr los códidos 👇.   
+✔️A partir de aquí se pueden correr los códidos 👇.
 
-Se carga el archivo `Migracion por Zonas Metropolitanas_2020.RData`.   
+Se carga el archivo `Migracion por Zonas Metropolitanas_2020.RData`.
 
 ```{r}
 load(file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2020.RData"))
@@ -176,11 +174,14 @@ ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"),
                    CVE_MUN = stringr::str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0"))
 ```
 
+**Claves de entidades y municipios**\
 **Entidades y Municipios**
 
-Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento.\
-Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.\
-Se genera un vector con las claves de los municipios, pero es importante hacer notar que tres municipios no entraron el muestreo del Cuestionario Ampliado.  
+Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento. 
+
+Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos. 
+
+Se genera un vector con las claves de los municipios.
 
 ```{r}
 # Claves de los estados
@@ -213,7 +214,7 @@ nom_zm <- sjlabelled::get_labels(mydata$NOM_ZM)[-2]
 
 ### Matrices
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 12 años y más.  
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 12 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -288,7 +289,7 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de movilidad laboral a nivel municipal 2020.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de movilidad laboral a nivel municipal, 2015 - 2020**
+**Matriz de movilidad laboral a nivel municipal, 2020**
 
 ::: {style="height:500px;overflow:auto;"}
 ```{r, echo = FALSE, eval = TRUE}
@@ -486,6 +487,7 @@ for(i in 1:length(ZM)){
 ```{r, eval = FALSE}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel municipal.RDS"))
 
+# Paleta de colores
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
@@ -520,6 +522,7 @@ chord_diagram_graph(file = file,
 ```{r etiquetas_municipal}
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas a nivel municipal.pdf"
 
+## Etiquetas a nivel municipal
 labels_chord_diagram(file = file, 
                      width = 7, 
                      height = 8, 
@@ -985,18 +988,27 @@ ggexport(p, width = 20, height = 12, dpi = 400, filename = path)
 
 ### Indicadores
 
-Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- $\%$ Inmigrantes\
-- $\%$ Emigrante\
-- Migración bruta\
-- Migración Neta\
-- $\%$ Tasa de migración bruta\
-- $\%$ Tasa de migración neta
+Se realizan cálculos generales de migración:
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora    
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.
 
 ```{r}
 ################################################################################
@@ -1078,7 +1090,7 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  movilidad laboral",  
+   tab_header(title = "Indicadores de  movilidad laboral a nivel municipal",  
               subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
@@ -1102,7 +1114,7 @@ tabla[1:20,] %>%
 
 ### Matrices
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 12 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -1128,7 +1140,7 @@ MC <- mydata %>%
 saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/MC_intramunicipal.RDS"))
 ```
 
-Se genera una matriz cruzada del lugar de residencia hace 5 años a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.
+Se genera una matriz cruzada del lugar de residencia a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.
 
 ```{r, eval = FALSE}
 MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/MC_intramunicipal.RDS"))
@@ -1175,7 +1187,7 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de movilidad laboral a nivel intramunicipal 2020.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de movilidad laboral hace 5 años a nivel municipal, 2015 - 2020**
+**Matriz de movilidad laboral a nivel municipal, 2020**
 
 ::: {style="height:500px;overflow:auto;"}
 ```{r, echo = FALSE, eval = TRUE}
@@ -1239,7 +1251,7 @@ saveWorkbook(wb,
 }
 ```
 
-**Matriz de movilidad laboral en la Zona Metropolitana de Cuernavaca, 2015 - 2020**
+**Matriz de movilidad laboral en la Zona Metropolitana de Cuernavaca, 2020**
 
 ::: {style="height:500px;overflow:auto;"}
 ```{r, echo = FALSE, eval = TRUE}
@@ -1361,6 +1373,7 @@ tabla1 <- purrr::map(tabla1, ~ .x %>%
 #                                                   mutate(Total = .$Total/50) %>%
 #                                                    pull(Total)
 #})
+
 ## Se guardan las matrices de Movilidad laboral para analizarlos después. 
 wb <- createWorkbook()
 for(i in 1:length(ZM)){
@@ -1407,6 +1420,7 @@ for(i in 1:length(ZM)){
 ```{r, eval = FALSE}
  tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel intramunicipal.RDS"))
 
+#Paleta de colores
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
@@ -1600,6 +1614,7 @@ tabla1 <- migration_flows_metropolitan_city(tabla = Migrantes,
 ```
 
 ```{r}
+#Paleta de colores
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
@@ -1715,6 +1730,7 @@ saveWorkbook(wb,
 ```
 
 ```{r}
+#Paleta de colores
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
@@ -1722,6 +1738,7 @@ tabla2 <- color_chord_diagram(tabla1 = as.matrix(tabla1), paleta)
 
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab de ZMVM_grupos (Intramunicipal).pdf"
 
+## Gráficos a nivel zona metropolitana (ZMVM)
 chord_diagram_graph_zmvm(file = file, 
                          width = 10, 
                          height = 10, 
@@ -1876,18 +1893,27 @@ ggexport(p, width = 20, height = 12, dpi = 400, filename = path)
 
 ### Indicadores
 
-Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- % Inmigrantes\
-- % Emigrante\
-- Migración bruta\
-- Migración Neta\
-- % Tasa de migración bruta\
-- % Tasa de migración neta
+Se realizan cálculos generales de migración:
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.
 
 ```{r}
 ################################################################################
@@ -1970,7 +1996,7 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  movilidad laboral",  
+   tab_header(title = "Indicadores de  movilidad laboral a nivel intramunicipal",  
               subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
@@ -1992,7 +2018,7 @@ tabla[1:20,] %>%
 
 ## Migración intermunicipal {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 12 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -2020,7 +2046,7 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 ### Matrices
 
-Se genera una matriz cruzada del lugar de residencia hace 5 años a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.
+Se genera una matriz cruzada del lugar de residencia a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.
 
 ```{r, eval = FALSE}
 MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/MC_intermunicipal.RDS"))
@@ -2067,7 +2093,7 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de movilidad laboral a nivel intermunicipal 2020.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de movilidad laboral hace 5 años a nivel municipal, 2015 - 2020**
+**Matriz de movilidad laboral a nivel municipal, 2020**
 
 ::: {style="height:500px;overflow:auto;"}
 ```{r, echo = FALSE, eval = TRUE}
@@ -2149,6 +2175,7 @@ ZM <- lapply(1:length(ZM_CF), function(x){
                        mutate(NOM_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 50)) %>% 
                         pull(NOM_MUN)
 })
+
 ################################################################################
 ################################## Filtro ######################################
 Inmigrantes <- Inmigrantes_function(ZM, Migrantes)
@@ -2262,6 +2289,7 @@ for(i in 1:length(ZM)){
 ```{r, results = FALSE, eval = FALSE}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Tabla MTrab a nivel intermunicipal.RDS"))
 
+#Paleta de colores
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
@@ -2472,7 +2500,7 @@ tabla1 <- migration_flows_metropolitan_city(tabla = Migrantes,
 ```
 
 ```{r}
-# Grupo de colores
+# Paleta de colores
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- rev(c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B"))
 
@@ -2612,6 +2640,7 @@ tabla2 <- color_chord_diagram(tabla1 = as.matrix(tabla1), paleta)
 
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/ChordDiagram de MTrab de ZMVM_grupos (Intermunicipal).pdf"
 
+## Gráficos a nivel intermunicipal ZMVM 
 chord_diagram_graph_zmvm(file = file, 
                          width = 10, 
                          height = 10, 
@@ -2647,6 +2676,7 @@ chord_diagram_graph_zmvm(file = file,
 ```{r}
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Etiquetas ZMVM a nivel intermunicipal.pdf"
 
+## Etiquetas a nivel intermunicipal ZMVM 
 labels_chord_diagram(file = file, 
                      width = 7, 
                      height = 9, 
@@ -2794,18 +2824,27 @@ ggexport(p, width = 20, height = 12, dpi = 400, filename = path)
 
 ### Indicadores
 
-Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- % Inmigrantes\
-- % Emigrante\
-- Migración bruta\
-- Migración Neta\
-- % Tasa de migración bruta\
-- % Tasa de migración neta
+Se realizan cálculos generales de migración:
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.
 
 ```{r}
 ################################################################################
@@ -2887,7 +2926,7 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  movilidad laboral",  
+   tab_header(title = "Indicadores de  movilidad laboral a nivel intermunicipal",  
               subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
@@ -2937,7 +2976,7 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 ### Matrices
 
-Se genera una matriz cruzada del lugar de residencia hace 5 años a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.
+Se genera una matriz cruzada del lugar de residencia a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.
 
 ```{r, eval = FALSE}
 MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/MC_metropolitana.RDS"))
@@ -2984,7 +3023,7 @@ writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(va
 saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz de Movilidad laboral a nivel metropolitano 2020.xlsx"), overwrite = TRUE)
 ```
 
-**Matriz de Movilidad laboral hace 5 años a nivel municipal, 2015 - 2020**
+**Matriz de Movilidad laboral a nivel municipal, 2020**
 
 ::: {style="height:500px;overflow:auto;"}
 ```{r, echo = FALSE, eval = TRUE}
@@ -2998,7 +3037,7 @@ tabla <- Migrantes %>%
 tabla[1:30, 1:30] %>%  
  gt() %>% 
   tab_header(title = "Matriz de Movilidad laboral por zonas metropolitanas", 
-             subtitle = "Nivel municipal") %>%
+             subtitle = "Zonas Metropolitanas") %>%
    tab_options(heading.title.font.size = 12, 
                heading.align = "center",
                heading.subtitle.font.size = 10,
@@ -3063,6 +3102,7 @@ tabla1 <- lapply(1, function(x){
 ```
 
 ```{r}
+# Paleta de colores
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
@@ -3198,6 +3238,7 @@ for(i in 1:length(ZM)){
 ```{r}
 tabla1 <- readRDS(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/03_Movilidad laboral/Matriz MTrab a nivel metropolitano.RDS"))
 
+# Paleta de colores
 #paleta <- colorRampPalette(pals::ocean.matter(100))(50)
 paleta <- c("#170A3A",  "#7D1D6B", "#871D62","#952664", "#AE2A5E", "#CA3F56", "#DB5854", "#E45B2F", "#E86328", "#ED8861", "#F4A472", "#F4CA72", "#E8B94B")
 
@@ -3244,18 +3285,27 @@ labels_chord_diagram(file = file,
 
 ### Indicadores
 
-Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- % Inmigrantes\
-- % Emigrante\
-- Migración bruta\
-- Migración Neta\
-- % Tasa de migración bruta\
-- % Tasa de migración neta
+Se realizan cálculos generales de migración:
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.
 
 ```{r}
 ################################################################################
@@ -3295,7 +3345,7 @@ Residentes <- lapply(1:length(zm), function(x){
                                            filter(CVE_MUN %in% ZM[[x]]) %>%
                                             summarize(Residentes =  sum(value, na.rm = TRUE)) %>% 
                                              mutate(CVE_ZM = !!paste0(zm[x])) 
-}}
+})
 
 Residentes <- do.call(rbind.data.frame, Residentes)
 
@@ -3358,7 +3408,7 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  movilidad laboral",  
+   tab_header(title = "Indicadores de  movilidad laboral (Nivel metropolitano)",  
               subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
@@ -3380,7 +3430,7 @@ tabla[1:20,] %>%
 
 ## Migración intrametropolitana {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 12 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -3408,18 +3458,27 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 ### Indicadores
 
-Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- % Inmigrantes\
-- % Emigrante\
-- Migración bruta\
-- Migración Neta\
-- % Tasa de migración bruta\
-- % Tasa de migración neta
+Se realizan cálculos generales de migración:
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.
 
 ```{r}
 ################################################################################
@@ -3510,8 +3569,8 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  movilidad laboral",  
-              subtitle = "Zonas Intrametropolitano") %>%
+   tab_header(title = "Indicadores de  movilidad laboral (Nivel intrametropolitano)",  
+              subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
                 heading.subtitle.font.size = 10,
@@ -3532,25 +3591,26 @@ tabla[1:20,] %>%
 
 ## Migración intermetropolitana {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 5 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 12 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
 
 MC <- mydata %>%
-       select(CVE_ENT, CVE_MUN, ENT_PAIS_RES_5A, MUN_RES_5A, CVE_MUN_TRABAJO, CVE_ZM, MC, CF, CVE_ZM_RES, M, EDAD, FACTOR, ESTRATO, UPM) %>%
+      select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, NOM_MUN, ENT_PAIS_TRAB, MUN_TRAB, CVE_MUN_TRABAJO, 
+              EDAD, CONACT, CVE_ZM, NOM_ZM, CVE_ZM_TRABAJO, ZM_TRABAJO, FACTOR, ESTRATO, UPM) %>%
         # Se genera una indicadora de zm 
         mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
-               I_RES5A_ZM_2020 = ifelse(is.na(.$CVE_ZM_RES), '0', '1')) %>%
+               I_TRAB_ZM_2020 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
         # Se clasifican a los migrantes internos 
-        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Residentes
-                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_RES ~ "Pertenecen a la Zona Metropolitana", #Migrantes que residen en la misma zona metropolitana
-                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_RES ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residen en otra zona metropolitana
-                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian fuera de la zona metropolitana
-                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian dentro de una zona metropolitana
-                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Migrantes que no residen en la zona metropolitana
+        mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Trabajan en el mismo municipio
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
                                 )) %>%
-         filter(EDAD >= 5 & EDAD <= 130) %>%
+         filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
@@ -3559,18 +3619,27 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 #### Indicadores
 
-Se realizan cálculos generales de migración\
-- Residentes\
-- Inmigrantes\
-- Emigrantes\
-- % Inmigrantes\
-- % Emigrante\
-- Migración bruta\
-- Migración Neta\
-- % Tasa de migración bruta\
-- % Tasa de migración neta
+Se realizan cálculos generales de migración:
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.
 
 ```{r}
 ################################################################################
@@ -3673,8 +3742,8 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  movilidad laboral",  
-              subtitle = "Zonas Intermetropolitano") %>%
+   tab_header(title = "Indicadores de  movilidad laboral (Nivel intermetropolitano)",  
+              subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
                 heading.subtitle.font.size = 10,
@@ -3698,9 +3767,8 @@ tabla[1:20,] %>%
 Librerias que se usaron en el documento
 
 ```{r, echo = FALSE, eval = TRUE}
-#sesion_info <- devtools::session_info()
-#saveRDS(sesion_info, file = paste0(here::here(), "/Output/sesion_info.RDS"))
-sesion_info <- readRDS(file = paste0(here::here(), "/Output/sesion_info.RDS"))
+sesion_info <- devtools::session_info()
+
 require(knitr)
 require(kableExtra)
 kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),
