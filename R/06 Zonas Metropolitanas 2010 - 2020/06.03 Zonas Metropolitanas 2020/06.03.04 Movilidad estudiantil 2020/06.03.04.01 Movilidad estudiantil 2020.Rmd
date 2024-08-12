@@ -81,9 +81,9 @@ require(doMC)
 registerDoMC(cores = 18)
 ```
 
-**Cuestionario Ampliado del Censo de Población y Vivienda 2020**
+**Cuestionario Ampliado del Censo de Población y Vivienda 2020**    
 
-El cuestionario ampliado se guarda en un un archivo `.RData`. 
+El cuestionario ampliado se guarda en un un archivo `.RData`.  
 
 ```{r, eval = FALSE}
 data <- read_sav("~/Personas_Censo 2020.SAV")
@@ -93,7 +93,7 @@ save(data,
 ```
 
 
-Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos. 
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.   
 
 
 ```{r, eval = FALSE}
@@ -114,7 +114,7 @@ mydata <- data %>%
 
 **Zonas Metropolitanas 2020**
 
-Se anexa la base de datos de las Zonas Metropolitanas 2020 a la base orginal
+Se anexa la base de datos de las Zonas Metropolitanas 2020 a la base orginal.   
 
 ```{r}
 ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"), 
@@ -126,13 +126,13 @@ ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"),
 ```
 
 
-Se asignan las claves de las zonas metropolitanas de acuerdo a las diferentes variables de interes:    
+Se asignan las claves de las zonas metropolitanas de acuerdo a las diferentes variables de interes:
 
-- Residencia hace 5 años   
-- Laboral   
-- Estudiantil   
-- Nacimiento  
-- Retorno    
+-   Residencia hace 5 años
+
+-   Laboral
+
+-   Estudiantil  
 
 ```{r, eval = FALSE}
 mydata <- mydata %>%
@@ -160,8 +160,8 @@ mydata <- mydata %>%
 save(mydata, file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2020.RData"))          
 ```
 
-✔️A partir  de aquí se pueden correr los códidos 👇.    
-Se carga el archivo `Migracion por Zonas Metropolitanas_2020.RData`.   
+✔️A partir  de aquí se pueden correr los códidos 👇.      
+Se carga el archivo `Migracion por Zonas Metropolitanas_2020.RData`.    
 
 ```{r}
 load(file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2020.RData"))
@@ -181,11 +181,14 @@ ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"),
 ```
 
 
+**Claves de entidades y municipios**\
 **Entidades y Municipios**
 
-Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento.     
-Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.     
-Se genera un vector con las claves de los municipios, pero es importante hacer notar que tres municipios no entraron el muestreo del Cuestionario Ampliado.   
+Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento.   
+
+Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.   
+
+Se genera un vector con las claves de los municipios.   
 
 ```{r}
 # Claves de los estados
@@ -248,7 +251,7 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 ### Matrices
 
-Se genera una matriz cruzada del lugar de residencia hace 5 años a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
+Se genera una matriz cruzada de la movilidad estudiantil a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
 
 ```{r, eval = FALSE}
 MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/MC_municipal.RDS"))
@@ -296,7 +299,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 ```
 
 
-**Matriz de Movilidad estudiantil hace 5 años a nivel municipal, 2015 - 2020**  
+**Matriz de Movilidad estudiantil a nivel municipal, 2020.**  
 
 
 <div style="height:500px;overflow:auto;">
@@ -310,8 +313,8 @@ tabla <- Migrantes %>%
 
 tabla[1:30, 1:30] %>%  
  gt() %>% 
-  tab_header(title = "Matriz de movilidad estudiantil por zonas metropolitanas", 
-             subtitle = "Nivel municipal") %>%
+  tab_header(title = "Matriz de movilidad estudiantil a nivel municipal", 
+             subtitle = "Zonas Metropolitanas") %>%
    tab_options(heading.title.font.size = 12, 
                heading.align = "center",
                heading.subtitle.font.size = 10,
@@ -499,6 +502,7 @@ for(i in 1:length(ZM)){
 ```{r, eval = FALSE}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel municipal.RDS"))
 
+# Paleta de colores
 #paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
 paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
@@ -997,22 +1001,29 @@ path = paste0(here::here(), "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04
 ggexport(p, width = 20, height = 12, dpi = 400, filename = path)
 ```
 
-### Indicadores
+### Indicadores  
 
-Se realizan cálculos generales de migración    
-- Residentes  
-- Inmigrantes     
-- Emigrantes    
-- % Inmigrantes   
-- % Emigrante  
--  Migración bruta   
--  Migración Neta  
-- % Tasa de migración bruta   
-- % Tasa de migración neta    
+Se realizan cálculos generales de migración:
 
+-   Residentes
 
+-   Inmigrantes
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.
 
 ```{r}
 ################################################################################
@@ -1095,7 +1106,7 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  Movilidad estudiantil",  
+   tab_header(title = "Indicadores de  movilidad estudiantil a nivel municipal",  
               subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
@@ -1147,7 +1158,7 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 ### Matrices
 
-Se genera una matriz cruzada del lugar de residencia hace 5 años a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
+Se genera una matriz cruzada de la movilidad estudiantil a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
 
 ```{r, eval = FALSE}
 MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/MC_intramunicipal.RDS"))
@@ -1195,7 +1206,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 ```
 
 
-**Matriz de Movilidad estudiantil hace 5 años a nivel municipal, 2015 - 2020**  
+**Matriz de Movilidad estudiantil a nivel municipal, 2020.**  
 
 
 <div style="height:500px;overflow:auto;">
@@ -1209,8 +1220,8 @@ tabla <- Migrantes %>%
 
 tabla[1:30, 1:30] %>%  
  gt() %>% 
-  tab_header(title = "Matriz de movilidad estudiantil por zonas metropolitanas", 
-             subtitle = "Nivel intramunicipal") %>%
+  tab_header(title = "Matriz de movilidad estudiantil a nivel intramunicipal", 
+             subtitle = "Zonas Metropolitanas") %>%
    tab_options(heading.title.font.size = 12, 
                heading.align = "center",
                heading.subtitle.font.size = 10,
@@ -1433,6 +1444,7 @@ for(i in 1:length(ZM)){
 ```{r, results = FALSE, eval = FALSE}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel intramunicipal.RDS"))
 
+# Paleta de colores
 #paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
 paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
@@ -1468,6 +1480,7 @@ chord_diagram_graph(file = file,
 ```{r etiquetas intramunicipal}
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Etiquetas ZM a nivel intramunicipal.pdf"
 
+## Etiquetas a nivel intramunicipal 
 labels_chord_diagram(file, 
                      width = 7, 
                      height = 9, 
@@ -1756,6 +1769,7 @@ tabla2 <- color_chord_diagram(tabla1 = as.matrix(tabla1), paleta)
 
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst de ZMVM_grupos (Intramunicipal).pdf"
 
+## Grafico a nivel intramunicipal (ZMVM)
 chord_diagram_graph_zmvm(file = file, 
                          width = 10, 
                          height = 10, 
@@ -1789,6 +1803,7 @@ chord_diagram_graph_zmvm(file = file,
 ```{r}
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Etiquetas ZMVM a nivel intramunicipal.pdf"
 
+## Etiquetas a nivel intramunicipal (ZMVM)
 labels_chord_diagram(file = file, 
                      width = 7, 
                      height = 8, 
@@ -1896,20 +1911,27 @@ ggexport(p, width = 20, height = 12, dpi = 400, filename = path)
 
 ### Indicadores
 
-Se realizan cálculos generales de migración    
-- Residentes  
-- Inmigrantes     
-- Emigrantes    
-- % Inmigrantes   
-- % Emigrante  
--  Migración bruta   
--  Migración Neta  
-- % Tasa de migración bruta   
-- % Tasa de migración neta    
+Se realizan cálculos generales de migración:
 
+-   Residentes
 
+-   Inmigrantes
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.
 
 ```{r}
 ################################################################################
@@ -1992,7 +2014,7 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  Movilidad estudiantil",  
+   tab_header(title = "Indicadores de  movilidad estudiantil a nivel intramunicipal",  
               subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
@@ -2044,7 +2066,7 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 ### Matrices
 
-Se genera una matriz cruzada del lugar de residencia hace 5 años a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
+Se genera una matriz cruzada de la movilidad estudiantil a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
 
 ```{r, eval = FALSE}
 MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/MC_intermunicipal.RDS"))
@@ -2092,7 +2114,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 ```
 
 
-**Matriz de Movilidad estudiantil hace 3 años a nivel municipal, 2015 - 2020**  
+**Matriz de Movilidad estudiantil a nivel municipal, 2020.**  
 
 
 <div style="height:500px;overflow:auto;">
@@ -2106,8 +2128,8 @@ tabla <- Migrantes %>%
 
 tabla[1:30, 1:30] %>%  
  gt() %>% 
-  tab_header(title = "Matriz de movilidad estudiantil por zonas metropolitanas", 
-             subtitle = "Nivel intermunicipal") %>%
+  tab_header(title = "Matriz de movilidad estudiantil a nivel intermunicipal", 
+             subtitle = "Zonas Metropolitanas") %>%
    tab_options(heading.title.font.size = 12, 
                heading.align = "center",
                heading.subtitle.font.size = 10,
@@ -2292,6 +2314,7 @@ for(i in 1:length(ZM)){
 ```{r, results = FALSE, eval = FALSE}
 tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Tabla MEst a nivel intermunicipal.RDS"))
 
+# Paleta de colores
 #paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
 paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
@@ -2327,6 +2350,7 @@ chord_diagram_graph(file = file,
 ```{r etiquetas intermunicipal}
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Etiquetas ZM a nivel intermunicipal.pdf"
 
+## Etiquetas a nivel intermunicipal
 labels_chord_diagram(file = file, 
                      width = 7, 
                      height = 8, 
@@ -2506,13 +2530,14 @@ tabla1 <- migration_flows_metropolitan_city(tabla = Migrantes,
 
 
 ```{r}
+# Paleta de colores
 paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
 tabla2 <- color_chord_diagram(tabla1 = as.matrix(tabla1), paleta)
 
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst de ZMVM (Intermunicipal).pdf"
 
-## Gráficos a nivel estatal 
+## Gráficos a nivel intermunicipal (ZMVM)
 chord_diagram_graph(file = file, 
                     width = 7, 
                     height = 7, 
@@ -2640,12 +2665,14 @@ saveWorkbook(wb,
 
 
 ```{r}
+# Paleta de colores
 paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
 tabla2 <- color_chord_diagram(tabla1 = as.matrix(tabla1), paleta)
 
 file = "/Graficos/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/ChordDiagram de MEst de ZMVM_grupos (Intermunicipal).pdf"
 
+## Gráfico a nivel intermunicipal (ZMVM)
 chord_diagram_graph_zmvm(file = file, 
                          width = 10, 
                          height = 10, 
@@ -2841,20 +2868,27 @@ ggexport(p, width = 20, height = 12, dpi = 400, filename = path)
 
 ### Indicadores
 
-Se realizan cálculos generales de migración    
-- Residentes  
-- Inmigrantes     
-- Emigrantes    
-- % Inmigrantes   
-- % Emigrante  
--  Migración bruta   
--  Migración Neta  
-- % Tasa de migración bruta   
-- % Tasa de migración neta    
+Se realizan cálculos generales de migración:
 
+-   Residentes
 
+-   Inmigrantes
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.
 
 ```{r}
 ################################################################################
@@ -2937,7 +2971,7 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  Movilidad estudiantil",  
+   tab_header(title = "Indicadores de  movilidad estudiantil a nivel intermunicipal",  
               subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
@@ -2989,7 +3023,7 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 ### Matrices
 
-Se genera una matriz cruzada del lugar de residencia hace 5 años a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
+Se genera una matriz cruzada de la movilidad estudiantil a nivel municipal, utilizando la función `svytable` de la paquetería `survey`.  
 
 ```{r, eval = FALSE}
 MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/MC_metropolitana.RDS"))
@@ -3037,7 +3071,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/06_Zonas Metropol
 ```
 
 
-**Matriz de Movilidad estudiantil hace 5 años a nivel municipal, 2015 - 2020**  
+**Matriz de Movilidad estudiantil a nivel municipal, 2020.**  
 
 
 <div style="height:500px;overflow:auto;">
@@ -3052,7 +3086,7 @@ tabla <- Migrantes %>%
 tabla[1:30, 1:30] %>%  
  gt() %>% 
   tab_header(title = "Matriz de movilidad estudiantil por zonas metropolitanas", 
-             subtitle = "Nivel municipal") %>%
+             subtitle = "Zonas Metropoitanas") %>%
    tab_options(heading.title.font.size = 12, 
                heading.align = "center",
                heading.subtitle.font.size = 10,
@@ -3117,13 +3151,12 @@ tabla1 <- lapply(1, function(x){
 ```
 
 ```{r}
+# Paleta de colores
 #paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
 paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
 tabla2 <- color_chord_diagram(tabla1, paleta)
 ```
-
-
 
 
 ```{r, eval = FALSE, results='hide'}
@@ -3147,7 +3180,6 @@ chord_diagram_graph(file = file,
                     clock.wise = FALSE,
                     track.margin = c(-0.07, 0.1),
                     margin = rep(0, 4))
-
 ```
 
 
@@ -3257,6 +3289,7 @@ for(i in 1:length(ZM)){
 ```{r}
 tabla1 <- readRDS(paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/04_Movilidad estudiantil/Matriz MEst a nivel metropolitano.RDS"))
 
+# Paleta de colores
 #paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
 paleta <- c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A")
 
@@ -3304,20 +3337,27 @@ labels_chord_diagram(file = file,
 
 ### Indicadores
 
-Se realizan cálculos generales de migración    
-- Residentes  
-- Inmigrantes     
-- Emigrantes    
-- % Inmigrantes   
-- % Emigrante  
--  Migración bruta   
--  Migración Neta  
-- % Tasa de migración bruta   
-- % Tasa de migración neta    
+Se realizan cálculos generales de migración:
 
+-   Residentes
 
+-   Inmigrantes
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.  
 
 ```{r}
 ################################################################################
@@ -3421,7 +3461,7 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  movilidad estudiantil",  
+   tab_header(title = "Indicadores de  movilidad estudiantil a nivel metropolitano",  
               subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
@@ -3472,20 +3512,27 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 ### Indicadores
 
-Se realizan cálculos generales de migración    
-- Residentes  
-- Inmigrantes     
-- Emigrantes    
-- % Inmigrantes   
-- % Emigrante  
--  Migración bruta   
--  Migración Neta  
-- % Tasa de migración bruta   
-- % Tasa de migración neta    
+Se realizan cálculos generales de migración:
 
+-   Residentes
 
+-   Inmigrantes
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.  
 
 ```{r}
 ################################################################################
@@ -3577,8 +3624,8 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  movilidad estudiantil",  
-              subtitle = "Zonas Intrametropolitano") %>%
+   tab_header(title = "Indicadores de  movilidad estudiantil a nivel intrametropolitano",  
+              subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
                 heading.subtitle.font.size = 10,
@@ -3628,20 +3675,27 @@ saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitan
 
 ### Indicadores
 
-Se realizan cálculos generales de migración    
-- Residentes  
-- Inmigrantes     
-- Emigrantes    
-- % Inmigrantes   
-- % Emigrante  
--  Migración bruta   
--  Migración Neta  
-- % Tasa de migración bruta   
-- % Tasa de migración neta    
+Se realizan cálculos generales de migración:
 
+-   Residentes
 
+-   Inmigrantes
 
-Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora 
+-   Emigrantes
+
+-   \% Inmigrantes
+
+-   \% Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   \% Tasa de migración bruta
+
+-   \% Tasa de migración neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura la computadora.  
 
 ```{r}
 ################################################################################
@@ -3744,8 +3798,8 @@ load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020
 tabla[1:20,] %>%  
  as.data.frame() %>%
   gt() %>% 
-   tab_header(title = "Indicadores de  movilidad estudiantil",  
-              subtitle = "Zonas Intermetropolitano") %>%
+   tab_header(title = "Indicadores de  movilidad estudiantil a nivel intermetropolitano",  
+              subtitle = "Zonas Metropolitanas") %>%
     tab_options(heading.title.font.size = 12, 
                 heading.align = "center",
                 heading.subtitle.font.size = 10,
