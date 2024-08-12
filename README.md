@@ -13,9 +13,9 @@ migración y movilidad dentro del país.
 
 <figure>
 <img src="images/ZM_2020.png" width="800"
-alt="Elaboración propia: Movilidad laboral de la Zona Metropolitana de la Ciudad de México 2020" />
+alt="Elaboración propia: Movilidad laboral de la Zona Metropolitana de la Ciudad de México, 2020." />
 <figcaption aria-hidden="true">Elaboración propia: Movilidad laboral de
-la Zona Metropolitana de la Ciudad de México 2020</figcaption>
+la Zona Metropolitana de la Ciudad de México, 2020.</figcaption>
 </figure>
 
 ## Contenido
@@ -74,8 +74,15 @@ movilidad, cada una con sus respectivos scripts y datos:
   - Movilidad estudiantil 2020 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MEst_2020.html)[\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/04%20Movilidad%20estudiantil%202015-%202020/04.02%20Movilidad%20estudiantil%202020/04.02.01-Movilidad-estudiantil-2020.html)
 - **Migración de retorno 2010 - 2020** (Nivel Estatal y Municipal)
-  - Migración de retorno 2010
-  - Migración de retorno 2015
+  - Migración de retorno 2000 [\[Chord
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2000.html)
+    [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.01%20Migracion%20de%20retorno%202000/05.01.01-Migracion-de-retorno-2000.html)
+  - Migración de retorno 2010 [\[Chord
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2010.html)
+    [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.02%20Migracion%20de%20retorno%202010/05.02.01-Migracion-de-retorno-2010.html)
+  - Migración de retorno 2015 [\[Chord
+    Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2015.html)
+    [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.03%20Migracion%20de%20retorno%202015/05.03.01-Migracion-de-retorno-2015.html)
   - Migración de retorno 2020 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2020.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.04%20Migracion%20de%20retorno%202020/05.04.01-Migracion-de-retorno-2020.html)
