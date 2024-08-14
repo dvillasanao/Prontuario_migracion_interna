@@ -49,9 +49,13 @@ movilidad, cada una con sus respectivos scripts y datos:
   - Migración reciente 2005-2010 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MR5a_2010.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/01%20Migracion%20reciente%202010%20-%202020/01.02%20Migracion%20reciente%202005%20-%202010/01.02.01-Migracion-reciente-2005---2010.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/01%20Migracion%20reciente%202010%20-%202020/01.02%20Migracion%20reciente%202005%20-%202010/01.02.02-Migracion-reciente-2005-2010_SDEM.html)
   - Migración reciente 2010-2015 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MR5a_2015.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/01%20Migracion%20reciente%202010%20-%202020/01.03%20Migracion%20reciente%202010%20-%202015/01.03.01-Migracion-reciente-2010-2015.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/01%20Migracion%20reciente%202010%20-%202020/01.03%20Migracion%20reciente%202010%20-%202015/01.03.02-Migracion-reciente-2010-2015_SDEM.html)
   - Migración reciente 2015-2020 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MR5a_2020.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/01%20Migracion%20reciente%202010%20-%202020/01.04%20Migracion%20reciente%202015%20-%202020/01.04.01-Migracion-reciente-2015-2020.html)
