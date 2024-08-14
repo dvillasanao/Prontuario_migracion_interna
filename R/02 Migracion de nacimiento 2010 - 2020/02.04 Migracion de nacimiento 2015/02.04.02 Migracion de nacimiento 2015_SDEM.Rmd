@@ -93,7 +93,7 @@ La variable `mydata` contiene **22 692 265 observaciones** y **20 variables**.
 
 Se carga el archivo `Migracion de lugar de nacimiento_2015.RData`.
 
-```{r, echo = FALSE}
+```{r}
 load(paste0(here::here(), "/Bases/02_Migracion de lugar de nacimiento_2015.RData"))
 ```
 
