@@ -89,12 +89,18 @@ movilidad, cada una con sus respectivos scripts y datos:
   - Movilidad laboral 2010 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MTrab_2010.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/03%20Movilidad%20laboral%202010%20-%202020/03.01%20Movilidad%20laboral%202010/03.01.01-Movilidad-laboral-2010.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/03%20Movilidad%20laboral%202010%20-%202020/03.01%20Movilidad%20laboral%202010/03.01.02-Movilidad-laboral-2010_SDEM.html)
   - Movilidad laboral 2015 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MTrab_2015.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/03%20Movilidad%20laboral%202010%20-%202020/03.02%20Movilidad%20laboral%202015/03.02.01-Movilidad-laboral-2015.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/03%20Movilidad%20laboral%202010%20-%202020/03.02%20Movilidad%20laboral%202015/03.02.02-Movilidad-laboral-2015_SDEM.html)
   - Movilidad laboral 2020 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MTrab_2020.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/03%20Movilidad%20laboral%202010%20-%202020/03.03%20Movilidad%20laboral%202020/03.03.01-Movilidad-laboral-2020.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/03%20Movilidad%20laboral%202010%20-%202020/03.03%20Movilidad%20laboral%202020/03.03.02-Movilidad-laboral-2020_SDEM.html)
 - **Movilidad estudiantil 2010 - 2020** (Nivel Estatal y Municipal)
   - Movilidad estudiantil 2015 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MEst_2015.html)[\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/04%20Movilidad%20estudiantil%202015-%202020/04.01%20Movilidad%20estudiantil%202015/04.01.01-Movilidad-estudiantil-2015.html)
