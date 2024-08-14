@@ -1,6 +1,6 @@
 ---
 title: "Migración reciente 1995 - 2000"
-asubtitle: "Indicadores sociodemográficos"
+subtitle: "Indicadores sociodemográficos"
 author: "Diana Villasana Ocampo"
 output:
    html_document:
