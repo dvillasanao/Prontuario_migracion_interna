@@ -1,73 +1,25 @@
 ---
 title: "Migración reciente 2010 - 2015"
-author: "Indicadores sociodemográficos"
+subtitle: "Indicadores sociodemográficos"
+author: "Diana Villasana Ocampo"
 output:
-  html_document:
-    highlight: tango
-    theme: flatly
-    toc: yes
-    toc_depth: 2
-    toc_float:
-      collapsed: yes
+   html_document:
+      code_folding: hide
+      css: "../style.css"
+      highlight: tango
+      theme: flatly
+      toc: yes
+      toc_depth: 2
+      toc_float:
+        collapsed: yes
 ---
-
-\usepackage{color}
-
-```{=html}
-<style>
-code.r{
-  font-size: 10px;
-}
-pre {
-  font-size: 12px
-}
-</style>
-
-<style>
-body {
-text-align: justify;
-font-style: normal;
-font-family: "Montserrat";
-font-size: 12px
-}
-h1.title {
-  font-size: 40px;
-  color: #000D3B;
-}
-h1 {
-  color: #B6854D;
-}
-h2 {
-  color: #172984;
-}
-h3 {
-  color: #172984;
-}
-</style>
-```
-
-```{=html}
-<style>
-.nav>li>a {
-    position: relative;
-    display: block;
-    padding: 10px 15px;
-    color: #0A2687;
-}
-.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
-    color: #ffffff;
-    background-color: #09C2BC;
-}
-</style>
-```
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
                          eval = FALSE, class.source = "fold-show")
 knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 options(digits = 2, encoding = "UTF8")
-```   
- 
+```
 
 ```{r, echo=FALSE}
 rm(list = ls())
@@ -77,39 +29,24 @@ rm(list = ls())
 setwd(here::here())
 ```
 
-
 ```{r, echo=FALSE}
 #Font Stlye
 require(showtext)
 library(extrafont)
-# activar showtext
-# SE cargan las funtes del sitema Windows (Pero tarda en correr)
-#ttf_import('C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/')
-#fonts()
-#extrafont::loadfonts(device = "win")
-#font_import()
 windowsFonts()
 ```
 
-
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval = TRUE}
 # Librerías que se usaron en el documCVE_ENTo
-require(Cairo)
 require(haven)
 require(Hmisc) # %nin%
 require(dplyr)
-require(survey)
-require(srvyr)
 require(stringr)
 require(sna)
 require(expss)
 require(knitr)
-require(kableExtra)
 require(sjlabelled)
 require(gt)
-require(ggplot2)
-require(ggpubr)
-require(ggrepel)
 require(janitor)
 require(tibble)
 require(tidyr)
@@ -117,15 +54,19 @@ require(reshape2)
 require(openxlsx)
 require(rlang)
 require(doMC)
+library(dplyr)
+library(data.table)
+library(purrr)
 registerDoMC(cores = 18)
 ```
+
 
 **Encuesta Intercensal 2015**
 
 La Encuesta Intercensal se guarda en un un archivo `.RData`. 
 
 ```{r, eval = FALSE}
-data <- read_sav("~/Persona.-Encuesta Intercensal 2015.sav")
+data <- read_sav("~/Persona/Encuesta Intercensal 2015.sav")
 #data <- data %>%
  #        select(., c(1:96)) %>%
   #        select(-"filter_$")
@@ -137,69 +78,39 @@ Se seleccionan las variables que se desean conservar para la realización de est
 
 **Posibles variables que se pueden contemplar en la migración reciente**
 
--   `EDAD`   
--   `SEXO`  
--   `AFRODES`\   
--   `HLENGUA`\   
--   `QDIALECT_INALI`    
--   `PERTE_INDIGENA`\  
--   `NIVACAD`   
--   `ALFABET`   
--   `CAUSA_MIG`\   
--   `SITUA_CONYUGAL`\   
--   `CONACT`\  
+-   `EDAD`
+-   `SEXO`
+-   `AFRODES` 
+-   `HLENGUA` 
+-   `QDIALECT_INALI`
+-   `PERTE_INDIGENA` 
+-   `NIVACAD`
+-   `ALFABET` 
+-   `SITUA_CONYUGAL` 
+-   `CONACT` 
+-   `SITUACION_TRAB` 
 -   `HIJOS_NAC_VIVOS`  
 
-La variable `mydata` contiene **15 015 683 observaciones** y **12 variables**.
-
-```{r, eval = FALSE}
-load(paste0(here::here(), "/Bases/Encuesta Intercensal_2015.RData"))
-
-mydata <- data %>%
-           select(CVE_ENT, NOM_ENT, MUN, NOM_MUN, ENT_MUN, ENT_PAIS_RES10, MUN_RES10, ENT_PAIS_RES10, EDAD, 
-                  SEXO, AFRODES, HLENGUA, QDIALECT_C, QDIALECT_INALI, PERTE_INDIGENA, NIVACAD, ESCOACUM, ESCOLARI, ALFABET, 
-                  SITUA_CONYUGAL, CONACT, SITUACION_TRAB, HIJOS_NAC_VIVOS, FACTOR, ESTRATO, UPM) %>%
-            rename("CVE_MUN" = "ENT_MUN")
-
-save(mydata, file = paste0(here::here(), "/Bases/01_Migracion interna_2015.RData"))
-```
+La variable `mydata` contiene **22 692 265 observaciones** y **12 variables**.
 
 ✔️A partir de aquí se pueden correr los códidos 👇.
+
 Se carga el archivo `Migracion interna_2015.RData`.
 
-```{r, echo = FALSE}
+```{r}
 load(paste0(here::here(), "/Bases/01_Migracion interna_2015.RData"))
-
-names(mydata)
-# Para fines prácticos se genera un ponderador de uno 
-mydata <- mydata %>%
-            mutate(M = 1)  %>%
-             mutate(NOM_ENT = as.factor(.$CVE_ENT)) %>%
-              ungroup()
 ```
 
 **Claves de entidades y municipios**
 
-Se genera un vector con el nombre de las entdades llamado `estados` para facilitar los filtros en el documento.\  
-Se genera un vector con las abreviaturas de las entidades llamado `est` para fines prácticos.\      
-Se genera un vector con las claves de los municipios, pero es importante hacer notar que tres municipios no entraron el muestreo la Encuesta Intercensal.      
+Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento. \
+Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.  \
+Se genera un vector con las claves de los municipios.
 
 ```{r}
 # Claves de los estados
-estados <- sjlabelled::get_labels(mydata$CVE_ENT)
-nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza",
-                  "Colima", "Chiapas", "Chihuahua", "Ciudad de México", "Durango", 
-                  "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",  "México", 
-                  "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", 
-                  "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", 
-                  "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala","Veracruz de Ignacio de la Llave", 
-                  "Yucatán", "Zacatecas")
-est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO",
-         "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", 
-         "TAMS", "TLX", "VER", "YUC", "ZAC")
-
-# Claves de los estados
 ENT <- readRDS(file = paste0(here::here(), "/Bases/estados.RDS"))
+estados <- ENT %>% pull(CVE_ENT)
 
 # Claves de los municipios
 MUN <- readRDS(paste0(here::here(), "/Bases/municipios_2015.RDS"))
@@ -210,7 +121,7 @@ municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 
 **Se reclasifican algunas variables**
 
-```{r}
+```{r, class.source = "fold-hide"}
 data <- mydata %>%
          mutate(PE = case_when(.$CONACT %in% c("10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 1,
                                .$CONACT %in% c("31", "32", "33", "34", "35") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 2,
@@ -260,148 +171,216 @@ data <- mydata %>%
                                              `60 años y más` = 4)))
 ```
 
+```{r, echo = FALSE, eval = TRUE}
+require(gt)
+require(openxlsx)
 
-# Nivel estatal {.tabset .tabset-pills}   
- 
-## Indicadores sociodemográficos {.tabset .tabset-pills}   
+tabla <- read.xlsx(paste0(here::here(), "/Output/Tablas_SDEM.xlsx"), sheet = "2015")
 
-### Valores absolutos   
+tabla %>%  
+ gt(rowname_col = "row", groupname_col = c("Variable", "Categoria")) |>
+  tab_header(title = "Reclasificación de variables", 
+             subtitle = "Encuesta Intercensal 2015") %>%
+   tab_options(heading.title.font.size = 14, 
+               heading.align = "center",
+               heading.subtitle.font.size = 12,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 10) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
 
-```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
+# Funciones {.tabset .tabset-pills}
 
-Indicadores <- function(Variable){
-                # Municipios
-                ## municipios <- MUN %>% pull(CVE_MUN)
-                
-                # Estados 
-                estados <- ENT %>% pull(CVE_ENT)
+La función `Indicadores` en términos generales realiza lo siguiente:
 
-                # Variable que se dese analizar
-                X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                      unlist()
-                # Etiquetas para las columnnas
-                etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                              unlist()
+1.  `Selección y análisis de una variable`: La función toma una variable específica de un conjunto de datos y la analiza en términos de la población afectada por esa variable.
 
-                # Población total
-                Pob.Total <- data %>%
-                              as.data.frame() %>%
-                               filter(CVE_ENT %in% estados) %>%
-                                group_by(CVE_ENT) %>%
-                                 summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                  ungroup() %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-                #Población desagregada
-                 # Filtro de la población desagregada
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]   
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_ENT %in% estados) %>%
-                                       filter(ENT_PAIS_RES10 %in% estados) %>%
-                                        filter(get(Variable) %in% Var) %>%
-                                         group_by(CVE_ENT) %>%
-                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                           set_names(c("CVE_ENT", paste0("Pob_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Pob.Objetivo <- left_join(ENT %>% select(CVE_ENT), 
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
+2.  `Cálculo de población total`: Agrupa los datos según claves de municipio o estado, calculando la población total en cada grupo.
 
-                # Población residente 
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]     
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_ENT == ENT_PAIS_RES10) %>%
-                                       filter(ENT_PAIS_RES10 %in% estados) %>%
-                                        filter(get(Variable) %in% Var) %>%
-                                         group_by(CVE_ENT) %>%
-                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                           set_names(c("CVE_ENT", paste0("Residentes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
+3.  `Cálculo de subpoblaciones`: Luego calcula subpoblaciones, como la población **residente**, **inmigrante**, y **emigrante**, aplicando filtros específicos (como la edad) y agrupando de según se por municipio o estado.
 
-                Residentes <- left_join(ENT %>% select(CVE_ENT),
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-                
-                # Población Inmigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_ENT != ENT_PAIS_RES10) %>%
-                                       filter(ENT_PAIS_RES10 %in% estados) %>%
-                                        filter(CVE_ENT %in% estados) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_ENT) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Inmigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Inmigrantes <- left_join(ENT %>% select(CVE_ENT),
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-               
-                # Población Emigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_ENT != ENT_PAIS_RES10) %>%
-                                       filter(ENT_PAIS_RES10 %in% estados) %>%
-                                        filter(ENT_PAIS_RES10 %in% estados) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(ENT_PAIS_RES10) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Emigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-               # Tabla de resultados
-                Resultados <- Pob.Total %>%
-                               full_join(., Pob.Objetivo, by = c("CVE_ENT")) %>%
-                               full_join(., Residentes, by = c("CVE_ENT")) %>%
-                               full_join(., Inmigrantes, by = c("CVE_ENT")) %>%
-                               full_join(., Emigrantes, by = c("CVE_ENT")) 
-                return(Resultados)
+4.  `Generación de resultados`: Finalmente, combina todos estos cálculos en una tabla que resume la información, mostrando la `población total`, `residente`, `inmigrante` y `emigrante`, con la posibilidad de agregar una fila de "Total" para cada grupo.
+
+## Valores absolutos
+
+```{r, class.source = "fold-hide"}
+Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"){
+                  
+                          # Variable que se desea analizar
+                          X <- get_values(dt[[Variable]], drop.na = TRUE) %>%
+                                unlist()
+                          
+                          # Etiquetas para las columnas
+                          etiquetas <- get_labels(dt[[Variable]], drop.na = TRUE) %>%
+                                        unlist()
+                        
+                          # Población total
+                          Pob.Total <- dt[get(Origen) %in% grupo,  #municipios
+                                          .(Pob.Total = sum(FACTOR, na.rm = TRUE)), 
+                                          by = names(df.claves)] # CVE_ENT
+       
+                          # Crear una nueva fila para "Total"
+                          total_row <- data.table(Pob.Total = sum(Pob.Total$Pob.Total, na.rm = TRUE))
+                          total_row[, (names(df.claves)) := "Total"]
+                          
+                          # Añadir la fila total al data.table original
+                          Pob.Total <- rbind(Pob.Total, total_row)
+                          
+                          # Función auxiliar para calcular poblaciones
+                          calcular_poblacion <- function(filtro_adicional, group, nombre_columna){
+                                                  dt_filtrada <- dt[eval(parse(text = filtro)) & filtro_adicional, ]
+                                                  
+                                                  resultados <- lapply(1:length(X), function(x) {
+                                                                        resultado <- dt_filtrada[get(Variable) %in% X[x], 
+                                                                                                 .(Pob = sum(FACTOR, na.rm = TRUE)), 
+                                                                                                 by = group] %>%
+                                                                                      setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
+                                                                      return(resultado)
+                                                                      }) %>%
+                                                                      Reduce(function(...) merge(..., by = Origen, all = TRUE), .)
+                                                  
+                                                  if (names(df.claves) != Origen) {
+                                                          resultados[, (names(df.claves)) := substr(get(Origen), 1, 3)]
+                                                          resultados <- resultados[, lapply(.SD, sum, na.rm = TRUE), 
+                                                                                   by = names(df.claves), 
+                                                                                   .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
+                                                            adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                                                        } else {
+                                                          resultados <- resultados %>%
+                                                                         merge(df.claves, by = c(Origen), all = TRUE) %>%
+                                                                          adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                                                        }
+                                                        
+                                                        return(resultados)
+                          }
+                          
+                          # Población desagregada                  CVE_MUN                                         
+                          Pob.Objetivo <- calcular_poblacion(dt[[Origen]] %in% grupo & dt[[Destino]] %in% grupo, Origen, "Pob")
+                          
+                          # Población residente
+                          Residentes <- calcular_poblacion(dt[[Origen]] == dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Residentes")
+          
+                          # Población inmigrante
+                          Inmigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Inmigrantes")
+                          
+                          # Población emigrante
+                          Emigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Destino, "Emigrantes")
+                          
+                          # Tabla de resultados
+                          Resultados <- list(Pob.Total, Pob.Objetivo, Residentes, Inmigrantes, Emigrantes) %>%
+                            Reduce(function(...) merge(..., by = names(df.claves), all = TRUE), .)
+  
+                          return(Resultados)
 }
-#tabla <- Indicadores("SEXO")
+#tabla1 <- Indicadores("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
+```
+
+## Valores relativos
+
+```{r, class.source = "fold-hide"}
+Indicadores_P <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"){
+                  
+                            # Variable que se desea analizar
+                            X <- get_values(dt[[Variable]], drop.na = TRUE) %>%
+                                  unlist()
+                            
+                            # Etiquetas para las columnas
+                            etiquetas <- get_labels(dt[[Variable]], drop.na = TRUE) %>%
+                                          unlist()
+                          
+                            # Población total
+                            Pob.Total <- dt[get(Origen) %in% grupo,  #municipios
+                                            .(Pob.Total = sum(FACTOR, na.rm = TRUE)), 
+                                            by = names(df.claves)] # CVE_ENT
+         
+                            # Crear una nueva fila para "Total"
+                            total_row <- data.table(Pob.Total = sum(Pob.Total$Pob.Total, na.rm = TRUE))
+                            total_row[, (names(df.claves)) := "Total"]
+                            
+                            # Añadir la fila total al data.table original
+                            Pob.Total <- rbind(Pob.Total, total_row)
+                            
+                            # Función auxiliar para calcular poblaciones
+                            calcular_poblacion <- function(filtro_adicional, group, nombre_columna){
+                                                    dt_filtrada <- dt[eval(parse(text = filtro)) & filtro_adicional, ]
+                                                    
+                                                    resultados <- lapply(1:length(X), function(x) {
+                                                                          resultado <- dt_filtrada[get(Variable) %in% X[x], 
+                                                                                                   .(Pob = sum(FACTOR, na.rm = TRUE)), 
+                                                                                                   by = group] %>%
+                                                                                        setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
+                                                                        return(resultado)
+                                                                        }) %>%
+                                                                        Reduce(function(...) merge(..., by = Origen, all = TRUE), .)
+                                                    
+                                                    if (names(df.claves) != Origen) {
+                                                            resultados[, (names(df.claves)) := substr(get(Origen), 1, 3)]
+                                                            resultados <- resultados[, lapply(.SD, sum, na.rm = TRUE), 
+                                                                                     by = names(df.claves), 
+                                                                                     .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
+                                                              adorn_totals(c("row"), fill = "-", na.rm = TRUE)  %>%
+                                                               adorn_percentages(denominator = "row") 
+                                                          } else {
+                                                            resultados <- resultados %>%
+                                                                           merge(df.claves, by = c(Origen), all = TRUE) %>%
+                                                                            adorn_totals(c("row"), fill = "-", na.rm = TRUE)  %>%
+                                                                             adorn_percentages(denominator = "row")   
+                                                          }
+                                                          
+                                                          return(resultados)
+                            }
+                            
+                            # Población desagregada                  CVE_MUN                                         
+                            Pob.Objetivo <- calcular_poblacion(dt[[Origen]] %in% grupo & dt[[Destino]] %in% grupo, Origen, "Pob")
+                            
+                            # Población residente
+                            Residentes <- calcular_poblacion(dt[[Origen]] == dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Residentes")
+            
+                            # Población inmigrante
+                            Inmigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Inmigrantes")
+                            
+                            # Población emigrante
+                            Emigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Destino, "Emigrantes")
+                            
+                            # Tabla de resultados
+                            Resultados <- list(Pob.Total, Pob.Objetivo, Residentes, Inmigrantes, Emigrantes) %>%
+                              Reduce(function(...) merge(..., by = names(df.claves), all = TRUE), .)
+    
+                            return(Resultados)
+}
+#tabla <- Indicadores_P("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
+#tabla <- Indicadores_P("SEXO", df.claves = CVE_ENT,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
 ```
 
 
+# Nivel estatal {.tabset .tabset-pills}
+
+-   Valores absolutos
+-   Valores relativos
+
 ```{r}
+# Claves de estados 
+CVE_ENT <- ENT %>% select(CVE_ENT) %>% as.data.frame()
+
+# Convertir el data frame en data.table para mayor eficiencia
+dt <- as.data.table(data)
+
+# Ejemplo
+#tabla <- Indicadores("SEXO", df.claves = CVE_ENT,  grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130")
+```
+
+## Valores absolutos {.tabset .tabset-pills}
+
+```{r, class.source = "fold-hide"}
+names(mydata)
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -412,162 +391,26 @@ addWorksheet(wb, "AFRODES")
 addWorksheet(wb, "HLENGUA")
 addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD"), colNames = TRUE)
+addWorksheet(wb, "G_ESCOACUM")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 saveWorkbook(wb, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel estatal 2015.xlsx"), overwrite = TRUE)
 ```
 
-### Valores relativos  
+## Valores relativos {.tabset .tabset-pills}
 
-```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
-
-Indicadores_P <- function(Variable){
-                  # Municipios
-                  ## municipios <- MUN %>% pull(CVE_MUN)
-                  
-                  # Estados 
-                  estados <- ENT %>% pull(CVE_ENT)
-  
-                  # Variable que se dese analizar
-                  X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                        unlist()
-                  # Etiquetas para las columnnas
-                  etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                                unlist()
-  
-                  # Población total
-                  Pob.Total <- data %>%
-                                as.data.frame() %>%
-                                 filter(CVE_ENT %in% estados) %>%
-                                  group_by(CVE_ENT) %>%
-                                   summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                    ungroup() %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) 
-                  
-                  #Población desagregada
-                   # Filtro de la población desagregada
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]   
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_ENT %in% estados) %>%
-                                         filter(ENT_PAIS_RES10 %in% estados) %>%
-                                          filter(get(Variable) %in% Var) %>%
-                                           group_by(CVE_ENT) %>%
-                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                             set_names(c("CVE_ENT", paste0("Pob_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Pob.Objetivo <- left_join(ENT %>% select(CVE_ENT), 
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                     adorn_percentages(denominator = "row") 
-  
-                  # Población residente 
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]     
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_ENT == ENT_PAIS_RES10) %>%
-                                         filter(ENT_PAIS_RES10 %in% estados) %>%
-                                          filter(get(Variable) %in% Var) %>%
-                                           group_by(CVE_ENT) %>%
-                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                             set_names(c("CVE_ENT", paste0("Residentes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-  
-                  Residentes <- left_join(ENT %>% select(CVE_ENT),
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                     adorn_percentages(denominator = "row") 
-                  
-                  # Población Inmigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_ENT != ENT_PAIS_RES10) %>%
-                                         filter(ENT_PAIS_RES10 %in% estados) %>%
-                                          filter(CVE_ENT %in% estados) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_ENT) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Inmigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Inmigrantes <- left_join(ENT %>% select(CVE_ENT),
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                     adorn_percentages(denominator = "row") 
-                 
-                  # Población Emigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_ENT != ENT_PAIS_RES10) %>%
-                                         filter(ENT_PAIS_RES10 %in% estados) %>%
-                                          filter(ENT_PAIS_RES10 %in% estados) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(ENT_PAIS_RES10) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Emigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                     adorn_percentages(denominator = "row") 
-                  
-                 # Tabla de resultados
-                  Resultados <- Pob.Total %>%
-                                 full_join(., Pob.Objetivo, by = c("CVE_ENT")) %>%
-                                 full_join(., Residentes, by = c("CVE_ENT")) %>%
-                                 full_join(., Inmigrantes, by = c("CVE_ENT")) %>%
-                                 full_join(., Emigrantes, by = c("CVE_ENT")) 
-                  return(Resultados)
-  }
-#tabla <- Indicadores_P("SEXO")
-```
-
-
-```{r}
+```{r, class.source = "fold-hide"}
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -580,26 +423,27 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores_P("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel estatal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ENT, grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_RES10", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Estado/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel estatal 2020_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
 
-# Nivel municipal {.tabset .tabset-pills}   
+
+# Nivel municipal {.tabset .tabset-pills} 
 
 ```{r}
 data <- data %>%
          mutate(CVE_MUN_RES = paste0(ENT_PAIS_RES10, MUN_RES10)) %>%
-          mutate(ENT_PAIS_RES10 = case_when(.$ENT_PAIS_RES10 %in% estados ~.$ENT_PAIS_RES10,                                                                                                                        .$ENT_PAIS_RES10 %nin% estados ~ "888", #Residencia en otro país
+          mutate(ENT_PAIS_RES10 = case_when(.$ENT_PAIS_RES10 %in% estados ~.$ENT_PAIS_RES10,                                                                                                                                             .$ENT_PAIS_RES10 %nin% estados ~ "888", #Residencia en otro país
                                             .$ENT_PAIS_RES10 %in% "997" ~ "997",
                                             .$ENT_PAIS_RES10 %in% "998" ~ "998",
                                             .$ENT_PAIS_RES10 %in% "997" ~ "999"),
@@ -611,159 +455,55 @@ data <- data %>%
                                          .$ENT_PAIS_RES10 %in% "999" ~ "999",
                                          .$MUN_RES10 %in% "999" ~ "999")) %>%
            mutate(I_Migracion = case_when(.$CVE_ENT == .$ENT_PAIS_RES10 & .$ENT_PAIS_RES10 %in% estados ~ 1, # Migrantes intramunicipales
-                                          .$CVE_ENT != .$ENT_PAIS_RES10 & .$ENT_PAIS_RES10 %in% estados ~ 2, # Migrantes intramunicipales
+                                          .$CVE_ENT != .$ENT_PAIS_RES10 & .$ENT_PAIS_RES10 %in% estados ~ 2, # Migrantes intermunicipales
                                           .$ENT_PAIS_RES10 %nin% estados ~ 3))
 ```
 
  
-## Indicadores sociodemográficos {.tabset .tabset-pills}   
+## Nivel municipal {.tabset .tabset-pills}
 
-### Nivel municipal {.tabset .tabset-pills}   
+-   Nivel municipal
+    -   Valores absolutos
+    -   Valores relativos
+    -   Agrupados por estados
+        -   Valores absolutos
+        -   Valores relativos
+-   Nivel intramunicipal
+    -   Valores absolutos
+    -   Valores relativos
+    -   Agrupados por estados
+        -   Valores absolutos
+        -   Valores relativos
+-   Nivel intermunicipal
+    -   Valores absolutos
+    -   Valores relativos
+    -   Agrupados por estados
+        -   Valores absolutos
+        -   Valores relativos
 
-#### Valores absolutos   
+### Nivel municipal {.tabset .tabset-pills}
 
+-   Valores absolutos
+-   Valores relativo
+-   Agrupados por estados
+    -   Valores absolutos
+    -   Valores relativos
+    
 ```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
+#Clave de municipios   
+CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.data.frame()
 
-Indicadores <- function(Variable){
-                # Municipios
-                ### Municipios que no pertenecen en la muestra
-                municipios_nomuestra <- c("004012", "007125", "029048")
-                
-                #Clave de los municipios 2015 
-                municipios <- MUN %>%
-                               select(CVE_MUN) %>%
-                                pull(CVE_MUN)
-                
-                # Estados 
-                estados <- ENT %>% pull(CVE_ENT)
+# Convertir el data frame en data.table para mayor eficiencia
+dt <- as.data.table(data)
 
-                # Variable que se dese analizar
-                X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                      unlist()
-                # Etiquetas para las columnnas
-                etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                              unlist()
-
-                # Población total
-                Pob.Total <- data %>%
-                              as.data.frame() %>%
-                               filter(CVE_MUN %in% municipios) %>%
-                                group_by(CVE_MUN) %>%
-                                 summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                  ungroup() %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-                #Población desagregada
-                 # Filtro de la población desagregada
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]   
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN %in% municipios) %>%
-                                       filter(CVE_MUN_RES %in% municipios) %>%
-                                        filter(get(Variable) %in% Var) %>%
-                                         group_by(CVE_MUN) %>%
-                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                           set_names(c("CVE_MUN", paste0("Pob_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Pob.Objetivo <- left_join(MUN %>% select(CVE_MUN), 
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_MUN'), "CVE_MUN") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-
-                # Población residente 
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]     
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN == CVE_MUN_RES)%>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_MUN) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_MUN", paste0("Residentes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-
-                Residentes <- left_join(MUN %>% select(CVE_MUN),
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_MUN'), "CVE_MUN") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-                
-                # Población Inmigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_MUN) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_MUN", paste0("Inmigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Inmigrantes <- left_join(MUN %>% select(CVE_MUN),
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_MUN'), "CVE_MUN") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-               
-                # Población Emigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_MUN_RES) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_MUN", paste0("Emigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Emigrantes <- left_join(MUN %>% select(CVE_MUN), 
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_MUN'), "CVE_MUN") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-               # Tabla de resultados
-                Resultados <- Pob.Total %>%
-                               full_join(., Pob.Objetivo, by = c("CVE_MUN")) %>%
-                               full_join(., Residentes, by = c("CVE_MUN")) %>%
-                               full_join(., Inmigrantes, by = c("CVE_MUN")) %>%
-                               full_join(., Emigrantes, by = c("CVE_MUN")) 
-                return(Resultados)
-}
-#tabla <- Indicadores("SEXO")
+# Ejemplo
+#tabla <- Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
+#tabla <- Indicadores("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
 ```
 
+#### Valores absolutos {.tabset .tabset-pills}
 
-```{r}
+```{r, class.source = "fold-hide"}
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -774,171 +514,26 @@ addWorksheet(wb, "AFRODES")
 addWorksheet(wb, "HLENGUA")
 addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD"), colNames = TRUE)
+addWorksheet(wb, "G_ESCOACUM")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", ddf.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel municipal 2015.xlsx"), overwrite = TRUE)
 ```
 
+#### Valores relativos {.tabset .tabset-pills}
 
-#### Valores relativos  
-
-```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
-
-Indicadores_P <- function(Variable){
-                  # Municipios
-                  ### Municipios que no pertenecen en la muestra
-                  municipios_nomuestra <- c("004012", "007125", "029048")
-                  
-                  #Clave de los municipios 2015 
-                  municipios <- MUN %>%
-                                 select(CVE_MUN) %>%
-                                  unique() %>%
-                                   filter(CVE_MUN %nin% municipios_nomuestra) %>%
-                                    pull(CVE_MUN)
-                  
-                  # Estados 
-                  estados <- ENT %>% pull(CVE_ENT)
-  
-                  # Variable que se dese analizar
-                  X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                        unlist()
-                  # Etiquetas para las columnnas
-                  etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                                unlist()
-  
-                  # Población total
-                  Pob.Total <- data %>%
-                                as.data.frame() %>%
-                                 filter(CVE_MUN %in% municipios) %>%
-                                  group_by(CVE_MUN) %>%
-                                   summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                    ungroup() %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) 
-                  
-                  #Población desagregada
-                   # Filtro de la población desagregada
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]   
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN %in% municipios) %>%
-                                         filter(CVE_MUN_RES %in% municipios) %>%
-                                          filter(get(Variable) %in% Var) %>%
-                                           group_by(CVE_MUN) %>%
-                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                             set_names(c("CVE_MUN", paste0("Pob_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Pob.Objetivo <- left_join(MUN %>% select(CVE_MUN), 
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_MUN'), "CVE_MUN") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-  
-                  # Población residente 
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]     
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN == CVE_MUN_RES)%>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_MUN) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_MUN", paste0("Residentes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-  
-                  Residentes <- left_join(MUN %>% select(CVE_MUN),
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_MUN'), "CVE_MUN") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                  
-                  # Población Inmigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_MUN) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_MUN", paste0("Inmigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Inmigrantes <- left_join(MUN %>% select(CVE_MUN),
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_MUN'), "CVE_MUN") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                 
-                  # Población Emigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_MUN_RES) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_MUN", paste0("Emigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Emigrantes <- left_join(MUN %>% select(CVE_MUN), 
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_MUN'), "CVE_MUN") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                  
-                 # Tabla de resultados
-                  Resultados <- Pob.Total %>%
-                                 full_join(., Pob.Objetivo, by = c("CVE_MUN")) %>%
-                                 full_join(., Residentes, by = c("CVE_MUN")) %>%
-                                 full_join(., Inmigrantes, by = c("CVE_MUN")) %>%
-                                 full_join(., Emigrantes, by = c("CVE_MUN")) 
-                  return(Resultados)
-}
-#tabla <- Indicadores("SEXO")
-```
-
-```{r}
+```{r, class.source = "fold-hide"}
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -951,166 +546,54 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores_P("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel municipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel municipal 2020_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
-### Nivel estatal {.tabset .tabset-pills}   
+#### Por estados {.tabset .tabset-pills}
 
-#### Valores absolutos 
+##### Valores absolutos 
 
-```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
-
-Indicadores <- function(Variable){
-                # Municipios
-                ### Municipios que no pertenecen en la muestra
-                municipios_nomuestra <- c("004012", "007125", "029048")
-                
-                #Clave de los municipios 2015 
-                municipios <- MUN %>%
-                               select(CVE_MUN) %>%
-                                unique() %>%
-                                 filter(CVE_MUN %nin% municipios_nomuestra) %>%
-                                  pull(CVE_MUN)
-                
-                # Estados 
-                estados <- ENT %>% pull(CVE_ENT)
-
-                # Variable que se dese analizar
-                X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                      unlist()
-                # Etiquetas para las columnnas
-                etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                              unlist()
-
-                # Población total
-                Pob.Total <- data %>%
-                              as.data.frame() %>%
-                               filter(CVE_MUN %in% municipios) %>%
-                                group_by(CVE_ENT) %>%
-                                 summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                  ungroup() %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-                #Población desagregada
-                 # Filtro de la población desagregada
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]   
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN %in% municipios) %>%
-                                       filter(CVE_MUN_RES %in% municipios) %>%
-                                        filter(get(Variable) %in% Var) %>%
-                                         group_by(CVE_ENT) %>%
-                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                           set_names(c("CVE_ENT", paste0("Pob_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Pob.Objetivo <- left_join(ENT %>% select(CVE_ENT), 
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-
-                # Población residente 
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]     
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN == CVE_MUN_RES)%>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_ENT) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Residentes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-
-                Residentes <- left_join(ENT %>% select(CVE_ENT), 
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-                
-                # Población Inmigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_ENT) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Inmigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Inmigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-               
-                # Población Emigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(ENT_PAIS_RES10) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Emigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-               # Tabla de resultados
-                Resultados <- Pob.Total %>%
-                               full_join(., Pob.Objetivo, by = c("CVE_ENT")) %>%
-                               full_join(., Residentes, by = c("CVE_ENT")) %>%
-                               full_join(., Inmigrantes, by = c("CVE_ENT")) %>%
-                               full_join(., Emigrantes, by = c("CVE_ENT")) 
-                return(Resultados)
-}
-#tabla <- Indicadores("SEXO")
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", ddf.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel municipal 2015 (Estados).xlsx"), overwrite = TRUE)
 ```
 
-```{r}
+##### Valores relativos 
+
+```{r, class.source = "fold-hide"}
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -1123,167 +606,41 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel estatal 2015.xlsx"), overwrite = TRUE)
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel municipal 2020_Porcentajes (Estados).xlsx"), overwrite = TRUE)
 ```
 
-#### Valores relativos
 
+### Nivel intramunicipal {.tabset .tabset-pills}
+
+-   Valores absolutos
+-   Valores relativo
+-   Agrupados por estados
+    -   Valores absolutos
+    -   Valores relativos
+    
 ```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
+#Clave de municipios   
+CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.data.frame()
 
-Indicadores_P <- function(Variable){
-                  # Municipios
-                  ### Municipios que no pertenecen en la muestra
-                  municipios_nomuestra <- c("004012", "007125", "029048")
-                  
-                  #Clave de los municipios 2015 
-                  municipios <- MUN %>%
-                                 select(CVE_MUN) %>%
-                                  unique() %>%
-                                   filter(CVE_MUN %nin% municipios_nomuestra) %>%
-                                    pull(CVE_MUN)
-                  
-                  # Estados 
-                  estados <- ENT %>% pull(CVE_ENT)
-  
-                  # Variable que se dese analizar
-                  X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                        unlist()
-                  # Etiquetas para las columnnas
-                  etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                                unlist()
-  
-                  # Población total
-                  Pob.Total <- data %>%
-                                as.data.frame() %>%
-                                 filter(CVE_MUN %in% municipios) %>%
-                                  group_by(CVE_ENT) %>%
-                                   summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                    ungroup() %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) 
-                  
-                  #Población desagregada
-                   # Filtro de la población desagregada
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]   
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN %in% municipios) %>%
-                                         filter(CVE_MUN_RES %in% municipios) %>%
-                                          filter(get(Variable) %in% Var) %>%
-                                           group_by(CVE_ENT) %>%
-                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                             set_names(c("CVE_ENT", paste0("Pob_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Pob.Objetivo <- left_join(ENT %>% select(CVE_ENT), 
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                na.rm = TRUE) 
-  
-                  # Población residente 
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]     
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN == CVE_MUN_RES)%>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_ENT) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Residentes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-  
-                  Residentes <- left_join(ENT %>% select(CVE_ENT), 
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                 adorn_totals(c("row"), 
-                                              fill = "-", 
-                                              na.rm = TRUE) %>%
-                                  adorn_percentages(denominator = "row") 
-                  
-                  # Población Inmigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_ENT) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Inmigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Inmigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                  adorn_totals(c("row"), 
-                                               fill = "-", 
-                                               na.rm = TRUE) %>%
-                                   adorn_percentages(denominator = "row") 
-                 
-                  # Población Emigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(ENT_PAIS_RES10) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Emigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                 adorn_totals(c("row"), 
-                                              fill = "-", 
-                                              na.rm = TRUE) %>%
-                                  adorn_percentages(denominator = "row") 
-                  
-                 # Tabla de resultados
-                  Resultados <- Pob.Total %>%
-                                 full_join(., Pob.Objetivo, by = c("CVE_ENT")) %>%
-                                 full_join(., Residentes, by = c("CVE_ENT")) %>%
-                                 full_join(., Inmigrantes, by = c("CVE_ENT")) %>%
-                                 full_join(., Emigrantes, by = c("CVE_ENT")) 
-                  return(Resultados)
-}
-#tabla <- Indicadores("SEXO")
+# Convertir el data frame en data.table para mayor eficiencia
+dt <- data %>%
+       filter(I_Migracion == 1) %>%
+        as.data.table()
 ```
 
-```{r}
+#### Valores absolutos {.tabset .tabset-pills}
+
+```{r, class.source = "fold-hide"}
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -1294,350 +651,26 @@ addWorksheet(wb, "AFRODES")
 addWorksheet(wb, "HLENGUA")
 addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores_P("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel estatal 2015_Porcentajes.xlsx"), overwrite = TRUE)
-```
-
-### Nivel intramunicipal {.tabset .tabset-pills}   
-
-#### Valores absolutos 
-
-```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
-
-Indicadores <- function(Variable){
-                # Base de datos con filtro
-                data <- data %>%
-                         filter(I_Migracion == 1)
-                
-                # Municipios
-                ### Municipios que no pertenecen en la muestra
-                municipios_nomuestra <- c("004012", "007125", "029048")
-                
-                #Clave de los municipios 2015 
-                municipios <- MUN %>%
-                               select(CVE_MUN) %>%
-                                unique() %>%
-                                 filter(CVE_MUN %nin% municipios_nomuestra) %>%
-                                  pull(CVE_MUN)
-                
-                # Estados 
-                estados <- ENT %>% pull(CVE_ENT)
-
-                # Variable que se dese analizar
-                X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                      unlist()
-                # Etiquetas para las columnnas
-                etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                              unlist()
-
-                # Población total
-                Pob.Total <- data %>%
-                              as.data.frame() %>%
-                               filter(CVE_MUN %in% municipios) %>%
-                                group_by(CVE_ENT) %>%
-                                 summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                  ungroup() %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-                #Población desagregada
-                 # Filtro de la población desagregada
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]   
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN %in% municipios) %>%
-                                       filter(CVE_MUN_RES %in% municipios) %>%
-                                        filter(get(Variable) %in% Var) %>%
-                                         group_by(CVE_ENT) %>%
-                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                           set_names(c("CVE_ENT", paste0("Pob_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Pob.Objetivo <- left_join(ENT %>% select(CVE_ENT), 
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-
-                # Población residente 
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]     
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN == CVE_MUN_RES)%>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_ENT) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Residentes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-
-                Residentes <- left_join(ENT %>% select(CVE_ENT), 
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-                
-                # Población Inmigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_ENT) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Inmigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Inmigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-               
-                # Población Emigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(ENT_PAIS_RES10) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Emigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-               # Tabla de resultados
-                Resultados <- Pob.Total %>%
-                               full_join(., Pob.Objetivo, by = c("CVE_ENT")) %>%
-                               full_join(., Residentes, by = c("CVE_ENT")) %>%
-                               full_join(., Inmigrantes, by = c("CVE_ENT")) %>%
-                               full_join(., Emigrantes, by = c("CVE_ENT")) 
-                return(Resultados)
-}
-#tabla <- Indicadores("SEXO")
-```
-
-```{r}
-wb <- createWorkbook()
-addWorksheet(wb, "SEXO")
-addWorksheet(wb, "GEDAD")
-addWorksheet(wb, "CONACT")
-addWorksheet(wb, "PE")
-addWorksheet(wb, "AFRODES")
-addWorksheet(wb, "HLENGUA")
-addWorksheet(wb, "PERTE_INDIGENA")
-addWorksheet(wb, "ALFABET")
-addWorksheet(wb, "SITUA_CONYUGAL")
-addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD"), colNames = TRUE)
+addWorksheet(wb, "G_ESCOACUM")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", ddf.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015.xlsx"), overwrite = TRUE)
 ```
 
-#### Valores relativos
+#### Valores relativos {.tabset .tabset-pills}
 
-```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
-
-Indicadores_P <- function(Variable){
-                  # Base de datos con filtro
-                  data <- data %>%
-                           filter(I_Migracion == 1)
-                  
-                  # Municipios
-                  ### Municipios que no pertenecen en la muestra
-                  municipios_nomuestra <- c("004012", "007125", "029048")
-                  
-                  #Clave de los municipios 2015 
-                  municipios <- MUN %>%
-                                 select(CVE_MUN) %>%
-                                  unique() %>%
-                                   filter(CVE_MUN %nin% municipios_nomuestra) %>%
-                                    pull(CVE_MUN)
-                  
-                  # Estados 
-                  estados <- ENT %>% pull(CVE_ENT)
-  
-                  # Variable que se dese analizar
-                  X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                        unlist()
-                  # Etiquetas para las columnnas
-                  etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                                unlist()
-  
-                  # Población total
-                  Pob.Total <- data %>%
-                                as.data.frame() %>%
-                                 filter(CVE_MUN %in% municipios) %>%
-                                  group_by(CVE_ENT) %>%
-                                   summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                    ungroup() %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                  
-                  #Población desagregada
-                   # Filtro de la población desagregada
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]   
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN %in% municipios) %>%
-                                         filter(CVE_MUN_RES %in% municipios) %>%
-                                          filter(get(Variable) %in% Var) %>%
-                                           group_by(CVE_ENT) %>%
-                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                             set_names(c("CVE_ENT", paste0("Pob_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Pob.Objetivo <- left_join(ENT %>% select(CVE_ENT), 
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-  
-                  # Población residente 
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]     
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN == CVE_MUN_RES)%>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_ENT) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Residentes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-  
-                  Residentes <- left_join(ENT %>% select(CVE_ENT), 
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                  
-                  # Población Inmigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_ENT) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Inmigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Inmigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                 
-                  # Población Emigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(ENT_PAIS_RES10) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Emigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                  
-                 # Tabla de resultados
-                  Resultados <- Pob.Total %>%
-                                 full_join(., Pob.Objetivo, by = c("CVE_ENT")) %>%
-                                 full_join(., Residentes, by = c("CVE_ENT")) %>%
-                                 full_join(., Inmigrantes, by = c("CVE_ENT")) %>%
-                                 full_join(., Emigrantes, by = c("CVE_ENT")) 
-                  return(Resultados)
-}
-#tabla <- Indicadores("SEXO")
-```
-
-```{r}
+```{r, class.source = "fold-hide"}
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -1650,170 +683,54 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores_P("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2020_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
-### Nivel intermunicipal {.tabset .tabset-pills}   
+#### Por estados {.tabset .tabset-pills}
 
-#### Valores absolutos 
+##### Valores absolutos 
 
-```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
-
-Indicadores <- function(Variable){
-                # Base de datos con filtro
-                data <- data %>%
-                         filter(I_Migracion == 2)
-                
-                # Municipios
-                ### Municipios que no pertenecen en la muestra
-                municipios_nomuestra <- c("004012", "007125", "029048")
-                
-                #Clave de los municipios 2015 
-                municipios <- MUN %>%
-                               select(CVE_MUN) %>%
-                                unique() %>%
-                                 filter(CVE_MUN %nin% municipios_nomuestra) %>%
-                                  pull(CVE_MUN)
-                
-                # Estados 
-                estados <- ENT %>% pull(CVE_ENT)
-
-                # Variable que se dese analizar
-                X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                      unlist()
-                # Etiquetas para las columnnas
-                etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                              unlist()
-
-                # Población total
-                Pob.Total <- data %>%
-                              as.data.frame() %>%
-                               filter(CVE_MUN %in% municipios) %>%
-                                group_by(CVE_ENT) %>%
-                                 summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                  ungroup() %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-                #Población desagregada
-                 # Filtro de la población desagregada
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]   
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN %in% municipios) %>%
-                                       filter(CVE_MUN_RES %in% municipios) %>%
-                                        filter(get(Variable) %in% Var) %>%
-                                         group_by(CVE_ENT) %>%
-                                          summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                           set_names(c("CVE_ENT", paste0("Pob_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Pob.Objetivo <- left_join(ENT %>% select(CVE_ENT), 
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-
-                # Población residente 
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]     
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN == CVE_MUN_RES)%>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_ENT) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Residentes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-
-                Residentes <- left_join(ENT %>% select(CVE_ENT), 
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-                
-                # Población Inmigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(CVE_ENT) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Inmigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Inmigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                          purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE)
-               
-                # Población Emigrante
-                p <- sapply(1:length(X), function(x){
-                                 Var <- X[x]      
-                                  data %>%
-                                   as.data.frame() %>%
-                                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                     subset(EDAD >= 5 & EDAD <= 130) %>%
-                                      filter(CVE_MUN != CVE_MUN_RES) %>%
-                                       filter(CVE_MUN %in% municipios) %>%
-                                        filter(CVE_MUN_RES %in% municipios) %>%
-                                         filter(get(Variable) %in% Var) %>%
-                                          group_by(ENT_PAIS_RES10) %>%
-                                           summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                            set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
-                  }, simplify = FALSE
-                )
-                
-                Emigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                         purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                   adorn_totals(c("row"), 
-                                                fill = "-", 
-                                                 na.rm = TRUE) 
-                
-               # Tabla de resultados
-                Resultados <- Pob.Total %>%
-                               full_join(., Pob.Objetivo, by = c("CVE_ENT")) %>%
-                               full_join(., Residentes, by = c("CVE_ENT")) %>%
-                               full_join(., Inmigrantes, by = c("CVE_ENT")) %>%
-                               full_join(., Emigrantes, by = c("CVE_ENT")) 
-                return(Resultados)
-}
-#tabla <- Indicadores("SEXO")
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", ddf.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015 (Estados).xlsx"), overwrite = TRUE)
 ```
 
-```{r}
+##### Valores relativos 
+
+```{r, class.source = "fold-hide"}
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -1826,172 +743,70 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD"), colNames = TRUE)
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2020_Porcentajes (Estados).xlsx"), overwrite = TRUE)
+```
+
+### Nivel intermunicipal {.tabset .tabset-pills}
+
+-   Valores absolutos
+-   Valores relativo
+-   Agrupados por estados
+    -   Valores absolutos
+    -   Valores relativos
+    
+```{r}
+#Clave de municipios   
+CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.data.frame()
+
+# Convertir el data frame en data.table para mayor eficiencia
+dt <- data %>%
+       filter(I_Migracion == 2) %>%
+        as.data.table()
+```
+
+#### Valores absolutos {.tabset .tabset-pills}
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", ddf.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015.xlsx"), overwrite = TRUE)
 ```
 
-#### Valores relativos
+#### Valores relativos {.tabset .tabset-pills}
 
-```{r}
-#Variable <- "SEXO"
-#Variable <- "NIVACAD"
-#Clave <- "20.01"
-#Clave <- "30.01"
-
-Indicadores_P <- function(Variable){
-                  # Base de datos con filtro
-                  data <- data %>%
-                           filter(I_Migracion == 2)
-                  # Municipios
-                  ### Municipios que no pertenecen en la muestra
-                  municipios_nomuestra <- c("004012", "007125", "029048")
-                  
-                  #Clave de los municipios 2015 
-                  municipios <- MUN %>%
-                                 select(CVE_MUN) %>%
-                                  unique() %>%
-                                   filter(CVE_MUN %nin% municipios_nomuestra) %>%
-                                    pull(CVE_MUN)
-                  
-                  # Estados 
-                  estados <- ENT %>% pull(CVE_ENT)
-  
-                  # Variable que se dese analizar
-                  X <- get_values(data[, paste(Variable)], drop.na = TRUE) %>%
-                        unlist()
-                  # Etiquetas para las columnnas
-                  etiquetas <- get_labels(data[, paste(Variable)], drop.na = TRUE) %>%
-                                unlist()
-  
-                  # Población total
-                  Pob.Total <- data %>%
-                                as.data.frame() %>%
-                                 filter(CVE_MUN %in% municipios) %>%
-                                  group_by(CVE_ENT) %>%
-                                   summarise(Pob.Total = sum(FACTOR, na.rm = TRUE)) %>%
-                                    ungroup() %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                  
-                  #Población desagregada
-                   # Filtro de la población desagregada
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]   
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN %in% municipios) %>%
-                                         filter(CVE_MUN_RES %in% municipios) %>%
-                                          filter(get(Variable) %in% Var) %>%
-                                           group_by(CVE_ENT) %>%
-                                            summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                             set_names(c("CVE_ENT", paste0("Pob_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Pob.Objetivo <- left_join(ENT %>% select(CVE_ENT), 
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-  
-                  # Población residente 
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]     
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN == CVE_MUN_RES)%>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_ENT) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Residentes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-  
-                  Residentes <- left_join(ENT %>% select(CVE_ENT), 
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                  
-                  # Población Inmigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(CVE_ENT) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Inmigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Inmigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                            purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                 
-                  # Población Emigrante
-                  p <- sapply(1:length(X), function(x){
-                                   Var <- X[x]      
-                                    data %>%
-                                     as.data.frame() %>%
-                                      mutate(EDAD = as.numeric(.$EDAD)) %>%
-                                       subset(EDAD >= 5 & EDAD <= 130) %>%
-                                        filter(CVE_MUN != CVE_MUN_RES) %>%
-                                         filter(CVE_MUN %in% municipios) %>%
-                                          filter(CVE_MUN_RES %in% municipios) %>%
-                                           filter(get(Variable) %in% Var) %>%
-                                            group_by(ENT_PAIS_RES10) %>%
-                                             summarise(sum(FACTOR, na.rm = TRUE)) %>%
-                                              set_names(c("CVE_ENT", paste0("Emigrantes_", etiquetas[x])))
-                    }, simplify = FALSE
-                  )
-                  
-                  Emigrantes <- left_join(ENT %>% select(CVE_ENT), 
-                                           purrr::reduce(p, dplyr::full_join, by = 'CVE_ENT'), "CVE_ENT") %>%
-                                     adorn_totals(c("row"), 
-                                                  fill = "-", 
-                                                   na.rm = TRUE) %>%
-                                      adorn_percentages(denominator = "row") 
-                  
-                 # Tabla de resultados
-                  Resultados <- Pob.Total %>%
-                                 full_join(., Pob.Objetivo, by = c("CVE_ENT")) %>%
-                                 full_join(., Residentes, by = c("CVE_ENT")) %>%
-                                 full_join(., Inmigrantes, by = c("CVE_ENT")) %>%
-                                 full_join(., Emigrantes, by = c("CVE_ENT")) 
-                  return(Resultados)
-}
-#tabla <- Indicadores("SEXO")
-```
-
-```{r}
+```{r, class.source = "fold-hide"}
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -2004,15 +819,95 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT"), colNames = TRUE)
-writeData(wb, 4, Indicadores_P("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2020_Porcentajes.xlsx"), overwrite = TRUE)
 ```
+
+#### Por estados {.tabset .tabset-pills}
+
+##### Valores absolutos 
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "CAUSA_MIG")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "G_ESCOACUM")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", ddf.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015 (Estados).xlsx"), overwrite = TRUE)
+```
+
+##### Valores relativos 
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "CONACT")
+addWorksheet(wb, "PE")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "SITUA_CONYUGAL")
+addWorksheet(wb, "NIVACAD")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2015/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2020_Porcentajes (Estados).xlsx"), overwrite = TRUE)
+```
+
+# Referencias
+
+Librerias que se usaron en el documento
+
+```{r, echo = FALSE, eval = TRUE}
+sesion_info <- devtools::session_info()
+require(knitr)
+require(kableExtra)
+kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),
+                    c(package, loadedversion, source))) %>%
+ kable_styling(font_size = 10, 
+               bootstrap_options = c("condensed", "responsive", "bordered")) %>%
+  kable_classic(full_width = TRUE, html_font = "montserrat") %>% 
+   scroll_box(width = "100%", height = "400px") %>%  
+    gsub("font-size: initial !important;", "font-size: 10pt !important;", .)
+```
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img src="https://i.creativecommons.org/l/by/4.0/88x31.png" alt="Creative Commons Licence" style="border-width:0"/></a><br />This work by [**Diana Villasana Ocampo**]{xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName"} is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+
