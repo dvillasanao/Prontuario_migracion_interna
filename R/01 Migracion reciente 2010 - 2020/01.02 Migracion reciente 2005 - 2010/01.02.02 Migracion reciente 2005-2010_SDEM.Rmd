@@ -125,15 +125,17 @@ data <- mydata %>%
                                   labels = c(`Población economicamente activa` = 1,
                                              `Población no economicamente activa` = 2,
                                              `No especificado` = 99))) %>%
-         mutate(GEDAD = case_when(.$EDAD >= 5 & .$EDAD <= 14 ~ 1,
-                                  .$EDAD >= 15 & .$EDAD <= 29 ~ 2,
-                                  .$EDAD >= 30 & .$EDAD <= 59 ~ 3,
-                                  .$EDAD >= 60 & .$EDAD <= 130 ~ 4)) %>%
+         mutate(GEDAD = case_when(.$EDAD >= 0 & .$EDAD <= 4 ~ 1,
+                                  .$EDAD >= 5 & .$EDAD <= 14 ~ 2,
+                                  .$EDAD >= 15 & .$EDAD <= 29 ~ 3,
+                                  .$EDAD >= 30 & .$EDAD <= 59 ~ 4,
+                                  .$EDAD >= 60 & .$EDAD <= 130 ~ 5)) %>%
           mutate(GEDAD = labelled(x = .$GEDAD, 
-                                  labels = c(`5 a 14 años` = 1,
-                                             `15 a 29 años` = 2,
-                                             `30 a 59 años` = 3, 
-                                             `60 años y más` = 4)))
+                                  labels = c(`0 a 4 años` = 1,
+                                             `5 a 14 años` = 2,
+                                             `15 a 29 años` = 3,
+                                             `30 a 59 años` = 4, 
+                                             `60 años y más` = 5)))
 ```
 
 ```{r, echo = FALSE, eval = TRUE}
