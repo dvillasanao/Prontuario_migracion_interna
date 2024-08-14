@@ -95,14 +95,13 @@ Se seleccionan las variables que se desean conservar para la realización de est
 
 -   `EDAD`
 -   `SEXO`
--   `AFRODES` 
 -   `HLENGUA` 
--   `QDIALECT_INALI`
--   `PERTE_INDIGENA` 
+-   `QDIALECT_C`
+-   `PERETN` 
 -   `NIVACAD`
 -   `ALFABET`
 -   `CAUSA_MIG` 
--   `SITUA_CONYUGAL` 
+-   `ESTCON` 
 -   `CONACT` 
 -   `HIJOS_NAC_VIVOS`  
 
@@ -123,7 +122,7 @@ save(mydata, file = paste0(here::here(),"/Bases/02_Migracion de lugar de nacimie
 
 ✔️A partir de aquí se pueden correr los códidos 👇.
 
-Se carga el archivo `Migracion interna_2000.RData`.
+Se carga el archivo `Migracion de lugar de nacimiento_2000.RData`.
 
 ```{r, echo = FALSE}
 load(paste0(here::here(), "/Bases/02_Migracion de lugar de nacimiento_2000.RData"))

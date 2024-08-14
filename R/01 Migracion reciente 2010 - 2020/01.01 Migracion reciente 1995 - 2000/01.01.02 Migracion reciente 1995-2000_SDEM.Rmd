@@ -77,7 +77,6 @@ Se seleccionan las variables que se desean conservar para la realización de est
 
 -   `EDAD`
 -   `SEXO`
--   `AFRODES` 
 -   `HLENGUA` 
 -   `QDIALECT_C`
 -   `PERETN` 
@@ -118,22 +117,24 @@ municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 
 ```{r, class.source = "fold-show"}
 data <- mydata %>%
-         mutate(PE = case_when(.$CONACT %in% c("10", "13", "14", "15", "16", "17", "18", "19", "20", "30") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 1,
-                               .$CONACT %in% c("40", "50", "60", "70", "80") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 2,
-                               .$CONACT %in% c("99") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 99)) %>%
+         mutate(PE = case_when(.$CONACT %in% c("10", "13", "14", "15", "16", "17", "18", "19", "20", "30") ~ 1,
+                               .$CONACT %in% c("40", "50", "60", "70", "80") ~ 2,
+                               .$CONACT %in% c("99") ~ 99)) %>%
          mutate(PE = labelled(x = .$PE, 
                                   labels = c(`Población economicamente activa` = 1,
                                              `Población no economicamente activa` = 2,
                                              `No especificado` = 99))) %>%
-         mutate(GEDAD = case_when(.$EDAD >= 5 & .$EDAD <= 14 ~ 1,
-                                  .$EDAD >= 15 & .$EDAD <= 29 ~ 2,
-                                  .$EDAD >= 30 & .$EDAD <= 59 ~ 3,
-                                  .$EDAD >= 60 & .$EDAD <= 130 ~ 4)) %>%
+         mutate(GEDAD = case_when(.$EDAD >= 0 & .$EDAD <= 4 ~ 1,
+                                  .$EDAD >= 5 & .$EDAD <= 14 ~ 2,
+                                  .$EDAD >= 15 & .$EDAD <= 29 ~ 3,
+                                  .$EDAD >= 30 & .$EDAD <= 59 ~ 4,
+                                  .$EDAD >= 60 & .$EDAD <= 130 ~ 5)) %>%
           mutate(GEDAD = labelled(x = .$GEDAD, 
-                                  labels = c(`5 a 14 años` = 1,
-                                             `15 a 29 años` = 2,
-                                             `30 a 59 años` = 3, 
-                                             `60 años y más` = 4)))
+                                  labels = c(`0 a 4 años` = 1,
+                                             `5 a 14 años` = 2,
+                                             `15 a 29 años` = 3,
+                                             `30 a 59 años` = 4, 
+                                             `60 años y más` = 5)))
 ```
 
 ```{r, echo = FALSE, eval = TRUE}
