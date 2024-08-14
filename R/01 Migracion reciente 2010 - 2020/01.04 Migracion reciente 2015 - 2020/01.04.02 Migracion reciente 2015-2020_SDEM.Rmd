@@ -123,53 +123,17 @@ data <- mydata %>%
                                   labels = c(`Población economicamente activa` = 1,
                                              `Población no economicamente activa` = 2,
                                              `No especificado` = 99))) %>%
-         mutate(ESCOACUM = stringr::str_pad(.$ESCOACUM, width = 2, side = c("left"), pad = "0")) %>%
-         mutate(G_ESCOACUM = case_when(.$ESCOACUM %in% c("00", "01", "02", "03", "04", "05") ~ 1, #Sin primaria
-                                       .$ESCOACUM %in% c("06", "07", "08") ~ 2, #Sin secundaria o estudio técnicos o comerciales con primaria
-                                       .$ESCOACUM %in% c("09", "10", "11") ~ 3, #Sin preparatoria o bachillerato
-                                       .$ESCOACUM %in% c("12", "13","14","15","16", "17", "18","19", "20", "21", "22", "23", "24") ~ 4)) %>%
-         mutate(G_ESCOACUM = labelled(x = .$G_ESCOACUM,
-                                     labels = c(`0 a 5` = 1,
-                                                `6 a 8` = 2,
-                                                `9 a 11` = 3,
-                                                `12 y más` = 4))) %>%
-         mutate(ESCOACUM = as.double(.$ESCOACUM)) %>%
-         mutate(ESCOACUM = labelled(x = .$ESCOACUM,
-                                     labels = c(`00` = 0, 
-                                                `01` = 1,
-                                                `02` = 2,
-                                                `03` = 3,
-                                                `04` = 4,
-                                                `05` = 5,
-                                                `06` = 6,
-                                                `07` = 7,
-                                                `08` = 8,
-                                                `09` = 9,
-                                                `10` = 10,
-                                                `11` = 11,
-                                                `12` = 12,
-                                                `13` = 13,
-                                                `14` = 14,
-                                                `15` = 15,
-                                                `16` = 16,
-                                                `17` = 17,
-                                                `18` = 18,
-                                                `19` = 19,
-                                                `20` = 20,
-                                                `21` = 21,
-                                                `22` = 22,
-                                                `23` = 23,
-                                                `24` = 24,
-                                                `99` = 99))) %>%
-         mutate(GEDAD = case_when(.$EDAD >= 5 & .$EDAD <= 14 ~ 1,
-                                  .$EDAD >= 15 & .$EDAD <= 29 ~ 2,
-                                  .$EDAD >= 30 & .$EDAD <= 59 ~ 3,
-                                  .$EDAD >= 60 & .$EDAD <= 130 ~ 4)) %>%
+         mutate(GEDAD = case_when(.$EDAD >= 0 & .$EDAD <= 4 ~ 1,
+                                  .$EDAD >= 5 & .$EDAD <= 14 ~ 2,
+                                  .$EDAD >= 15 & .$EDAD <= 29 ~ 3,
+                                  .$EDAD >= 30 & .$EDAD <= 59 ~ 4,
+                                  .$EDAD >= 60 & .$EDAD <= 130 ~ 5)) %>%
           mutate(GEDAD = labelled(x = .$GEDAD, 
-                                  labels = c(`5 a 14 años` = 1,
-                                             `15 a 29 años` = 2,
-                                             `30 a 59 años` = 3, 
-                                             `60 años y más` = 4)))
+                                  labels = c(`0 a 4 años` = 1,
+                                             `5 a 14 años` = 2,
+                                             `15 a 29 años` = 3,
+                                             `30 a 59 años` = 4, 
+                                             `60 años y más` = 5)))
 ```
 
 ```{r, echo = FALSE, eval = TRUE}

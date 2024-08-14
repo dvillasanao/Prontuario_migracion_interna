@@ -82,6 +82,7 @@ El cuestionario ampliado se guarda en un un archivo `.RData`.
 
 ```{r, eval = FALSE}
 data <- read_sav("~/Personas_Censo 2020.SAV")
+
 save(data, 
       file = paste0(here::here(), "/Bases/Censo_Personas_2020.RData"))
 ```
