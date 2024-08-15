@@ -101,7 +101,7 @@ Se seleccionan las variables que se desean conservar para la realización de est
 - `SITTRA` 
 - `HIJOS_NAC_VIVOS`   
 
-La variable `mydata` contiene **10 099 182** observaciones** y **12 variables**. 
+La variable `mydata` contiene **10 099 182** observaciones** y **22 variables**. 
 
 **Se clasifican a los migrantes de retorno**    
 

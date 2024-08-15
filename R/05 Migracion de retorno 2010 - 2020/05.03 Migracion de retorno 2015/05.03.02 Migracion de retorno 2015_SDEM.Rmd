@@ -101,7 +101,7 @@ load(file = paste0(here::here(), "/Bases/05_Migracion de retorno_2015.RData"))
 
 Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento. \
 Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.  \
-Se genera un vector con las claves de los municipios, pero es importante hacer notar que tres municipios no entraron el muestreo del Cuestionario Ampliado.
+Se genera un vector con las claves de los municipios.
 
 ```{r}
 # Claves de los estados
