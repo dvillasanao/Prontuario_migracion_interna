@@ -104,8 +104,12 @@ movilidad, cada una con sus respectivos scripts y datos:
 - **Movilidad estudiantil 2010 - 2020** (Nivel Estatal y Municipal)
   - Movilidad estudiantil 2015 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MEst_2015.html)[\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/04%20Movilidad%20estudiantil%202015-%202020/04.01%20Movilidad%20estudiantil%202015/04.01.01-Movilidad-estudiantil-2015.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/04%20Movilidad%20estudiantil%202015-%202020/04.01%20Movilidad%20estudiantil%202015/04.01.02-Movilidad-estudiantil-2015_SDEM.html)
   - Movilidad estudiantil 2020 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MEst_2020.html)[\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/04%20Movilidad%20estudiantil%202015-%202020/04.02%20Movilidad%20estudiantil%202020/04.02.01-Movilidad-estudiantil-2020.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/04%20Movilidad%20estudiantil%202015-%202020/04.02%20Movilidad%20estudiantil%202020/04.02.02-Movilidad-estudiantil-2020_SDEM.html)
 - **Migración de retorno 2010 - 2020** (Nivel Estatal y Municipal)
   - Migración de retorno 2000 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2000.html)
