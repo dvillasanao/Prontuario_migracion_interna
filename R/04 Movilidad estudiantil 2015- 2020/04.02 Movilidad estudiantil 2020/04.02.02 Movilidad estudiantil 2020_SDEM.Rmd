@@ -175,7 +175,7 @@ La función `Indicadores` en términos generales realiza lo siguiente:
 ## Valores absolutos
 
 ```{r, class.source = "fold-hide"}
-Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"){
+Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"){
                   
                           # Variable que se desea analizar
                           X <- get_values(dt[[Variable]], drop.na = TRUE) %>%
@@ -249,7 +249,7 @@ Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Orig
 ## Valores relativos
 
 ```{r, class.source = "fold-hide"}
-Indicadores_P <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"){
+Indicadores_P <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"){
                   
                             # Variable que se desea analizar
                             X <- get_values(dt[[Variable]], drop.na = TRUE) %>%
@@ -319,8 +319,8 @@ Indicadores_P <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Or
     
                             return(Resultados)
 }
-#tabla <- Indicadores_P("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)")
-#tabla <- Indicadores_P("SEXO", df.claves = CVE_ENT,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)")
+#tabla <- Indicadores_P("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
+#tabla <- Indicadores_P("SEXO", df.claves = CVE_ENT,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
 ```
 
 
@@ -337,7 +337,7 @@ CVE_ENT <- ENT %>% select(CVE_ENT) %>% as.data.frame()
 dt <- as.data.table(data)
 
 # Ejemplo
-tabla <- Indicadores("SEXO", df.claves = CVE_ENT,  grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_ASI", filtro = "(EDAD >= 3 & EDAD <= 130)")
+tabla <- Indicadores("SEXO", df.claves = CVE_ENT,  grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
 ```
 
 ## Valores absolutos {.tabset .tabset-pills}
