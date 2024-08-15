@@ -116,9 +116,9 @@ municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 
 ```{r, class.source = "fold-hide"}
 data <- mydata %>%
-         mutate(PE = case_when(.$CONACT %in% c("10", "13", "14", "15", "16", "17", "18", "19", "20") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 1,
-                               .$CONACT %in% c("30", "40", "50", "60", "70", "80") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 2,
-                               .$CONACT %in% c("99") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 99)) %>%
+         mutate(PE = case_when(.$CONACT %in% c("10", "13", "14", "15", "16", "17", "18", "19", "20") ~ 1,
+                               .$CONACT %in% c("30", "40", "50", "60", "70", "80") ~ 2,
+                               .$CONACT %in% c("99"))) %>%
          mutate(PE = labelled(x = .$PE, 
                                   labels = c(`Población economicamente activa` = 1,
                                              `Población no economicamente activa` = 2,

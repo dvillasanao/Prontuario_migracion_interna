@@ -114,15 +114,23 @@ movilidad, cada una con sus respectivos scripts y datos:
   - Migración de retorno 2000 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2000.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.01%20Migracion%20de%20retorno%202000/05.01.01-Migracion-de-retorno-2000.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.01%20Migracion%20de%20retorno%202000/05.01.02-Migracion-de-retorno-2000_SDEM.html)
   - Migración de retorno 2010 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2010.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.02%20Migracion%20de%20retorno%202010/05.02.01-Migracion-de-retorno-2010.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.02%20Migracion%20de%20retorno%202010/05.02.02-Migracion-de-retorno-2010_SDEM.html)
   - Migración de retorno 2015 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2015.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.03%20Migracion%20de%20retorno%202015/05.03.01-Migracion-de-retorno-2015.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.03%20Migracion%20de%20retorno%202015/05.03.02-Migracion-de-retorno-2015_SDEM.html)
   - Migración de retorno 2020 [\[Chord
     Diagram\]](https://dvillasanao.github.io/Prontuario_migracion_interna/images/MRt_2020.html)
     [\[Script\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.04%20Migracion%20de%20retorno%202020/05.04.01-Migracion-de-retorno-2020.html)
+    - [\[Indicadores
+      sociodemográficos\]](https://dvillasanao.github.io/Prontuario_migracion_interna/R/05%20Migracion%20de%20retorno%202010%20-%202020/05.04%20Migracion%20de%20retorno%202020/05.04.02-Migracion-de-retorno-2020_SDEM.html)
 - **Zonas Metropolitanas 2010 - 2020** (Nivel Estatal, Municipal y
   Metropolitano)
   - Zonas Metropolitanas 2010
