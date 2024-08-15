@@ -529,7 +529,7 @@ CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.da
 
 # Convertir el data frame en data.table para mayor eficiencia
 dt <- data %>%
-       filter(I_Migracion == 1) %>%
+       filter(CVE_MUN_RES %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana")
         as.data.table()
 ```
 
@@ -560,7 +560,7 @@ writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios,
 writeData(wb, 9, Indicadores("CAUSA_MIG", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
 writeData(wb, 10, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
 writeData(wb, 11, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2020.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2020.xlsx"), overwrite = TRUE)
 ```
 
 
@@ -591,7 +591,7 @@ writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipio
 writeData(wb, 9, Indicadores_P("CAUSA_MIG", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
 writeData(wb, 10, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
 writeData(wb, 11, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2020_Porcentajes.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2020_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
 #### Por zonas metropolitanas {.tabset .tabset-pills}
@@ -623,7 +623,7 @@ writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen =
 writeData(wb, 9, Indicadores("CAUSA_MIG", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 10, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 11, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2020 (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2020 (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ##### Valores relativos
@@ -653,7 +653,7 @@ writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen
 writeData(wb, 9, Indicadores_P("CAUSA_MIG", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 10, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 11, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2020_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2020_Porcentajes (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ### Nivel intermunicipal {.tabset .tabset-pills}
@@ -671,7 +671,9 @@ CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.da
 
 # Convertir el data frame en data.table para mayor eficiencia
 dt <- data %>%
-       filter(I_Migracion == 2) %>%
+       # Convertir el data frame en data.table para mayor eficiencia
+dt <- data %>%
+       filter(CVE_MUN_RES %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>% 
         as.data.table()
 ```
 
@@ -702,7 +704,7 @@ writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios,
 writeData(wb, 9, Indicadores("CAUSA_MIG", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
 writeData(wb, 10, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
 writeData(wb, 11, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2020.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2020.xlsx"), overwrite = TRUE)
 ```
 
 
@@ -733,7 +735,7 @@ writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipio
 writeData(wb, 9, Indicadores_P("CAUSA_MIG", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
 writeData(wb, 10, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
 writeData(wb, 11, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 5 & EDAD <= 130) & (I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1')"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2020_Porcentajes.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2020_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
 #### Por zonas metropolitanas {.tabset .tabset-pills}
@@ -765,7 +767,7 @@ writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen =
 writeData(wb, 9, Indicadores("CAUSA_MIG", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 10, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 11, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2020 (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2020 (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ##### Valores relativos
@@ -795,7 +797,7 @@ writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen
 writeData(wb, 9, Indicadores_P("CAUSA_MIG", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 10, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 11, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2020_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2020/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2020_Porcentajes (ZM).xlsx"), overwrite = TRUE)
 ```
 
 # Referencias
