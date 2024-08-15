@@ -356,7 +356,7 @@ addWorksheet(wb, "SEXO")
 addWorksheet(wb, "GEDAD")
 addWorksheet(wb, "CONACT")
 addWorksheet(wb, "PE")
-addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "HLENGUA")3
 addWorksheet(wb, "PERETN")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "ESTCON")
