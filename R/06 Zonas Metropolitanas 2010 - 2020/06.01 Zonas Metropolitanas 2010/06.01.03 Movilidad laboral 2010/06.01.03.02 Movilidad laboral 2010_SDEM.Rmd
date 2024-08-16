@@ -1,6 +1,6 @@
 ---
 title: "Zonas Metropolitanas 2010"
-subtitle: "Migración reciente 2005 - 2020 <br> Indicadores sociodemográficos"
+subtitle: "Movilidad laboral 2010 <br> Indicadores sociodemográficos"
 author: "Diana Villasana Ocampo"
 output:
    html_document:
@@ -125,9 +125,9 @@ zm <- ZM_2010 %>% select(CVE_ZM) %>% unique() %>% pull
 
 ```{r, class.source = "fold-hide"}
 data <- mydata %>%
-         mutate(PE = case_when(.$CONACT %in% c("10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 1,
-                               .$CONACT %in% c("31", "32", "33", "34", "35") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 2,
-                               .$CONACT %in% c("99") & (.$EDAD >= 12 & .$EDAD <= 130) ~ 99)) %>%
+         mutate(PE = case_when(.$CONACT %in% c("10", "13", "14", "15", "16", "17", "18", "19", "20", "30") ~ 1,
+                               .$CONACT %in% c("40", "50", "60", "70", "80") ~ 2,
+                               .$CONACT %in% c("99") ~ 99)) %>%
          mutate(PE = labelled(x = .$PE, 
                                   labels = c(`Población economicamente activa` = 1,
                                              `Población no economicamente activa` = 2,
@@ -144,15 +144,15 @@ data <- mydata %>%
                                              `30 a 59 años` = 4, 
                                              `60 años y más` = 5))) %>%
           # Se genera una indicadora de zm 
-          mutate(I_ZM_2015 = ifelse(is.na(.$CVE_ZM), '0', '1'),
-                 I_RES5A_ZM_2015 = ifelse(is.na(.$CVE_ZM_RES), '0', '1')) %>%
+          mutate(I_ZM_2010 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+                 I_TRAB_ZM_2010 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
           # Se clasifican a los migrantes internos 
-          mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_RES ~ 'Pertenecen a la Zona Metropolitana', #Residentes
-                                  .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '1' & .$I_RES5A_ZM_2015 %in% '1' & .$CVE_ZM == .$CVE_ZM_RES ~ "Pertenecen a la Zona Metropolitana", #Migrantes que residen en la misma zona metropolitana
-                                  .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '1' & .$I_RES5A_ZM_2015 %in% '1' & .$CVE_ZM != .$CVE_ZM_RES ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residen en otra zona metropolitana
-                                  .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '1' & .$I_RES5A_ZM_2015 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian fuera de la zona metropolitana
-                                  .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '0' & .$I_RES5A_ZM_2015 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian dentro de una zona metropolitana
-                                  .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '0' & .$I_RES5A_ZM_2015 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Migrantes que no residen en la zona metropolitana
+          mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Residentes
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2010 %in% '1' & .$I_TRAB_ZM_2010 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Migrantes que residen en la misma zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2010 %in% '1' & .$I_TRAB_ZM_2010 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residen en otra zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2010 %in% '1' & .$I_TRAB_ZM_2010 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian fuera de la zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2010 %in% '0' & .$I_TRAB_ZM_2010 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian dentro de una zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2010 %in% '0' & .$I_TRAB_ZM_2010 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Migrantes que no residen en la zona metropolitana
                                   ))
 ```
 
@@ -160,12 +160,12 @@ data <- mydata %>%
 require(gt)
 require(openxlsx)
 
-tabla <- read.xlsx(paste0(here::here(), "/Output/Tablas_SDEM.xlsx"), sheet = "2010")
+tabla <- read.xlsx(paste0(here::here(), "/Output/Tablas_SDEM.xlsx"), sheet = "2020")
 
 tabla %>%  
  gt(rowname_col = "row", groupname_col = c("Variable", "Categoria")) |>
   tab_header(title = "Reclasificación de variables", 
-             subtitle = "Encuesta Intercensal 2010") %>%
+             subtitle = "Censo de Población y Vivienda 2010") %>%
    tab_options(heading.title.font.size = 14, 
                heading.align = "center",
                heading.subtitle.font.size = 12,
@@ -197,7 +197,7 @@ La función `Indicadores` en términos generales realiza lo siguiente:
 ## Valores absolutos
 
 ```{r, class.source = "fold-hide"}
-Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"){
+Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"){
                   
                           # Variable que se desea analizar
                           X <- get_values(dt[[Variable]], drop.na = TRUE) %>%
@@ -266,13 +266,13 @@ Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Orig
                           return(Resultados)
 }
 
-#tabla1 <-  Indicadores("SEXO", df.claves = CVE_ZM,  grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130")
+#tabla1 <-  Indicadores("SEXO", df.claves = CVE_ZM,  grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)")
 ```
 
 ## Valores relativos
 
 ```{r, class.source = "fold-hide"}
-Indicadores_P <- function(Variable, df.claves = CVE_ZM, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"){
+Indicadores_P <- function(Variable, df.claves = CVE_ZM, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"){
                   
                             # Variable que se desea analizar
                             X <- get_values(dt[[Variable]], drop.na = TRUE) %>%
@@ -342,8 +342,8 @@ Indicadores_P <- function(Variable, df.claves = CVE_ZM, grupo = municipios,  Ori
     
                             return(Resultados)
 }
-#tabla <- Indicadores_P("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
-#tabla <- Indicadores_P("SEXO", df.claves = CVE_ENT,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
+#tabla <- Indicadores_P("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)")
+#tabla <- Indicadores_P("SEXO", df.claves = CVE_ENT,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)")
 ```
 
 # Nivel municipal {.tabset .tabset-pills}
@@ -356,12 +356,12 @@ CVE_ZM <- ZM_2010 %>% select(CVE_ZM) %>% distinct()
 
 # Convertir el data frame en data.table para mayor eficiencia
 dt <- data %>% 
-       filter(I_ZM_2010 %in% '1' | I_RES5A_ZM_2010 %in% '1') %>%
+       filter(I_ZM_2010 %in% '1' | I_TRAB_ZM_2010 %in% '1') %>%
         as.data.table()
 
 # Ejemplo
-tabla <- Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
-tabla1 <- Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
+tabla <- Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)")
+tabla1 <- Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)")
 ```
 
 
@@ -409,17 +409,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
 writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2010.xlsx"), overwrite = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores("SITTRA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel municipal 2010.xlsx"), overwrite = TRUE)
 ```
 
 
@@ -438,17 +440,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2010_Porcentajes.xlsx"), overwrite = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("SITTRA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel municipal 2010_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
 #### Por zonas metropolitanas {.tabset .tabset-pills}
@@ -468,17 +472,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
 writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2010 (ZM).xlsx"), overwrite = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores("SITTRA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel municipal 2010 (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ##### Valores relativos
@@ -496,17 +502,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
 writeData(wb, 4, Indicadores_P("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel municipal 2010_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("SITTRA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel municipal 2010_Porcentajes (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ### Nivel intramunicipal {.tabset .tabset-pills}
@@ -524,7 +532,7 @@ CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.da
 
 # Convertir el data frame en data.table para mayor eficiencia
 dt <- data %>%
-       filter(CVE_MUN_RES %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana")
+       filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana")
         as.data.table()
 ```
 
@@ -543,17 +551,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
 writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2010.xlsx"), overwrite = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores("SITTRA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2010.xlsx"), overwrite = TRUE)
 ```
 
 
@@ -572,17 +582,20 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2010_Porcentajes.xlsx"), overwrite = TRUE)
+addWorksheet(wb, "SITTRA")
+
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("SITTRA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2010_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
 #### Por zonas metropolitanas {.tabset .tabset-pills}
@@ -602,17 +615,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
 writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2010 (ZM).xlsx"), overwrite = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores("SITTRA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2010 (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ##### Valores relativos
@@ -630,17 +645,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
 writeData(wb, 4, Indicadores_P("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2010_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("SITTRA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2010_Porcentajes (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ### Nivel intermunicipal {.tabset .tabset-pills}
@@ -658,7 +675,7 @@ CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.da
 
 # Convertir el data frame en data.table para mayor eficiencia
 dt <- data %>%
-       filter(CVE_MUN_RES %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>% 
+       filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>% 
         as.data.table()
 ```
 
@@ -677,17 +694,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
 writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2010.xlsx"), overwrite = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores("SITTRA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2010.xlsx"), overwrite = TRUE)
 ```
 
 
@@ -706,17 +725,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2010_Porcentajes.xlsx"), overwrite = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("SITTRA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2010_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
 #### Por zonas metropolitanas {.tabset .tabset-pills}
@@ -736,17 +757,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
 writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2010 (ZM).xlsx"), overwrite = TRUE)
+writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores("SITTRA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2010 (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ##### Valores relativos
@@ -764,17 +787,19 @@ addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
-writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+addWorksheet(wb, "SITTRA")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("CONACT", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
 writeData(wb, 4, Indicadores_P("PE"), colNames = TRUE)
-writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2010_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("SITTRA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2010_Porcentajes (ZM).xlsx"), overwrite = TRUE)
 ```
 
 # Referencias
