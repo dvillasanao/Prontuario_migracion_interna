@@ -1322,12 +1322,14 @@ Pob.ocupada <- mydata %>%
                 mutate(CVE_MUN_TRABAJO = paste0(ENT_PAIS_TRAB, MUN_TRAB)) %>%
                  mutate(ENT_PAIS_TRAB = case_when(.$ENT_PAIS_TRAB %in% estados ~.$ENT_PAIS_TRAB,
                                                   .$ENT_PAIS_TRAB %nin% estados ~ "888", #Entidad de trabajo en otro país
+                                                  .$ENT_PAIS_TRAB %in% "990" ~ "990",
                                                   .$ENT_PAIS_TRAB %in% "997" ~ "997",
                                                   .$ENT_PAIS_TRAB %in% "998" ~ "998",
                                                   .$ENT_PAIS_TRAB %in% "997" ~ "999"),
                         CVE_MUN_TRABAJO = case_when(.$CVE_MUN_TRABAJO %in% municipios ~.$CVE_MUN_TRABAJO,
                                                      nchar(.$CVE_MUN_TRABAJO) == 3 ~ "888",  #Municipio de tranajo en otro país
                                                     .$CVE_MUN_TRABAJO %in% "997999" ~ '997999',
+                                                    .$ENT_PAIS_TRAB %in% "990" ~ "990",
                                                     .$ENT_PAIS_TRAB %in% "997" ~ "997",
                                                     .$ENT_PAIS_TRAB %in% "998" ~ "998",
                                                     .$ENT_PAIS_TRAB %in% "999" ~ "999",

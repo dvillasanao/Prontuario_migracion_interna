@@ -823,12 +823,14 @@ Pob.5ymas <- mydata %>%
               mutate(CVE_MUN_RES = paste0(RES05EDO_C, MUN05OTR_C)) %>%
                mutate(RES05EDO_C = case_when(.$RES05EDO_C %in% estados ~.$RES05EDO_C,
                                              .$RES05EDO_C %nin% estados ~ "888", #Residencia en otro país
+                                             .$RES05EDO_C %in% "990" ~ "990", # Por omision
                                              .$RES05EDO_C %in% "997" ~ "997",
                                              .$RES05EDO_C %in% "998" ~ "998",
                                              .$RES05EDO_C %in% "997" ~ "999"),
                       CVE_MUN_RES = case_when(.$CVE_MUN_RES %in% municipios ~.$CVE_MUN_RES,
                                                nchar(.$CVE_MUN_RES) == 3 ~ "888",  #Residencia en otro país
                                               .$CVE_MUN_RES %in% "997999" ~ '997999',
+                                              .$RES05EDO_C %in% "990" ~ "990", # Por omision
                                               .$RES05EDO_C %in% "997" ~ "997",
                                               .$RES05EDO_C %in% "998" ~ "998",
                                               .$RES05EDO_C %in% "999" ~ "999",
@@ -1268,11 +1270,13 @@ Pob.5ymas <- mydata %>%
               mutate(CVE_MUN_RES = paste0(RES05EDO_C, MUN05OTR_C)) %>%
                mutate(RES05EDO_C = case_when(.$RES05EDO_C %in% estados ~.$RES05EDO_C,
                                              .$RES05EDO_C %nin% estados ~ "888", #Residencia en otro país
+                                             .$RES05EDO_C %in% "990" ~ "990", # Por omision
                                              .$RES05EDO_C %in% "997" ~ "997",
                                              .$RES05EDO_C %in% "998" ~ "998",
                                              .$RES05EDO_C %in% "997" ~ "999"),
                       CVE_MUN_RES = case_when(.$CVE_MUN_RES %in% municipios ~.$CVE_MUN_RES,
                                                nchar(.$CVE_MUN_RES) == 3 ~ "888",  #Residencia en otro país
+                                              .$RES05EDO_C %in% "990" ~ "990", # Por omision
                                               .$CVE_MUN_RES %in% "997999" ~ '997999',
                                               .$RES05EDO_C %in% "997" ~ "997",
                                               .$RES05EDO_C %in% "998" ~ "998",
@@ -1809,12 +1813,14 @@ Pob.5ymas <- mydata %>%
               mutate(CVE_MUN_RES = paste0(RES05EDO_C, MUN05OTR_C)) %>%
                mutate(RES05EDO_C = case_when(.$RES05EDO_C %in% estados ~.$RES05EDO_C,
                                              .$RES05EDO_C %nin% estados ~ "888", #Residencia en otro país
+                                             .$RES05EDO_C %in% "990" ~ "990", # Por omision
                                              .$RES05EDO_C %in% "997" ~ "997",
                                              .$RES05EDO_C %in% "998" ~ "998",
                                              .$RES05EDO_C %in% "997" ~ "999"),
                       CVE_MUN_RES = case_when(.$CVE_MUN_RES %in% municipios ~.$CVE_MUN_RES,
                                                nchar(.$CVE_MUN_RES) == 3 ~ "888",  #Residencia en otro país
                                               .$CVE_MUN_RES %in% "997999" ~ '997999',
+                                              .$RES05EDO_C %in% "990" ~ "990", # Por omision
                                               .$RES05EDO_C %in% "997" ~ "997",
                                               .$RES05EDO_C %in% "998" ~ "998",
                                               .$RES05EDO_C %in% "999" ~ "999",
