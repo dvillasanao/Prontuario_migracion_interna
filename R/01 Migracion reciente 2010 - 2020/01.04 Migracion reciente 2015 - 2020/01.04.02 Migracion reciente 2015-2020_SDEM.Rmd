@@ -134,18 +134,21 @@ data <- mydata %>%
                                              `5 a 14 años` = 2,
                                              `15 a 29 años` = 3,
                                              `30 a 59 años` = 4, 
-                                             `60 años y más` = 5))) 
-     #     mutate(CAUSA_MIG = labelled(x = .$CAUSA_MIG, 
-      #                                labels = c("01" = "Buscar trabajo",
-       #                                          "02" = "Cambio u oferta de trabajo",
-        #                                         "03" = "Reunirse con la familia",
-         #                                        "04" = "Se casó o unió",
-          #                                       "05" = "Estudiar",
-           #                                      "06" = "Por inseguridad delictiva o violencia",
-            #                                     "07" = "Por desastres naturales",
-             #                                    "08" = "Lo deportaron (regresaron)",
-              #                                   "09" = "Otra causa",
-               #                                  "99" = "No especificado")))
+                                             `60 años y más` = 5))) %>%
+          mutate(CAUSA_MIG = as.character(.$CAUSA_MIG)) %>%
+          mutate(CAUSA_MIG = labelled(x = .$CAUSA_MIG, 
+                                      labels = c("Buscar trabajo" = "01",
+                                                 "Cambio u oferta de trabajo"= "02",
+                                                 "Reunirse con la familia"= "03",
+                                                 "Se casó o unió"= "04",
+                                                 "Estudiar"= "05",
+                                                 "Por inseguridad delictiva o violencia"= "06",
+                                                 "Por desastres naturales"= "07",
+                                                 "Lo deportaron (regresaron)"= "08",
+                                                 "Otra causa"= "09",
+                                                 "No especificado" = "99")))
+table(data$CAUSA_MIG)
+str(data$SEXO)
 ```
 
 ```{r, echo = FALSE, eval = TRUE}
@@ -355,7 +358,7 @@ dt <- as.data.table(data)
 
 ## Valores absolutos {.tabset .tabset-pills}
 
-```{r, class.source = "fold-hide", eval = FALSE}
+```{r, class.source = "fold-hide"}
 require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
@@ -484,6 +487,7 @@ dt <- as.data.table(data)
 
 # Ejemplo
 #tabla <- Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
+#tabla <- Indicadores("CAUSA_MIG", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
 ```
 
 #### Valores absolutos
@@ -505,7 +509,7 @@ addWorksheet(wb, "NIVACAD")
 writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"., df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
@@ -567,7 +571,7 @@ addWorksheet(wb, "NIVACAD")
 writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
@@ -645,7 +649,7 @@ addWorksheet(wb, "NIVACAD")
 writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
@@ -707,7 +711,7 @@ addWorksheet(wb, "NIVACAD")
 writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
@@ -731,7 +735,6 @@ addWorksheet(wb, "AFRODES")
 addWorksheet(wb, "HLENGUA")
 addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
-addWorksheet(wb, "CAUSA_MIG")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
 writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
@@ -742,9 +745,8 @@ writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ENT, grupo = municipio
 writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("CAUSA_MIG", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 11, Indicadores_P("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2020_Porcentajes (Estados).xlsx"), overwrite = TRUE)
 ```
 
@@ -786,7 +788,7 @@ addWorksheet(wb, "NIVACAD")
 writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
@@ -848,7 +850,7 @@ addWorksheet(wb, "NIVACAD")
 writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 3, Indicadores("CONACT", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 4, Indicadores("PE"), colNames = TRUE)
+writeData(wb, 4, Indicadores("PE", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 5, Indicadores("AFRODES", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 6, Indicadores("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 7, Indicadores("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
@@ -872,7 +874,6 @@ addWorksheet(wb, "AFRODES")
 addWorksheet(wb, "HLENGUA")
 addWorksheet(wb, "PERTE_INDIGENA")
 addWorksheet(wb, "ALFABET")
-addWorksheet(wb, "CAUSA_MIG")
 addWorksheet(wb, "SITUA_CONYUGAL")
 addWorksheet(wb, "NIVACAD")
 writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
@@ -883,9 +884,8 @@ writeData(wb, 5, Indicadores_P("AFRODES", df.claves = CVE_ENT, grupo = municipio
 writeData(wb, 6, Indicadores_P("HLENGUA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 7, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 writeData(wb, 8, Indicadores_P("ALFABET", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 9, Indicadores_P("CAUSA_MIG", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 10, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
-writeData(wb, 11, Indicadores_P("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion reciente/2020/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2020_Porcentajes (Estados).xlsx"), overwrite = TRUE)
 ```
 
