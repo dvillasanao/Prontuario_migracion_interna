@@ -209,7 +209,7 @@ Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Orig
                                                         # Asegurarse de que todas las categorías estén representadas
                                                         if(nrow(resultado) == 0) {
                                                             resultado <- data.table(group = unique(dt_filtrada[[group]]))
-                                                            resultado[group %in% grupo, Pob := 0]  %>%
+                                                            resultado[, Pob := 0]  %>%
                                                              setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
                                                         } else {
                                                           setnames(resultado, c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
@@ -225,11 +225,11 @@ Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Orig
                                         resultados <- resultados[, lapply(.SD, sum, na.rm = TRUE), 
                                                                  by = names(df.claves), 
                                                                  .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
-                                          adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                                                       adorn_totals(c("row"), fill = "-", na.rm = TRUE)
                                       } else {
                                         resultados <- resultados %>%
-                                          merge(df.claves, by = c(Origen), all = TRUE) %>%
-                                          adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                                                        merge(df.claves, by = c(Origen), all = TRUE) %>%
+                                                         adorn_totals(c("row"), fill = "-", na.rm = TRUE)
                                       }
                                   
                                       return(resultados)
@@ -254,7 +254,7 @@ Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Orig
                                       return(Resultados)
                         }
 #tabla1 <- Indicadores("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)")
-#tabla <- Indicadores("MED_TRASLADO_ESC3", df.claves = CVE_ENT,  grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
+#tabla <-  Indicadores("SEXO", df.claves = CVE_ENT, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
 ```
 
 ## Valores relativos
@@ -297,7 +297,7 @@ Indicadores_P <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Or
                                                             # Asegurarse de que todas las categorías estén representadas
                                                             if(nrow(resultado) == 0) {
                                                                 resultado <- data.table(group = unique(dt_filtrada[[group]]))
-                                                                resultado[group %in% grupo, Pob := 0]  %>%
+                                                                resultado[, Pob := 0]  %>%
                                                                  setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
                                                             } else {
                                                               setnames(resultado, c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
@@ -314,12 +314,12 @@ Indicadores_P <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Or
                                                                      by = names(df.claves), 
                                                                      .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
                                                            adorn_totals(c("row"), fill = "-", na.rm = TRUE) %>%
-                                                            adorn_percentages(denominator = "row")   
+                                                            adorn_percentages(denominator = "row", na.rm = TRUE)   
                                           } else {
                                             resultados <- resultados %>%
                                                            merge(df.claves, by = c(Origen), all = TRUE) %>%
                                                             adorn_totals(c("row"), fill = "-", na.rm = TRUE) %>%
-                                                             adorn_percentages(denominator = "row")   
+                                                             adorn_percentages(denominator = "row", na.rm = TRUE)   
                                           }
                                       
                                           return(resultados)
@@ -343,7 +343,7 @@ Indicadores_P <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Or
         
                                 return(Resultados)
 }
-#tabla <- Indicadores_P("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
+#tabla <- Indicadores_P("SEXO", df.claves = CVE_ENT,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
 #tabla <- Indicadores_P("MED_TRASLADO_ESC3", df.claves = CVE_ENT,  grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
 ```
 
@@ -362,6 +362,7 @@ dt <- as.data.table(data)
 
 # Ejemplo
 tabla <- Indicadores("SEXO", df.claves = CVE_ENT,  grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
+tabla <- Indicadores_P("SEXO", df.claves = CVE_ENT,  grupo = estados, Origen = "CVE_ENT", Destino = "ENT_PAIS_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
 ```
 
 ## Valores absolutos {.tabset .tabset-pills}
