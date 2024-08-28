@@ -622,7 +622,7 @@ CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.da
 
 # Convertir el data frame en data.table para mayor eficiencia
 dt <- data %>%
-       filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana")
+       filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana") %>%
         as.data.table()
 ```
 
