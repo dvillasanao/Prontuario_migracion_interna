@@ -496,7 +496,6 @@ data <- data %>%
                                            .$ENT_PAIS_TRAB %in% "997" ~ "999"),
                  CVE_MUN_TRABAJO = case_when(.$CVE_MUN_TRABAJO %in% municipios ~.$CVE_MUN_TRABAJO,
                                               #### Se excluyen los municipios que no fueron muestreados
-                                             .$CVE_MUN_TRABAJO %in% municipios_nomuestra ~ "777",
                                               nchar(.$CVE_MUN_TRABAJO) == 3 ~ "888",  #Residencia en otro país
                                              .$CVE_MUN_TRABAJO %in% "997999" ~ '997999',
                                              .$ENT_PAIS_TRAB %in% "997" ~ "997",
