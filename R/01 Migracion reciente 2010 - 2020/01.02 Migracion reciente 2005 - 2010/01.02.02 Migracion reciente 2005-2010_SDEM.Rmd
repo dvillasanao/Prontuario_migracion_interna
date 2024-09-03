@@ -29,7 +29,7 @@ rm(list = ls())
 setwd(here::here())
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval = FALSE}
 #Font Stlye
 require(showtext)
 library(extrafont)
@@ -201,52 +201,62 @@ Indicadores <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Orig
                           # Añadir la fila total al data.table original
                           Pob.Total <- rbind(Pob.Total, total_row)
                           
-                          # Función auxiliar para calcular poblaciones
-                          calcular_poblacion <- function(filtro_adicional, group, nombre_columna){
-                                                  dt_filtrada <- dt[eval(parse(text = filtro)) & filtro_adicional, ]
-                                                  
-                                                  resultados <- lapply(1:length(X), function(x) {
-                                                                        resultado <- dt_filtrada[get(Variable) %in% X[x], 
-                                                                                                 .(Pob = sum(FACTOR, na.rm = TRUE)), 
-                                                                                                 by = group] %>%
-                                                                                      setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
-                                                                      return(resultado)
-                                                                      }) %>%
-                                                                      Reduce(function(...) merge(..., by = Origen, all = TRUE), .)
-                                                  
-                                                  if (names(df.claves) != Origen) {
-                                                          resultados[, (names(df.claves)) := substr(get(Origen), 1, 3)]
-                                                          resultados <- resultados[, lapply(.SD, sum, na.rm = TRUE), 
-                                                                                   by = names(df.claves), 
-                                                                                   .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
-                                                            adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                            # Función auxiliar para calcular poblaciones
+                              calcular_poblacion <- function(filtro_adicional, group, nombre_columna){
+                                dt_filtrada <- dt[eval(parse(text = filtro)) & filtro_adicional, ]
+                            
+                                 resultados <- lapply(1:length(X), function(x) {
+                                                       resultado <- dt_filtrada[get(Variable) %in% X[x], 
+                                                                                .(Pob = sum(FACTOR, na.rm = TRUE)), 
+                                                                                by = group]
+                                  
+                                                        # Asegurarse de que todas las categorías estén representadas
+                                                        if(nrow(resultado) == 0) {
+                                                            resultado <- data.table(group = unique(dt_filtrada[[group]]))
+                                                            resultado[, Pob := 0]  %>%
+                                                             setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
                                                         } else {
-                                                          resultados <- resultados %>%
-                                                                         merge(df.claves, by = c(Origen), all = TRUE) %>%
-                                                                          adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                                                          setnames(resultado, c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
                                                         }
                                                         
-                                                        return(resultados)
-                          }
+                                                        return(resultado)
+                                                      })
+                            
+                                  resultados <- Reduce(function(...) merge(..., by = Origen, all = TRUE), resultados)
+                              
+                                      if (names(df.claves) != Origen) {
+                                        resultados[, (names(df.claves)) := substr(get(Origen), 1, 3)]
+                                        resultados <- resultados[, lapply(.SD, sum, na.rm = TRUE), 
+                                                                 by = names(df.claves), 
+                                                                 .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
+                                                       adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                                      } else {
+                                        resultados <- resultados %>%
+                                                        merge(df.claves, by = c(Origen), all = TRUE) %>%
+                                                         adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                                      }
+                                  
+                                      return(resultados)
+                                    }
+                                                  
+                                      # Población desagregada                  CVE_MUN                                         
+                                      Pob.Objetivo <- calcular_poblacion(dt[[Origen]] %in% grupo & dt[[Destino]] %in% grupo, Origen, "Pob")
+                                                  
+                                      # Población residente
+                                      Residentes <- calcular_poblacion(dt[[Origen]] == dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Residentes")
+                                  
+                                      # Población inmigrante
+                                      Inmigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Inmigrantes")
+                                                  
+                                      # Población emigrante
+                                      Emigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Destino, "Emigrantes")
+                                                  
+                                      # Tabla de resultados
+                                      Resultados <- list(Pob.Total, Pob.Objetivo, Residentes, Inmigrantes, Emigrantes) %>%
+                                                    Reduce(function(...) merge(..., by = names(df.claves), all = TRUE), .)
                           
-                          # Población desagregada                  CVE_MUN                                         
-                          Pob.Objetivo <- calcular_poblacion(dt[[Origen]] %in% grupo & dt[[Destino]] %in% grupo, Origen, "Pob")
-                          
-                          # Población residente
-                          Residentes <- calcular_poblacion(dt[[Origen]] == dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Residentes")
-          
-                          # Población inmigrante
-                          Inmigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Inmigrantes")
-                          
-                          # Población emigrante
-                          Emigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Destino, "Emigrantes")
-                          
-                          # Tabla de resultados
-                          Resultados <- list(Pob.Total, Pob.Objetivo, Residentes, Inmigrantes, Emigrantes) %>%
-                            Reduce(function(...) merge(..., by = names(df.claves), all = TRUE), .)
-  
-                          return(Resultados)
-}
+                                      return(Resultados)
+                        }
 #tabla1 <- Indicadores("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
 ```
 
@@ -275,53 +285,66 @@ Indicadores_P <- function(Variable, df.claves = CVE_ENT, grupo = municipios,  Or
                             # Añadir la fila total al data.table original
                             Pob.Total <- rbind(Pob.Total, total_row)
                             
-                            # Función auxiliar para calcular poblaciones
-                            calcular_poblacion <- function(filtro_adicional, group, nombre_columna){
-                                                    dt_filtrada <- dt[eval(parse(text = filtro)) & filtro_adicional, ]
-                                                    
-                                                    resultados <- lapply(1:length(X), function(x) {
-                                                                          resultado <- dt_filtrada[get(Variable) %in% X[x], 
-                                                                                                   .(Pob = sum(FACTOR, na.rm = TRUE)), 
-                                                                                                   by = group] %>%
-                                                                                        setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
-                                                                        return(resultado)
-                                                                        }) %>%
-                                                                        Reduce(function(...) merge(..., by = Origen, all = TRUE), .)
-                                                    
-                                                    if (names(df.claves) != Origen) {
-                                                            resultados[, (names(df.claves)) := substr(get(Origen), 1, 3)]
-                                                            resultados <- resultados[, lapply(.SD, sum, na.rm = TRUE), 
-                                                                                     by = names(df.claves), 
-                                                                                     .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
-                                                              adorn_totals(c("row"), fill = "-", na.rm = TRUE)  %>%
-                                                               adorn_percentages(denominator = "row") 
-                                                          } else {
-                                                            resultados <- resultados %>%
-                                                                           merge(df.claves, by = c(Origen), all = TRUE) %>%
-                                                                            adorn_totals(c("row"), fill = "-", na.rm = TRUE)  %>%
-                                                                             adorn_percentages(denominator = "row")   
-                                                          }
-                                                          
-                                                          return(resultados)
-                            }
-                            
-                            # Población desagregada                  CVE_MUN                                         
-                            Pob.Objetivo <- calcular_poblacion(dt[[Origen]] %in% grupo & dt[[Destino]] %in% grupo, Origen, "Pob")
-                            
-                            # Población residente
-                            Residentes <- calcular_poblacion(dt[[Origen]] == dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Residentes")
-            
-                            # Población inmigrante
-                            Inmigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Inmigrantes")
-                            
-                            # Población emigrante
-                            Emigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Destino, "Emigrantes")
-                            
-                            # Tabla de resultados
-                            Resultados <- list(Pob.Total, Pob.Objetivo, Residentes, Inmigrantes, Emigrantes) %>%
-                              Reduce(function(...) merge(..., by = names(df.claves), all = TRUE), .)
-    
-                            return(Resultados)
+                            # Añadir la fila total al data.table original
+                            Pob.Total <- rbind(Pob.Total, total_row)
+                              
+                                # Función auxiliar para calcular poblaciones
+                                  calcular_poblacion <- function(filtro_adicional, group, nombre_columna){
+                                    dt_filtrada <- dt[eval(parse(text = filtro)) & filtro_adicional, ]
+                                
+                                     resultados <- lapply(1:length(X), function(x) {
+                                                           resultado <- dt_filtrada[get(Variable) %in% X[x], 
+                                                                                    .(Pob = sum(FACTOR, na.rm = TRUE)), 
+                                                                                    by = group]
+                                      
+                                                            # Asegurarse de que todas las categorías estén representadas
+                                                            if(nrow(resultado) == 0) {
+                                                                resultado <- data.table(group = unique(dt_filtrada[[group]]))
+                                                                resultado[, Pob := 0]  %>%
+                                                                 setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
+                                                            } else {
+                                                              setnames(resultado, c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
+                                                            }
+                                                            
+                                                            return(resultado)
+                                                          })
+                                
+                                      resultados <- Reduce(function(...) merge(..., by = Origen, all = TRUE), resultados)
+                                  
+                                          if (names(df.claves) != Origen) {
+                                            resultados[, (names(df.claves)) := substr(get(Origen), 1, 3)]
+                                            resultados <- resultados[, lapply(.SD, sum, na.rm = TRUE), 
+                                                                     by = names(df.claves), 
+                                                                     .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
+                                                           adorn_totals(c("row"), fill = "-", na.rm = TRUE) %>%
+                                                            adorn_percentages(denominator = "row", na.rm = TRUE)   
+                                          } else {
+                                            resultados <- resultados %>%
+                                                           merge(df.claves, by = c(Origen), all = TRUE) %>%
+                                                            adorn_totals(c("row"), fill = "-", na.rm = TRUE) %>%
+                                                             adorn_percentages(denominator = "row", na.rm = TRUE)   
+                                          }
+                                      
+                                          return(resultados)
+                                  }
+                                  
+                                # Población desagregada                                               
+                                Pob.Objetivo <- calcular_poblacion(dt[[Origen]] %in% grupo & dt[[Destino]] %in% grupo, Origen, "Pob")
+                                
+                                # Población residente
+                                Residentes <- calcular_poblacion(dt[[Origen]] == dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Residentes")
+                
+                                # Población inmigrante
+                                Inmigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Inmigrantes")
+                                
+                                # Población emigrante
+                                Emigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Destino, "Emigrantes")
+                                
+                                # Tabla de resultados
+                                Resultados <- list(Pob.Total, Pob.Objetivo, Residentes, Inmigrantes, Emigrantes) %>%
+                                  Reduce(function(...) merge(..., by = names(df.claves), all = TRUE), .)
+        
+                                return(Resultados)
 }
 #tabla <- Indicadores_P("SEXO", df.claves = CVE_MUN,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
 #tabla <- Indicadores_P("SEXO", df.claves = CVE_ENT,  grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130")
@@ -400,21 +423,24 @@ saveWorkbook(wb, file = paste0(here::here(), "/Output/Estado/01_Migracion recien
 
 ```{r}
 data <- data %>%
-         mutate(CVE_MUN_RES = paste0(ENT_PAIS_RES10, MUN_RES10)) %>%
-          mutate(ENT_PAIS_RES10 = case_when(.$ENT_PAIS_RES10 %in% estados ~.$ENT_PAIS_RES10,                                                                                                                                             .$ENT_PAIS_RES10 %nin% estados ~ "888", #Residencia en otro país
-                                            .$ENT_PAIS_RES10 %in% "997" ~ "997",
-                                            .$ENT_PAIS_RES10 %in% "998" ~ "998",
-                                            .$ENT_PAIS_RES10 %in% "997" ~ "999"),
-                 CVE_MUN_RES = case_when(.$CVE_MUN_RES %in% municipios ~.$CVE_MUN_RES,
-                                          nchar(.$CVE_MUN_RES) == 3 ~ "888",  #Residencia en otro país
-                                         .$CVE_MUN_RES %in% "997999" ~ '997999',
-                                         .$ENT_PAIS_RES10 %in% "997" ~ "997",
-                                         .$ENT_PAIS_RES10 %in% "998" ~ "998",
-                                         .$ENT_PAIS_RES10 %in% "999" ~ "999",
-                                         .$MUN_RES10 %in% "999" ~ "999")) %>%
-           mutate(I_Migracion = case_when(.$CVE_ENT == .$ENT_PAIS_RES10 & .$ENT_PAIS_RES10 %in% estados ~ 1, # Migrantes intramunicipales
-                                          .$CVE_ENT != .$ENT_PAIS_RES10 & .$ENT_PAIS_RES10 %in% estados ~ 2, # Migrantes intermunicipales
-                                          .$ENT_PAIS_RES10 %nin% estados ~ 3))
+         mutate(CVE_MUN_RES = paste0(RES05EDO_C, MUN05OTR_C)) %>%
+                mutate(RES05EDO_C = case_when(.$RES05EDO_C %in% estados ~.$RES05EDO_C,
+                                              .$RES05EDO_C %nin% estados ~ "888", #Residencia en otro país
+                                              .$RES05EDO_C %in% "990" ~ "990", # Por omision
+                                              .$RES05EDO_C %in% "997" ~ "997",
+                                              .$RES05EDO_C %in% "998" ~ "998",
+                                              .$RES05EDO_C %in% "997" ~ "999"),
+                      CVE_MUN_RES = case_when(.$CVE_MUN_RES %in% municipios ~.$CVE_MUN_RES,
+                                               nchar(.$CVE_MUN_RES) == 3 ~ "888",  #Residencia en otro país
+                                              .$CVE_MUN_RES %in% "997999" ~ '997999',
+                                              .$RES05EDO_C %in% "990" ~ "990", # Por omision
+                                              .$RES05EDO_C %in% "997" ~ "997",
+                                              .$RES05EDO_C %in% "998" ~ "998",
+                                              .$RES05EDO_C %in% "999" ~ "999",
+                                              .$MUN05OTR_C %in% "999" ~ "999")) %>%
+                 mutate(I_Migracion = case_when(.$CVE_ENT == .$RES05EDO_C & .$RES05EDO_C %in% estados ~ 1,
+                                                .$CVE_ENT != .$RES05EDO_C & .$RES05EDO_C %in% estados ~ 2,
+                                                .$RES05EDO_C %nin% estados ~ 3))
 ```
 
  
@@ -737,7 +763,7 @@ saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/01_Migracion rec
 #### Valores relativos {.tabset .tabset-pills}
 
 ```{r, class.source = "fold-hide"}
-rrequire(openxlsx)
+require(openxlsx)
 wb <- createWorkbook()
 addWorksheet(wb, "SEXO")
 addWorksheet(wb, "GEDAD")
