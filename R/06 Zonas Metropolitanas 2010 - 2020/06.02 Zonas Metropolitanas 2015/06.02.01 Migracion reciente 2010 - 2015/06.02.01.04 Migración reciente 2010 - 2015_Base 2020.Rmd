@@ -541,9 +541,10 @@ tabla[1:30, 1:30] %>%
 MR <- NULL
 for(i in 1:length(zm)){
 tabla <- ZM_2020 %>%
-          select(CVE_ZM, CVE_MUN) %>%
-           filter(CVE_ZM %in% zm[i]) %>%
-            pull(CVE_MUN)
+          filter(CVE_MUN %in% municipios) %>%
+           select(CVE_ZM, CVE_MUN) %>%
+            filter(CVE_ZM %in% zm[i]) %>%
+             pull(CVE_MUN)
 
 MR[[paste0(zm[i])]] <- Migrantes %>%
                         as.data.frame() %>%
