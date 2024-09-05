@@ -1166,7 +1166,7 @@ Pob.5ymas <- mydata %>%
 
 ################################################################################
 ########################### Residentes #########################################
-load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/Matriz de migracion reciente a nivel intermunicipal.RData"))
+load(file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2010/01_Migracion reciente/Matriz de migracion reciente a nivel municipal.RData"))
 
 Residentes <- Migrantes %>%
                rownames_to_column() %>%
