@@ -1,0 +1,2401 @@
+---
+title: "Movilidad Estudiantil 2015"
+author: "Diana Villasana Ocampo"
+output:
+   html_document:
+      css: "../style.css"
+      highlight: tango
+      theme: flatly
+      toc: yes
+      toc_depth: 2
+      toc_float:
+        collapsed: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
+                         eval = FALSE, class.source = "fold-show")
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+options(digits = 2, encoding = "UTF8")
+```
+
+```{r, echo=FALSE}
+rm(list = ls())
+```
+
+```{r, echo=FALSE}
+setwd(here::here())
+source(paste0(here::here(), "/R/inst/chord_function.R"))
+source(paste0(here::here(), "/R/inst/margins_function.R"))
+source(paste0(here::here(), "/R/inst/migration_function.R"))
+```
+
+```{r, echo=FALSE}
+#Font Stlye
+require(showtext)
+library(extrafont)
+# activar showtext
+# SE cargan las funtes del sitema Windows (Pero tarda en correr)
+#ttf_import('C:/Users/dvill/AppData/Local/Microsoft/Windows/Fonts/')
+#fonts()
+#extrafont::loadfonts(device = "win")
+#font_import()
+windowsFonts()
+```
+
+```{r, echo = FALSE, eval = TRUE, results=FALSE}
+# Librerías que se usaron en el documCVE_ENTo
+#devtools::install_github("mattflor/chorddiag")
+require(chorddiag)
+require(circlize)
+require(Cairo)
+require(haven)
+require(Hmisc) # %nin%
+require(dplyr)
+require(mapview)
+require(survey)
+require(srvyr)
+require(stringr)
+require(sna)
+require(expss)
+require(knitr)
+require(kableExtra)
+require(sjlabelled)
+require(gt)
+require(ggplot2)
+require(ggpubr)
+require(ggalluvial)
+require(ggsankey)
+require(ggrepel)
+require(janitor)
+require(tibble)
+require(tidyr)
+require(reshape2)
+require(openxlsx)
+require(doMC)
+registerDoMC(cores = 18)
+```
+
+**Encuesta Intercensal 2015**
+
+La Encuesta Intercensal se guarda en un un archivo `.RData`.
+
+```{r, eval = FALSE}
+data <- read_sav("~/Persona.-Encuesta Intercensal 2015.sav")
+
+save(data, 
+      file = paste0(here::here(), "/Bases/Encuesta Intercensal_2015.RData"))
+```
+
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.
+
+**Posibles variables que se pueden contemplar en la movilidad estudiantil**
+
+-   `SEXO`
+-   `AFRODES`
+-   `HLENGUA`
+-   `QDIALECT_INALI`
+-   `PERTE_INDIGENA`
+-   `ALFABET`
+-   `NIVACAD` ¿Cuál fue el último año o grado aprobado por (NOMBRE) en la escuela?
+-   `TIE_TRASLADO_ESCU`
+-   `MED_TRASLADO_ESC1`
+-   `MED_TRASLADO_ESC2`
+-   `MED_TRASLADO_ESC3`
+
+```{r, eval = FALSE}
+load(paste0(here::here(), "/Bases/Encuesta Intercensal_2015.RData"))
+
+mydata <- data %>%
+           select(CVE_ENT, NOM_ENT, MUN, NOM_MUN, ENT_MUN, ENT_PAIS_ASI, MUN_ASI, ENT_MUN_ASI_ESC,
+                  EDAD, SEXO, AFRODES,  HLENGUA, QDIALECT_INALI, ELENGUA, PERTE_INDIGENA, ALFABET, 
+                  ASISTEN, NIVACAD, ESCOLARI, ESCOACUM, TIE_TRASLADO_ESCU, 
+                  MED_TRASLADO_ESC1, MED_TRASLADO_ESC2, MED_TRASLADO_ESC3, FACTOR, ESTRATO, UPM) %>%
+            rename("CVE_MUN" = "ENT_MUN",
+                   "CVE_MUN_ASI" = "ENT_MUN_ASI_ESC")
+
+save(mydata, file = paste0(here::here(), "/Bases/04_Movilidad estudiantil_2015.RData"))
+```
+
+✔️A partir de aquí se pueden correr los códidos 👇.\
+Se carga el archivo `Movilidad estudiantil_2015.RData`.
+
+```{r}
+load(file = paste0(here::here(), "/Bases/04_Movilidad estudiantil_2015.RData"))
+
+#Para fines prácticos se genera un ponderador de uno 
+mydata <- mydata %>%
+           select(CVE_ENT, NOM_ENT, MUN, CVE_MUN, ENT_PAIS_ASI, MUN_ASI, CVE_MUN_ASI, EDAD, FACTOR, ESTRATO, UPM) %>%
+            mutate(M = 1)  %>%
+             ungroup()
+```
+
+**Entidades**   
+
+Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento. \   
+Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.    
+Se genera un vector con las claves de los municipios.
+
+```{r}
+# Claves de los estados
+estados <- sjlabelled::get_labels(mydata$CVE_ENT)
+
+nom_estados <- c( "Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila de Zaragoza", "Colima", 
+                  "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",        
+                  "México", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", 
+                  "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", 
+                  "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas")
+
+est <- c("AGS", "BC", "BCS", "CAMP", "COAH", "COL", "CHIS", "CHIH", "CDMX", "DGO", "GTO", "GRO", "HGO",
+         "JAL", "MEX", "MICH", "MOR", "NAY", "NL", "OAX", "PUE", "QRO", "QROO", "SLP","SIN","SON", "TAB", 
+         "TAMS", "TLX", "VER", "YUC", "ZAC")
+
+# Claves de los municipios
+MUN <- readRDS(paste0(here::here(), "/Bases/municipios_2015.RDS"))
+nom_municipios <- sjlabelled::get_labels(MUN$NOM_MUN) %>% as.factor()
+municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
+
+# Se le asignan las etiquetas a los nombres de los estados 
+levels(mydata$NOM_ENT) <- estados
+```
+
+**Población estudiantil de 3 años y más**
+
+Se identifica a la población estudiantil de 3 años y más.
+
+`filter(EDAD >= 3 & EDAD <= 130)'.`
+
+```{r}
+Pob.3ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 3 & EDAD <= 130) %>%
+                 filter(ENT_PAIS_ASI %in% estados)  # Filtro del lugar de trabajo dentro del país. 
+```
+
+**Población de 3 años y más**
+
+```{r, echo = FALSE}
+# Población de 3 años y más
+tabla <- Pob.3ymas %>%
+          summarise(Pob_3ymas = sum(.$FACTOR))
+
+as.integer(tabla) %>%  
+ as.data.frame() %>%
+  mutate(across(where(is.numeric), ~ prettyNum(., big.mark = " ", preserve.width = "none"))) %>%
+   gt() %>% 
+    tab_header(title = "Población de 3 años y más") %>%
+     tab_options(heading.title.font.size = 12, 
+                 heading.align = "center",
+                 heading.subtitle.font.size = 10,
+                 table.align = "center",
+                 column_labels.font.weight = "bold",
+                 table.font.names = 'montserrat',
+                 table.font.size = 8) %>%  
+       as_raw_html()
+```
+
+# Nivel estatal {.tabset .tabset-pills}
+
+## Movilidad estudiantil {.tabset .tabset-pills}
+
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 3 años y más.
+
+```{r, eval = FALSE}
+options(survey.lonely.psu = "adjust")
+
+MC <- mydata %>%
+       as.data.frame() %>%
+        mutate(EDAD = as.numeric(.$EDAD)) %>%
+         subset(EDAD >= 3 & EDAD <= 130) %>%  
+          filter(ENT_PAIS_ASI %in% estados) %>%
+           svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2015/MC_estado.RDS"))
+```
+
+Se genera una matriz cruzada de movilidad estudiantil a nivel estatal, utilizando la función `svytable` de la paquetería `survey`.
+
+```{r}
+MC <- readRDS(file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2015/MC_estado.RDS"))
+
+Migrantes <- svytable(~ENT_PAIS_ASI + CVE_ENT, design = MC) 
+```
+
+La función `cross_cases()` de la paquetería `expss` se utiliza para crear tablas de contingencia cruzadas a partir de dos o más variables categóricas. Utilizando el comando `weight`, permite ponderar las observaciones "factores de expansión" en la tabla.
+
+Se quita la diagonal a la matriz cruadrada con la función `diag.remove()` de la paquetería `sna`, donde esta función reemplaza los elementos de la diagonal principal de una matriz por un valor nulo o por el valor especifico.
+
+```{r}
+Migrantes <- Migrantes %>%
+              as.data.frame() %>%
+               expss::cross_cases(CVE_ENT, ENT_PAIS_ASI, weight = Freq) %>%
+                as.data.frame() %>%
+                 slice(-33) %>% 
+                  select(-row_labels) 
+
+rownames(Migrantes)<- nom_estados
+colnames(Migrantes) <- nom_estados
+
+save(Migrantes, file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Matriz de MEst a nivel estatal 2015.RData"))
+ 
+wb <- createWorkbook()
+addWorksheet(wb, "MEstudiantil 2015")
+writeData(wb, 1, Migrantes, colNames = TRUE, rowNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Matriz de MEst a nivel estatal 2015.xlsx"), overwrite = TRUE)
+```
+
+**Matriz de movilidad estudiantil a nivel estatal, 2015**
+
+::: {style="height:500px;overflow:auto;"}
+```{r, echo = FALSE, eval = TRUE}
+load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Matriz de MEst a nivel estatal 2015.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "Entidad") 
+
+tabla %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de movilidad estudiantil, 2015", 
+             subtitle = "Nivel estatal") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+  
+     tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+      sub_missing(columns = everything(), missing_text = "0") %>%
+       as_raw_html()
+```
+:::
+
+## Gráfico dinámico
+
+Gráfico dinámico de movilidad estudiantil a nivel estatal.
+
+```{r, fig.width=5, fig.height=5, fig.align='center', eval = TRUE}
+load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Matriz de MEst a nivel estatal 2015.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0) 
+
+names <- c("Aguascalientes", "Baja California" ,"Baja California Sur", "Campeche", "Coahuila", "Colima", 
+           "Chiapas", "Chihuahua", "Ciudad de México", "Durango", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco",    
+           "México", "Michoacán", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", 
+           "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", 
+           "Veracruz", "Yucatán", "Zacatecas")
+
+# Paleta de colores
+paleta <- rev(colorRampPalette(pals::kovesi.linear_bmy_10_95_c71(100))(50))
+
+p <- chorddiag(tabla, 
+               groupNames = names,
+               groupColors = paleta, 
+               groupnamePadding = 10, 
+               #height = 700, 
+               #width = 700,
+               margin = 120,
+               groupThickness = 0.07,
+               groupPadding = 3,
+               groupnameFontsize = 12,
+               fadeLevel = '0.1',
+               tickInterval = seq(0, 500000, 10000),
+               chordedgeColor = "transparent",
+               showZeroTooltips = FALSE,
+               showTicks = TRUE)
+
+# Ajusta las etiquetas usando JavaScript para modificar su posición
+p <- htmlwidgets::onRender(p, '
+      function(el, x) {
+        d3.selectAll(".group text")
+          .attr("text-anchor", "middle")
+          .attr("dx", "0")  
+          .attr("dy", "0.75em"); 
+      }
+')
+
+# Crear un contenedor div y aplicar estilos CSS para centrarlo
+#p <- tags$div(style = "display: flex; justify-content: center; align-items: center;", p)
+
+p
+
+p %>% 
+ mapshot(url = paste0(here::here(),"/images/MEst_2015.html"))
+
+#htmlwidgets::saveWidget(p, paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2015/MEst a nivel estatal 2015.html"), selfcontained = TRUE)
+#require(webshot)
+#webshot(url = paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2015/MEst a nivel estatal 2015.html"),
+ #         file = paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2015/MEst a nivel estatal 2015.png"),
+  #                cliprect = "viewport")
+```
+
+## Gráficos {.tabset .tabset-pills}
+
+### ChordDiagram
+
+```{r, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Matriz de MEst a nivel estatal 2015.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0)  
+
+rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
+
+# Paleta de colores
+#paleta <- colorRampPalette(pals::ocean.matter(100))(50)
+paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DDE379", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
+
+tabla2 <- color_chord_diagram(tabla1 = tabla, paleta)
+```
+
+```{r, fig.height=20, fig.width=20, eval = FALSE, class.source = "fold-hide"}
+file = "/Graficos/Estado/04_Movilidad estudiantil/2015/ChordDiagram de MEst a nivel estatal.pdf"
+
+## Gráficos a nivel estatal 
+chord_diagram_graph(file = file, 
+                    width = 7, 
+                    height = 7, 
+                    family = "Montserrat Medium", 
+                    paleta = paleta, 
+                    tabla1 = tabla, 
+                    tabla2 = tabla2, 
+                    color_labels = "#000C7D",
+                    transparency = 0.4,
+                    circo.text = 9,
+                    circos.axis.text = 6,
+                    adj.text =c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                    adj.ylim = 0.1,
+                    gap.degree = 2, 
+                    clock.wise = FALSE,
+                    track.margin = c(-0.07, 0.1),
+                    margin = rep(0, 4))
+```
+
+#### Gráficos por estados
+
+Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
+
+```{r, results = FALSE, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Matriz de MEst a nivel estatal 2015.RData"))
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0) 
+
+rownames(tabla) <- stringr::str_wrap(nom_estados, 100)
+colnames(tabla) <- stringr::str_wrap(nom_estados, 100)
+
+# Nombre de los estados 
+estado <- stringr::str_wrap(nom_estados, 100)
+
+filtro_est <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) 
+
+### Sacar el promedio de los flujos migratiorios para determinar como se van a grupar los estados 
+#### Es importante correr la tabla1[[x]] sin filtros para determinar el número promedio de flujos de migración
+### Filtro <<<<  filter(value > 0 & rn != estado[x])
+#filtro_mig <- sapply(1:32, function(x)
+                      #mean(tail(sort(tabla1[[x]]), 5), na.rm = TRUE))
+#p <- data.frame(estados = est,
+ #             filtro_estados = filtro_mig)
+#write.table(p, file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Filtro a nivel estatal.txt"))
+#write.xlsx(p, file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Filtro a nivel estatal.xlsx"))
+
+filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Filtro a nivel estatal.xlsx"), colNames = TRUE) %>% 
+               pull(filtro_estados)
+
+tabla1 <- migration_flows_states(tabla = tabla, 
+                                 filtro_mig = filtro_mig, 
+                                 filtro_est = filtro_est, 
+                                 category = estado, 
+                                 group = "Otro estados")
+
+## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+wb <- createWorkbook()
+for(i in 1:32){
+     tabla <- tabla1[[i]] %>%
+                as.data.frame() %>%
+                 adorn_totals(c("row", "col"), 
+                               fill = "-", 
+                                na.rm = TRUE, 
+                                 name = "Total",,,,contains(colnames(tabla1[[i]])))
+                 
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2015/Matriz MEst por estados_2015_Reduccion.xlsx"), 
+               overwrite = TRUE)
+}
+
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2015/Tabla MEst por estados.RDS"))
+```
+
+```{r tablas de matrices estatal}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2015/Tabla MEst por estados.RDS"))
+
+total_tablas <- totales(tabla1 = tabla1, 
+                        Clave = "CVE_ENT", 
+                        Inmigrantes = "Salen por estudio",  
+                        Emigrantes = "Entran por estudio")
+
+porcentajes_tablas <- porcentajes(tabla1 = tabla1, 
+                                  Clave = "CVE_ENT", 
+                                  Inmigrantes = "%Salen por estudio",  
+                                  Emigrantes = "%Entran por estudio")
+
+# Se guardan los totales de las matrices reducidas 
+wb <- createWorkbook()
+for(i in 1:32){
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, total_tablas[[i]], colNames = TRUE, startCol = 1)
+     writeData(wb, i, porcentajes_tablas[[i]], colNames = TRUE, startCol = 5)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(),  "/Output/Estado/04_Movilidad estudiantil/2015/Matriz MEst por estados_2015_Reduccion_Totales.xlsx"), 
+               overwrite = TRUE)
+}
+```
+
+```{r}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2015/Tabla MEst por estados.RDS"))
+
+# Paleta de colores
+#paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
+paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
+
+tabla2 <- color_chord_diagram(tabla1 = tabla1, paleta)
+```
+
+```{r grafico estatal, eval = FALSE, results='hide'}
+file = "/Graficos/Estado/04_Movilidad estudiantil/2015/ChordDiagram de MEst para cada estado.pdf"
+
+## Gráficos a nivel estatal 
+chord_diagram_graph(file = file, 
+                    width = 8, 
+                    height = 8, 
+                    family = "Montserrat Medium", 
+                    paleta = paleta, 
+                    tabla1 = tabla1, 
+                    tabla2 = tabla2, 
+                    color_labels = "#000C7D",
+                    transparency = 0.2,
+                    circo.text = 9,
+                    circos.axis.text = 6,
+                    adj.text =c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                    adj.ylim = 0.1,
+                    gap.degree = 2, 
+                    clock.wise = FALSE,
+                    track.margin = c(-0.07, 0.1),
+                    margin = rep(0, 4))
+```
+
+**Etiquetas**
+
+```{r}
+file = "/Graficos/Estado/04_Movilidad estudiantil/2015/Etiquetas a nivel estatal.pdf"
+
+labels_chord_diagram(file = file, 
+                     width = 7, 
+                     height = 8, 
+                     family = "Montserrat Medium", 
+                     paleta = paleta, 
+                     tabla1 = tabla1, 
+                     labels = paste(nom_estados))
+```
+
+### Gráfico Sankey
+
+#### Población estudiantil de 3 años y más
+
+Se genera la variable `Pob.3ymas` sin ningún filtro y se desagrega a nivel estatal para futuros cálculos.
+
+```{r, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Matriz de MEst a nivel estatal 2015.RData"))
+
+Migrantes <- Migrantes %>%
+              sna::diag.remove(remove.val = 0)  
+
+rownames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
+colnames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
+
+# Matiz movilidad interna
+tabla <- Migrantes %>% 
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             as_tibble() %>%
+              mutate(rn = forcats::fct_relevel(.$rn, nom_estados),
+                     cn = forcats::fct_relevel(.$cn, nom_estados)) %>%
+               filter(value >= 0)  
+```
+
+```{r, eval = FALSE}
+p <- tabla %>% 
+       ggplot(aes(axis1 = rn, 
+                   axis2 = cn, 
+                    y = value),  # c("value", "freq", "tasa")
+               reverse = FALSE, 
+                na.rm = TRUE) +
+        geom_alluvium(aes(fill = rn),
+                       curve_type = "quintic", 
+                        color = "transparent", 
+                         alpha = 0.85, 
+                          lwd = 0.001, 
+                           width = 1/5,
+                            reverse = FALSE) +
+          geom_stratum(aes(fill = cn), 
+                        color = "white", 
+                         alpha = 0.65,  
+                          lwd = 0.001, 
+                           width = 1/5,
+                            reverse = FALSE) +
+           geom_text_repel(aes(label = ifelse(after_stat(x) == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""), 
+                               fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                            stat = "stratum", 
+                             size = 3, 
+                              direction = "y", 
+                               nudge_x = -.2,
+                                min.segment.length = unit(1, "lines"),
+                                 force = 1,
+                                  force_pull = 0,
+                                   family = "montserrat",
+                                    reverse = FALSE) +
+            geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                             stat = "stratum", 
+                              size = 3,
+                               direction = "y", 
+                                nudge_x = .2, 
+                                 force = 1,
+                                  force_pull = 0,
+                                   family = "montserrat",
+                                    reverse = FALSE) +
+             theme_void() + 
+              theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                     text = element_text(family = "montserrat"),
+                      axis.text = element_blank(),
+                       axis.title = element_blank(),
+                        strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                         legend.key.size = unit(0.5, "cm"),
+                          legend.text = element_text(size = 8, family = "montserrat"),
+                           legend.position = c(1, .5)) + 
+               scale_x_discrete(expand = c(-0.1, 0.35)) +
+                scale_fill_viridis_d(option = "A") +
+                 guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                  labs(fill = "", 
+                       color = "")
+
+path = paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2015/GSankey de MEst a nivel estatal.pdf")
+ggexport(p, width = 18, height = 10, dpi = 400, filename = path)
+```
+
+**Desagregado por estado**
+
+```{r, eval = FALSE}
+load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Matriz de MEst a nivel estatal 2015.RData"))
+
+rownames(Migrantes) <- estados
+colnames(Migrantes) <- estados
+
+tabla <- Migrantes %>%
+          sna::diag.remove(remove.val = 0) %>%
+           as.data.frame() %>%
+            tibble::rownames_to_column(var = "rn") %>% 
+             melt(., id.vars = "rn", variable.name = "cn") %>%
+              mutate_if(is.factor, as.character) %>%
+               mutate(value = ifelse((.$rn != .$cn) & (.$rn %in% estados | .$cn %in% estados), value, 0)) %>%
+                mutate(rn = forcats::fct_relevel(.$rn, estados),
+                       cn = forcats::fct_relevel(.$cn, estados)) 
+```
+
+```{r, eval = FALSE}
+p <- lapply(1:32, function(x){
+                   tabla <- tabla %>%
+                             mutate(rn = forcats::fct_relevel(.$rn, estados),
+                                    cn = forcats::fct_relevel(.$cn, estados)) %>%
+                              mutate(value = ifelse(.$rn %in% estados[x] | .$cn %in% estados[x], value, 0)) 
+ 
+                    tabla %>% 
+                     ggplot(aes(axis1 = rn, 
+                                 axis2 = cn, 
+                                  y = value),  # c("value", "freq", "tasa")
+                             reverse = FALSE, 
+                              na.rm = TRUE) + 
+                      geom_alluvium(aes(fill = rn),  
+                                     color = "transparent", 
+                                      alpha = 0.8, 
+                                       lwd = 0.001, 
+                                        width = 1/5,
+                                         reverse = FALSE) +
+                       geom_stratum(aes(fill = rn), 
+                                     color = "#F1F1F1", 
+                                      alpha = 1, 
+                                       lwd = 0.001, 
+                                        width = 1/5,
+                                         reverse = FALSE) +
+                         geom_text_repel(aes(label = ifelse(after_stat(x)  == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                             fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                                           stat = "stratum", 
+                                            size = 3,
+                                             direction = "y", 
+                                              nudge_x = -.2, 
+                                               force = 1,
+                                                        force_pull = 0,
+                                                         family = "montserrat",
+                                                          reverse = FALSE) +
+                          geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                              fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                                           stat = "stratum", 
+                                            size = 3,
+                                             direction = "y", 
+                                              nudge_x = .2, 
+                                               force = 1,
+                                                force_pull = 0,
+                                                 family = "montserrat",
+                                                  reverse = FALSE) +
+                            theme_void() + 
+                             theme(plot.margin = margin(t = 1, r = 1.5, b = 1, l = 0, "cm"),
+                                    text = element_text(family = "montserrat"),
+                                     axis.text = element_blank(),
+                                      axis.title = element_blank(),
+                                       strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                                        legend.key.size = unit(0.5, "cm"),
+                                         legend.text = element_text(size = 9, family = "montserrat"),
+                                          legend.position = c(1, .5)) + 
+                              scale_x_discrete(expand = c(-0.1, 0.35)) +
+                               scale_fill_viridis_d(option = "A", end = 0.9, begin = 0.2) +
+                                guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                                 labs(fill = "", 
+                                      color = "")
+              }
+)
+
+path = paste0(here::here(), "/Graficos/Estado/04_Movilidad estudiantil/2015/GSankey de MEst desagregado por estados_Absolutos.pdf")
+ggexport(list = p, width = 14, height = 10, dpi = 400, filename = path)
+```
+
+## Indicadores {.tabset .tabset-pills}
+
+Se realizan cálculos generales de movilidad:
+
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   $\%$ Inmigrantes
+
+-   $\%$ %Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   $\%$ Tasa de movilidad bruta
+
+-   $\%$ Tasa de movilidad neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
+
+```{r}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_ENT) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Pob. estudiantil de 3 años y más ########################
+estados <- sjlabelled::get_labels(mydata$CVE_ENT)
+
+Pob.3ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset((EDAD >= 3 & EDAD <= 130)) %>%
+                 #filter(ENT_PAIS_ASI %in% estados) %>%
+                  group_by(CVE_ENT) %>%
+                   summarise(Pob.3ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(file = paste0(here::here(), "/Bases/Estado/04_Movilidad estudiantil/2015/Matriz de MEst a nivel estatal 2015.RData"))
+
+rownames(Migrantes) <- estados
+colnames(Migrantes) <- estados
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>%
+                gather(CVE_ENT, Value, -rowname)%>%
+                 filter(rowname == CVE_ENT) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+
+## Población que sale de su entidad de residencia y entra a otra demarcación por motivos de estudios
+Inmigrantes <- Migrantes %>% 
+                sna::diag.remove(remove.val = 0) %>%
+                 as.data.frame() %>%
+                  tibble::rownames_to_column(var = "CVE_ENT") %>%
+                   melt(., id.vars = "CVE_ENT", variable.name = "ENT_PAIS_ASI") %>%
+                    mutate_at(vars(3), as.numeric) %>%
+                     as_tibble() %>%
+                      filter(CVE_ENT != ENT_PAIS_ASI) %>%
+                       group_by(CVE_ENT) %>%
+                        summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+
+## Población que entra a la entidad para estudiar 
+Emigrantes <- Migrantes %>% 
+               sna::diag.remove(remove.val = 0) %>%
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_ENT") %>%
+                  melt(., id.vars = "CVE_ENT", variable.name = "ENT_PAIS_ASI") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_ENT != ENT_PAIS_ASI) %>%
+                      group_by(ENT_PAIS_ASI) %>%
+                       summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                        rename("CVE_ENT" = "ENT_PAIS_ASI")
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.3ymas, by = c("CVE_ENT")) %>%
+          left_join(., Residentes, by = c("CVE_ENT")) %>%
+          left_join(., Inmigrantes, by = c("CVE_ENT")) %>%
+          left_join(., Emigrantes, by = c("CVE_ENT")) %>%
+            mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                   Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                   Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.3ymas) / 2))*1000,
+                   Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.3ymas) / 2))*1000,
+                   Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                   Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2015/Indicadores de MEst a nivel estatal 2015.xlsx"), overwrite = TRUE)
+
+save(tabla, file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2015/Indicadores de MEst a nivel estatal 2015.RData"))
+```
+
+```{r, echo = FALSE, eval = TRUE}
+load(file = paste0(here::here(), "/Output/Estado/04_Movilidad estudiantil/2015/Indicadores de MEst a nivel estatal 2015.RData"))
+
+tabla %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  movilidad estudiantil", 
+              subtitle = "Nivel estatal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+     tab_style(style = list(cell_text(align = "center",
+                                      weight = 'bold')),
+               locations = list(cells_title(groups = c("title")))) %>%
+      fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+       fmt_number(columns = c(9:11), decimals = 1) %>%
+        sub_missing(columns = everything(), missing_text = "0") %>%
+         tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+          as_raw_html()
+```
+
+# Nivel municipal {.tabset .tabset-pills}
+
+## Movilidad estudiantil {.tabset .tabset-pills}
+
+### Matrices
+
+```{r, eval = FALSE}
+#Clave de los municipios 2015 
+municipios <- MUN %>%
+               select(CVE_MUN) %>%
+                unique() %>%
+                 pull(CVE_MUN)
+
+Pob.3ymas <- mydata %>%
+              mutate(CVE_MUN_ASI = paste0(ENT_PAIS_ASI, MUN_ASI)) %>%
+               mutate(ENT_PAIS_ASI = case_when(.$ENT_PAIS_ASI %in% estados ~.$ENT_PAIS_ASI,
+                                               .$ENT_PAIS_ASI %nin% estados ~ "888", #Residencia en otro país
+                                               .$ENT_PAIS_ASI %in% "997" ~ "997",
+                                               .$ENT_PAIS_ASI %in% "998" ~ "998",
+                                               .$ENT_PAIS_ASI %in% "997" ~ "999"),
+                      CVE_MUN_ASI = case_when(.$CVE_MUN_ASI %in% municipios ~.$CVE_MUN_ASI,
+                                               nchar(.$CVE_MUN_ASI) == 3 ~ "888",  #Asistencia escolar en otro país
+                                              .$CVE_MUN_ASI %in% "997999" ~ '997999',
+                                              .$ENT_PAIS_ASI %in% "997" ~ "997",
+                                              .$ENT_PAIS_ASI %in% "998" ~ "998",
+                                              .$ENT_PAIS_ASI %in% "999" ~ "999",
+                                              .$MUN_ASI %in% "999" ~ "999")) %>%
+                mutate(EDAD = as.numeric(.$EDAD)) %>%
+                 subset(EDAD >= 3 & EDAD <= 130) %>%
+                  select(FACTOR, ESTRATO, UPM, CVE_MUN, CVE_MUN_ASI, EDAD) %>%
+                   filter(CVE_MUN_ASI %in% municipios) 
+
+MC <- Pob.3ymas %>%
+       svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/MC_municipal.RDS"))
+```
+
+```{r, eval = FALSE}
+MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/MC_municipal.RDS"))
+
+Migrantes <- svytable(~CVE_MUN_ASI + CVE_MUN, design = MC) 
+```
+
+Se genera la matriz cuadrada y se le asignan los nombres de los estados.
+
+```{r, eval = FALSE}
+Migrantes <- Migrantes %>%
+              as.data.frame() %>%
+               expss::cross_cases(CVE_MUN, CVE_MUN_ASI, weight = Freq) %>%
+                as.data.frame() %>%
+                 rename("CVE_MUN" = "row_labels") %>% 
+                  arrange(CVE_MUN) %>%
+                   slice(-1) 
+
+rownames <- Migrantes %>% 
+             mutate(CVE_MUN = substr(.$CVE_MUN, 9, 16)) %>% 
+              pull(CVE_MUN)
+
+colnames <- names(Migrantes) %>% 
+             as.data.frame() %>% 
+              slice(-1) %>% 
+               rename("CVE_MUN" = ".") %>%
+                mutate(`CVE_MUN` = substr(.$CVE_MUN, 13, 18)) %>%
+                 pull(CVE_MUN)
+
+# Se elimina la variable CVE_MUN
+Migrantes <- Migrantes %>%
+              select(-CVE_MUN)
+
+rownames(Migrantes) <- rownames 
+colnames(Migrantes) <- colnames
+
+saveRDS(Migrantes, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel municipal 2015.RDS"))
+save(Migrantes, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel municipal 2015.RData"))
+
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "M.estudiantil")
+writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(var = "CVE_MUN"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel municipal 2015.xlsx"), overwrite = TRUE)
+```
+
+**Matriz de movilidad estudiantil a nivel municipal, 2015**
+
+<div style="height:500px;overflow:auto;">
+```{r, echo = FALSE, eval = TRUE}
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel municipal 2015.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "CVE_MUN") %>%
+            mutate_if(is.numeric, as.numeric)
+
+tabla[1:30, 1:30] %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de movilidad estudiantil", 
+             subtitle = "Nivel municipal") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "0") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
+</div>
+
+### Gráficos {.tabset .tabset-pills}
+
+#### ChordDiagram
+
+Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
+
+```{r, results = FALSE, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel municipal 2015.RData"))
+
+rownames <- rownames(Migrantes) %>% 
+             as.data.frame() %>%
+              rename("CVE_MUN" = ".") %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                 pull(CVE_MUN)
+
+colnames <- colnames(Migrantes) %>% 
+             as.data.frame() %>%
+              rename("CVE_MUN" = ".") %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                 pull(CVE_MUN)
+
+rownames(Migrantes) <- rownames
+colnames(Migrantes) <- colnames
+
+# Nombre de los estados 
+estado <- stringr::str_wrap(nom_estados, 100)
+
+# Clave de los municipios 
+municipios <- MUN %>% 
+               mutate(municipios = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                pull(municipios)
+
+################################################################################
+################################## Filtro ######################################
+Inmigrantes <- Inmigrantes_function(municipios, Migrantes)
+
+Emigrantes <- Emigrantes_function(municipios, Migrantes)   
+
+################################## Filtro ######################################
+filtro  <- Inmigrantes %>%
+            full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+             mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE))
+
+filtro_est <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   filter(value > 0)
+
+### Sacar el promedio de los flujos migratiorios para determinar como se van a grupar los estados 
+#### Es importante correr la tabla1[[x]] sin filtros para determinar el número promedio de flujos de migración
+#### Filtro <<<<< filter(value < 0) %>% 
+#p <- data.frame(estados = est,
+ #               filtro_municipio = filtro_mig,
+  #              filtro_estado = filtro_out)
+#write.xlsx(p, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel municipal.xlsx"), overwrite = TRUE)
+
+#### Filtro de municipios
+filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel municipal.xlsx"), colNames = TRUE) %>%
+               pull(filtro_municipio)
+
+#### Filtro de estados 
+filtro_out <- read.xlsx(paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel municipal.xlsx"), colNames = TRUE) %>%
+               pull(filtro_estado)
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character) %>%
+              filter(value > 0)
+
+## Se generan los filtros correspondientes a la matriz cuadrada por estados 
+tabla1 <- migration_flows_municipality(tabla = tabla, 
+                                       filtro_mun = filtro,
+                                       filtro_est = filtro_est,
+                                       filtro_mig = filtro_mig, 
+                                       filtro_out = filtro_out, 
+                                       category_group = estados, 
+                                       category_names = nom_estados,
+                                       group_mun = "Otros municipios",
+                                       group_est = "Otros estados")
+
+## Se sacan los flujos migratorios que pertencen a otros estados
+#tabla_estados <- sapply(1:32, function(i){
+#                                tabla1[[i]] %>%
+#                                 as.data.frame() %>%
+#                                  adorn_totals(c("row", "col"), 
+#                                                fill = "-", 
+#                                                 na.rm = TRUE, 
+#                                                  ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                    select(`Otros estados`) %>%
+#                                     slice(nrow(.)) %>%
+#                                      mutate(`Otros estados` = .$`Otros estados`/30) %>%
+#                                       pull(`Otros estados`)
+#})
+
+## Se sacan los flujos migratorios que pertencen a otros municipios
+#tabla_municipios <- sapply(1:32, function(i){
+#                                   tabla1[[i]] %>%
+#                                    as.data.frame() %>%
+#                                     select(-c(`Otros estados`)) %>%
+#                                      adorn_totals(c("row", "col"), 
+#                                                    fill = "-", 
+#                                                     na.rm = TRUE, 
+#                                                      ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                       slice(nrow(.)) %>%
+#                                        mutate(Total = .$Total/50) %>%
+#                                        pull(Total)
+#})
+
+## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+wb <- createWorkbook()
+for(i in 1:32){
+     tabla <- tabla1[[i]] %>%
+                as.data.frame() %>%
+                 adorn_totals(c("row", "col"), 
+                               fill = "-", 
+                                na.rm = TRUE, 
+          ,,,,contains(colnames(tabla1[[i]])))
+                 
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz MEst a nivel municipal_Reduccion.xlsx"), 
+               overwrite = TRUE)
+}
+
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Tabla MEst a nivel municipal.RDS"))
+```
+
+```{r tablas de matrices municipal}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Tabla MEst a nivel municipal.RDS"))
+
+total_tablas <- totales(tabla1 = tabla1, 
+                        Clave = "CVE_MUN", 
+                        Inmigrantes = "Salen por estudio",  
+                        Emigrantes = "Entran por estudio")
+
+porcentajes_tablas <- porcentajes(tabla1 = tabla1, 
+                                  Clave = "CVE_MUN", 
+                                  Inmigrantes = "%Salen por estudio",  
+                                  Emigrantes = "%Entran por estudio")
+
+# Se guardan los totales de las matrices reducidas 
+wb <- createWorkbook()
+for(i in 1:32){
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, total_tablas[[i]], colNames = TRUE, startCol = 1)
+     writeData(wb, i, porcentajes_tablas[[i]], colNames = TRUE, startCol = 5)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz MEst a nivel municipal_Reduccion_Totales.xlsx"), 
+               overwrite = TRUE)
+}
+```
+
+**Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
+
+```{r}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Tabla MEst a nivel municipal.RDS"))
+
+# Paleta de colores
+#paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
+paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
+
+tabla2 <- color_chord_diagram(tabla1 = tabla1, paleta)
+```
+
+```{r grafico municipal, eval = FALSE, results='hide'}
+file = "/Graficos/Municipio/04_Movilidad estudiantil/2015/ChordDiagram de MEst desagregado por estado.pdf"
+
+## Gráficos a nivel municipal
+chord_diagram_graph(file = file, 
+                    width = 15, 
+                    height = 10, 
+                    family = "Montserrat Medium", 
+                    paleta = paleta, 
+                    tabla1 = tabla1, 
+                    tabla2 = tabla2, 
+                    color_labels = "#000C7D",
+                    transparency = 0.1,
+                    circo.text = 9,
+                    circos.axis.text = 6,
+                    adj.text =c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                    adj.ylim = 0.1,
+                    gap.degree = 2, 
+                    clock.wise = FALSE,
+                    track.margin = c(-0.07, 0.1),
+                    margin = rep(0, 4))
+```
+
+**Etiquetas**
+
+```{r etiquetas_municipal}
+file = "/Graficos/Municipio/04_Movilidad estudiantil/2015/Etiquetas a nivel municipal.pdf"
+
+labels_chord_diagram(file = file, 
+                     width = 7, 
+                     height = 10, 
+                     family = "Montserrat Medium", 
+                     paleta = paleta, 
+                     tabla1 = tabla1, 
+                     labels = nom_estados)
+```
+
+### Indicadores {.tabset .tabset-pills}
+
+Se realizan cálculos generales de movilidad:
+
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   $\%$ Inmigrantes
+
+-   $\%$ %Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   $\%$ Tasa de movilidad bruta
+
+-   $\%$ Tasa de movilidad neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
+
+```{r, eval = FALSE}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_MUN) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Pob. estudiantil de 3 años y más ########################
+Pob.3ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 3 & EDAD <= 130) %>%
+                 group_by(CVE_MUN) %>%
+                  summarise(Pob.3ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel municipal 2015.RData"))
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>%
+                gather(CVE_MUN, Value ,-rowname)%>%
+                 filter(rowname == CVE_MUN) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+Inmigrantes <- Migrantes %>% 
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_MUN") %>%
+                  melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_ASI") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_MUN != CVE_MUN_ASI) %>%
+                      group_by(CVE_MUN) %>%
+                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+
+## Población que entra a la entidad para estudiar 
+Emigrantes <- Migrantes %>% 
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "CVE_MUN") %>%
+                 melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_ASI") %>%
+                  mutate_at(vars(3), as.numeric) %>%
+                   as_tibble() %>%
+                    filter(CVE_MUN != CVE_MUN_ASI) %>%
+                     group_by(CVE_MUN_ASI) %>%
+                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                       rename("CVE_MUN" = "CVE_MUN_ASI") 
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.3ymas, by = c("CVE_MUN")) %>%
+          left_join(., Residentes, by = c("CVE_MUN")) %>%
+          left_join(., Inmigrantes, by = c("CVE_MUN")) %>%
+          left_join(., Emigrantes, by = c("CVE_MUN")) %>%
+            mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                   Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                   Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.3ymas) / 2)) * 1000,
+                   Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.3ymas) / 2)) * 1000,
+                   Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                   Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Indicadores de movilidad estudiantil a nivel municipal 2015.xlsx"), overwrite = TRUE)
+
+save(tabla, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Indicadores de movilidad estudiantil a nivel municipal 2015.RData"))
+```
+
+```{r, echo = FALSE, eval = TRUE}
+load(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Indicadores de movilidad estudiantil a nivel municipal 2015.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  movilidad estudiantil", 
+              subtitle = "Nivel municipal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+      tab_style(style = list(cell_text(align = "center",
+                                       weight = 'bold')),
+                locations = list(cells_title(groups = c("title")))) %>%
+       fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+        fmt_number(columns = c(11), decimals = 1) %>%
+         sub_missing(columns = everything(), missing_text = "0") %>%
+          tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+           as_raw_html()
+```
+
+## Movilidad intramunicipal {.tabset .tabset-pills}
+
+### Matrices
+
+```{r, eval = FALSE}
+#Clave de los municipios 2015 
+municipios <- MUN %>%
+               select(CVE_MUN) %>%
+                unique() %>%
+                 pull(CVE_MUN)
+
+Pob.3ymas <- mydata %>%
+              mutate(CVE_MUN_ASI = paste0(ENT_PAIS_ASI, MUN_ASI)) %>%
+               mutate(ENT_PAIS_ASI = case_when(.$ENT_PAIS_ASI %in% estados ~.$ENT_PAIS_ASI,
+                                               .$ENT_PAIS_ASI %nin% estados ~ "888", #Residencia en otro país
+                                               .$ENT_PAIS_ASI %in% "997" ~ "997",
+                                               .$ENT_PAIS_ASI %in% "998" ~ "998",
+                                               .$ENT_PAIS_ASI %in% "997" ~ "999"),
+                      CVE_MUN_ASI = case_when(.$CVE_MUN_ASI %in% municipios ~.$CVE_MUN_ASI,
+                                               nchar(.$CVE_MUN_ASI) == 3 ~ "888",  #Asistencia escolar en otro país
+                                              .$CVE_MUN_ASI %in% "997999" ~ '997999',
+                                              .$ENT_PAIS_ASI %in% "997" ~ "997",
+                                              .$ENT_PAIS_ASI %in% "998" ~ "998",
+                                              .$ENT_PAIS_ASI %in% "999" ~ "999",
+                                              .$MUN_ASI %in% "999" ~ "999")) %>%
+                mutate(I_Migracion = case_when(.$CVE_ENT == .$ENT_PAIS_ASI & .$ENT_PAIS_ASI %in% estados ~ 1,
+                                               .$CVE_ENT != .$ENT_PAIS_ASI & .$ENT_PAIS_ASI %in% estados ~ 2,
+                                               .$ENT_PAIS_ASI %nin% estados ~ 3)) %>%
+                 mutate(EDAD = as.numeric(.$EDAD)) %>%
+                  subset(EDAD >= 3 & EDAD <= 130) %>%
+                   select(FACTOR, ESTRATO, UPM, CVE_MUN, CVE_MUN_ASI, EDAD, I_Migracion) %>%
+                    filter(CVE_MUN_ASI %in% municipios & I_Migracion == 1) 
+
+MC <- Pob.3ymas %>%
+       svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/MC_intramunicipal.RDS"))
+```
+
+```{r, eval = FALSE}
+MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/MC_intramunicipal.RDS"))
+
+Migrantes <- svytable(~CVE_MUN_ASI + CVE_MUN, design = MC) 
+```
+
+Se genera la matriz cuadrada y se le asignan los nombres de los estados.
+
+```{r, eval = FALSE}
+Migrantes <- Migrantes %>%
+              as.data.frame() %>%
+               expss::cross_cases(CVE_MUN, CVE_MUN_ASI, weight = Freq) %>%
+                as.data.frame() %>%
+                 rename("CVE_MUN" = "row_labels") %>% 
+                  arrange(CVE_MUN) %>%
+                   slice(-1) 
+
+rownames <- Migrantes %>% 
+             mutate(CVE_MUN = substr(.$CVE_MUN, 9, 16)) %>% 
+              pull(CVE_MUN)
+
+colnames <- names(Migrantes) %>% 
+             as.data.frame() %>% 
+              slice(-1) %>% 
+               rename("CVE_MUN" = ".") %>%
+                mutate(`CVE_MUN` = substr(.$CVE_MUN, 13, 18)) %>%
+                 pull(CVE_MUN)
+
+# Se elimina la variable CVE_MUN
+Migrantes <- Migrantes %>%
+              select(-CVE_MUN)
+
+rownames(Migrantes) <- rownames 
+colnames(Migrantes) <- colnames
+
+saveRDS(Migrantes, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intramunicipal 2015.RDS"))
+save(Migrantes, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intramunicipal 2015.RData"))
+
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "M.Intramunicipal")
+writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(var = "CVE_MUN"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intramunicipal 2015.xlsx"), overwrite = TRUE)
+```
+
+**Matriz de movilidad estudiantil a nivel municipal, 2015**
+
+<div style="height:500px;overflow:auto;">
+```{r, echo = FALSE, eval = TRUE}
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intramunicipal 2015.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "CVE_MUN") %>%
+            mutate_if(is.numeric, as.numeric)
+
+tabla[1:30, 1:30] %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de movilidad estudiantil", 
+             subtitle = "Nivel intramunicipal") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "0") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
+</div>
+
+### Gráficos {.tabset .tabset-pills}
+
+#### ChordDiagram
+
+Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
+
+```{r, results = FALSE, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intramunicipal 2015.RData"))
+
+rownames <- rownames(Migrantes) %>% 
+             as.data.frame() %>%
+              rename("CVE_MUN" = ".") %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                 pull(CVE_MUN)
+
+colnames <- colnames(Migrantes) %>% 
+             as.data.frame() %>%
+              rename("CVE_MUN" = ".") %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                 pull(CVE_MUN)
+
+rownames(Migrantes) <- rownames
+colnames(Migrantes) <- colnames
+
+# Nombre de los estados 
+estado <- stringr::str_wrap(nom_estados, 100)
+
+# Clave de los municipios 
+municipios <- MUN %>% 
+               mutate(municipios = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                pull(municipios)
+
+################################################################################
+################################## Filtro ######################################
+Inmigrantes <- Inmigrantes_function(municipios, Migrantes)
+
+Emigrantes <- Emigrantes_function(municipios, Migrantes)
+
+### Sacar el promedio de los flujos migratiorios para determinar como se van a grupar los estados 
+#### Es importante correr la tabla1[[x]] sin filtros para determinar el número promedio de flujos de migración
+#### Filtro <<<<< filter(value < 0) %>% 
+#p <- data.frame(estados = est,
+ #               filtro_municipio = filtro_mig)
+#write.table(p, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel intramunicipal.txt"), col.names = TRUE)
+#write.xlsx(p, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel intramunicipal.xlsx"), overwrite = TRUE)
+
+#### Filtro de municipios
+filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel intramunicipal.xlsx"), colNames = TRUE) %>%
+               pull(filtro_municipio)
+
+################################################################################
+## Se generan los filtros correspondientes a la matriz cuadrada por estados 
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character) %>%
+              filter(value > 0)
+
+tabla1 <- migration_flows_municipality(tabla = tabla, 
+                                       filtro_mun = filtro,
+                                       filtro_est = NULL,
+                                       filtro_mig = filtro_mig, 
+                                       filtro_out = NULL,
+                                       category_group = estados, 
+                                       category_names = nom_estados,
+                                       group_mun = "Otros municipios",
+                                       group_est = NULL)
+
+################################################################################
+#tabla_municipios <- sapply(1:32, function(x)
+#                                   tabla1[[x]] %>%
+#                                     as.data.frame() %>%
+#                                      adorn_totals(c("col"), 
+#                                                    fill = "-", 
+#                                                     na.rm = TRUE, 
+#                                                      ,,,,contains(rownames(tabla1[[x]]))) %>%
+#                                        select(Total) %>% 
+#                                         summarise(mean = mean(Total)) %>%
+#                                          pull(mean))
+
+## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+wb <- createWorkbook()
+for(i in 1:32){
+         tabla <- tabla1[[i]] %>%
+                    as.data.frame() %>%
+                     adorn_totals(c("row", "col"), 
+                                   fill = "-", 
+                                    na.rm = TRUE, 
+              ,,,,contains(colnames(tabla1[[i]])))
+                     
+         addWorksheet(wb, paste(est[i]))
+         writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
+         saveWorkbook(wb, 
+                      file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz MEst nivel intramunicipal_Reduccion.xlsx"), 
+                   overwrite = TRUE)
+}
+
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Tabla MEst a nivel intramunicipal.RDS"))
+```
+
+```{r tablas de matrices intramunicipal}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Tabla MEst a nivel intramunicipal.RDS"))
+
+total_tablas <- totales(tabla1 = tabla1, 
+                        Clave = "CVE_MUN", 
+                        Inmigrantes = "Salen por estudio",  
+                        Emigrantes = "Entran por estudio")
+
+porcentajes_tablas <- porcentajes(tabla1 = tabla1, 
+                                  Clave = "CVE_MUN", 
+                                  Inmigrantes = "%Salen por estudio",  
+                                  Emigrantes = "%Entran por estudio")
+
+# Se guardan los totales de las matrices reducidas 
+wb <- createWorkbook()
+for(i in 1:32){
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, total_tablas[[i]], colNames = TRUE, startCol = 1)
+     writeData(wb, i, porcentajes_tablas[[i]], colNames = TRUE, startCol = 5)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz MEst nivel intramunicipal_Reduccion_Totales.xlsx"), 
+               overwrite = TRUE)
+}
+```
+
+**Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
+
+```{r, eval = FALSE}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Tabla MEst a nivel intramunicipal.RDS"))
+
+# Paleta de colores
+#paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
+paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DEE53E", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
+
+tabla2 <- color_chord_diagram(tabla1 = tabla1, paleta)
+```
+
+```{r grafico intramunicipal, eval = FALSE, results='hide'}
+file = "/Graficos/Municipio/04_Movilidad estudiantil/2015/ChordDiagram de MEst desagregado a nivel intramunicipal.pdf"
+
+## Gráficos a nivel intramunicipal
+chord_diagram_graph(file = file, 
+                    width = 15, 
+                    height = 10, 
+                    family = "Montserrat Medium", 
+                    paleta = paleta, 
+                    tabla1 = tabla1, 
+                    tabla2 = tabla2, 
+                    color_labels = "#000C7D",
+                    transparency = 0,
+                    circo.text = 9,
+                    circos.axis.text = 6,
+                    adj.text =c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                    adj.ylim = 0.1,
+                    gap.degree = 2, 
+                    clock.wise = FALSE,
+                    track.margin = c(-0.07, 0.1),
+                    margin = rep(0, 4))
+```
+
+**Etiquetas**
+
+```{r etiquetas_intramunicipal}
+file = "/Graficos/Municipio/04_Movilidad estudiantil/2015/Etiquetas a nivel intramunicipal.pdf"
+
+labels_chord_diagram(file = file, 
+                     width = 7, 
+                     height = 8, 
+                     family = "Montserrat Medium", 
+                     paleta = paleta, 
+                     tabla1 = tabla1, 
+                     labels = nom_estados)
+```
+
+#### Gráfico Sankey
+
+```{r, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intramunicipal 2015.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character)
+
+################################################################################
+################################## Filtro ######################################
+Inmigrantes  <- Migrantes %>%
+                 as.data.frame() %>%
+                  tibble::rownames_to_column(var = "rn") %>% 
+                   melt(., id.vars = "rn", variable.name = "cn") %>%
+                    mutate_if(is.factor, as.character) %>%
+                     mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                      filter(value > 0) %>%
+                       group_by(rn) %>% 
+                        summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
+
+Emigrantes <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                    filter(value > 0) %>%
+                     group_by(cn) %>% 
+                      summarise(Emigrantes = sum(value, na.rm = TRUE))     
+
+################################## Filtro ######################################
+# Se utiliza el filtro de arriba
+################################################################################
+
+tabla1 <- lapply(1:32, function(x){
+                   filtro  <- Inmigrantes %>%
+                                full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+                                 mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+                                  filter(value < filtro_mig[x]) %>% 
+                                   pull(rn)
+                   tabla %>%
+                    mutate(rn = case_when(substr(.$rn, 1, 3) %in% estados[x] & .$rn %in% filtro ~ paste0("Otros municipios (", estados[x], ")"),
+                                          substr(.$rn, 1, 3) %in% estados[x]  & .$rn %nin% filtro ~ .$rn,
+                                          substr(.$rn, 1, 3) %nin% estados[x] ~ substr(.$rn, 1, 3)),
+                           cn = case_when(substr(.$cn, 1, 3) %in% estados[x] & .$cn %in% filtro ~ paste0("Otros municipios (", estados[x], ")"),
+                                          substr(.$cn, 1, 3) %in% estados[x] & .$cn %nin% filtro ~ .$cn,
+                                          substr(.$cn, 1, 3) %nin% estados[x] ~ substr(.$cn, 1, 3))) %>%
+
+                     mutate(value = ifelse(.$rn != .$cn, .$value, 0)) %>%
+                      filter(value > 0) 
+  }
+)
+```
+
+```{r, eval = FALSE}
+p <- lapply(1:32, function(x){
+             tabla1[[x]] %>% 
+              ggplot(aes(axis1 = rn, 
+                          axis2 = cn, 
+                           y = value),  # c("value", "freq", "tasa")
+                      reverse = FALSE, 
+                       na.rm = TRUE) +
+               geom_alluvium(aes(fill = rn),
+                              curve_type = "quintic", 
+                               color = "transparent", 
+                                alpha = 0.85, 
+                                 lwd = 0.001, 
+                                  width = 1/5,
+                                   reverse = FALSE) +
+                 geom_stratum(aes(fill = cn), 
+                               color = "white", 
+                                alpha = 0.65,  
+                                 lwd = 0.001, 
+                                  width = 1/5,
+                                   reverse = FALSE) +
+                  geom_text_repel(aes(label = ifelse(after_stat(x) == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""), 
+                                       fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                                   stat = "stratum", 
+                                    size = 3, 
+                                     direction = "y", 
+                                      nudge_x = -.2,
+                                       min.segment.length = unit(1, "lines"),
+                                        force = 1,
+                                         force_pull = 0,
+                                          family = "montserrat",
+                                           reverse = FALSE) +
+                   geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                        fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                                    stat = "stratum", 
+                                     size = 3,
+                                      direction = "y", 
+                                       nudge_x = .2, 
+                                        force = 1,
+                                         force_pull = 0,
+                                          family = "montserrat",
+                                           reverse = FALSE) +
+                     theme_void() + 
+                      theme(plot.margin = margin(t = 1, r = 5, b = 1, l = 0, "cm"),
+                             text = element_text(family = "montserrat"),
+                              axis.text = element_blank(),
+                               axis.title = element_blank(),
+                                strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                                 legend.key.size = unit(0.5, "cm"),
+                                  legend.text = element_text(size = 7, family = "montserrat"),
+                                   legend.position = c(1.02, .5)) + 
+                       scale_x_discrete(expand = c(-0.1, 0.5)) +
+                        scale_fill_viridis_d(option = "A", end = 1, begin = 0.2) +
+                         guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                          labs(fill = "", 
+                               color = "")
+  }
+)
+
+path = paste0(here::here(), "/Graficos/Municipio/04_Movilidad estudiantil/2015/GSankey de MEst desagregado a nivel intramunicipal.pdf")
+ggexport(list = p, width = 18, height = 10, dpi = 400, filename = path)
+```
+
+### Indicadores {.tabset .tabset-pills}
+
+Se realizan cálculos generales de movilidad:
+
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   $\%$ Inmigrantes
+
+-   $\%$ %Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   $\%$ Tasa de movilidad bruta
+
+-   $\%$ Tasa de movilidad neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
+
+```{r, eval = FALSE}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               group_by(CVE_MUN) %>%
+                summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Pob. estudiantil de 3 años y más ########################
+Pob.3ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 3 & EDAD <= 130) %>%
+                 group_by(CVE_MUN) %>%
+                  summarise(Pob.3ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intramunicipal 2015.RData"))
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>%
+                gather(CVE_MUN, Value ,-rowname)%>%
+                 filter(rowname == CVE_MUN) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+
+## Población que sale de su entidad de residencia y entra a otro demarcación por motivos de estudios
+Inmigrantes <- Migrantes %>% 
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_MUN") %>%
+                  melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_ASI") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_MUN != CVE_MUN_ASI) %>%
+                      group_by(CVE_MUN) %>%
+                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+
+## Población que entra a la entidad para estudiar 
+Emigrantes <- Migrantes %>% 
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "CVE_MUN") %>%
+                 melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_ASI") %>%
+                  mutate_at(vars(3), as.numeric) %>%
+                   as_tibble() %>%
+                    filter(CVE_MUN != CVE_MUN_ASI) %>%
+                     group_by(CVE_MUN_ASI) %>%
+                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                       rename("CVE_MUN" = "CVE_MUN_ASI") 
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.3ymas, by = c("CVE_MUN")) %>%
+          left_join(., Residentes, by = c("CVE_MUN")) %>%
+          left_join(., Inmigrantes, by = c("CVE_MUN")) %>%
+          left_join(., Emigrantes, by = c("CVE_MUN")) %>%
+            mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                   Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                   Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.3ymas) / 2)) * 1000,
+                   Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.3ymas) / 2)) * 1000,
+                   Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                   Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Indicadores de movilidad estudiantil a nivel intramunicipal 2015.xlsx"), overwrite = TRUE)
+
+save(tabla, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Indicadores de movilidad estudiantil a nivel intramunicipal 2015.RData"))
+```
+
+```{r, echo = FALSE, eval = TRUE}
+load(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Indicadores de movilidad estudiantil a nivel intramunicipal 2015.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  movilidad estudiantil", 
+              subtitle = "Nivel intramunicipal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+      tab_style(style = list(cell_text(align = "center",
+                                       weight = 'bold')),
+                locations = list(cells_title(groups = c("title")))) %>%
+       fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+        fmt_number(columns = c(11), decimals = 1) %>%
+         sub_missing(columns = everything(), missing_text = "0") %>%
+          tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+           as_raw_html()
+```
+
+## Movilidad intermunicipal {.tabset .tabset-pills}
+
+### Matrices
+
+```{r, eval = FALSE}
+#Clave de los municipios 2015 
+municipios <- MUN %>%
+               select(CVE_MUN) %>%
+                unique() %>%
+                 pull(CVE_MUN)
+
+Pob.3ymas <- mydata %>%
+              mutate(CVE_MUN_ASI = paste0(ENT_PAIS_ASI, MUN_ASI)) %>%
+               mutate(ENT_PAIS_ASI = case_when(.$ENT_PAIS_ASI %in% estados ~.$ENT_PAIS_ASI,
+                                               .$ENT_PAIS_ASI %nin% estados ~ "888", #Residencia en otro país
+                                               .$ENT_PAIS_ASI %in% "997" ~ "997",
+                                               .$ENT_PAIS_ASI %in% "998" ~ "998",
+                                               .$ENT_PAIS_ASI %in% "997" ~ "999"),
+                      CVE_MUN_ASI = case_when(.$CVE_MUN_ASI %in% municipios ~.$CVE_MUN_ASI,
+                                               nchar(.$CVE_MUN_ASI) == 3 ~ "888",  #Asistencia escolar en otro país
+                                              .$CVE_MUN_ASI %in% "997999" ~ '997999',
+                                              .$ENT_PAIS_ASI %in% "997" ~ "997",
+                                              .$ENT_PAIS_ASI %in% "998" ~ "998",
+                                              .$ENT_PAIS_ASI %in% "999" ~ "999",
+                                              .$MUN_ASI %in% "999" ~ "999")) %>%
+                mutate(I_Migracion = case_when(.$CVE_ENT == .$ENT_PAIS_ASI & .$ENT_PAIS_ASI %in% estados ~ 1,
+                                               .$CVE_ENT != .$ENT_PAIS_ASI & .$ENT_PAIS_ASI %in% estados ~ 2,
+                                               .$ENT_PAIS_ASI %nin% estados ~ 3)) %>%
+                 mutate(EDAD = as.numeric(.$EDAD)) %>%
+                  subset(EDAD >= 3 & EDAD <= 130) %>%
+                   select(FACTOR, ESTRATO, UPM, CVE_MUN, CVE_MUN_ASI, EDAD, I_Migracion) %>%
+                    filter(CVE_MUN_ASI %in% municipios & I_Migracion == 2) 
+
+MC <- Pob.3ymas %>%
+       svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
+
+saveRDS(MC, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/MC_intermunicipal.RDS"))
+```
+
+```{r, eval = FALSE}
+MC <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/MC_intermunicipal.RDS"))
+
+Migrantes <- svytable(~CVE_MUN_ASI + CVE_MUN, design = MC) 
+```
+
+Se genera la matriz cuadrada y se le asignan los nombres de los estados.
+
+```{r, eval = FALSE}
+Migrantes <- Migrantes %>%
+              as.data.frame() %>%
+               expss::cross_cases(CVE_MUN, CVE_MUN_ASI, weight = Freq) %>%
+                as.data.frame() %>%
+                 rename("CVE_MUN" = "row_labels") %>% 
+                  arrange(CVE_MUN) %>%
+                   slice(-1) 
+
+rownames <- Migrantes %>% 
+             mutate(CVE_MUN = substr(.$CVE_MUN, 9, 16)) %>% 
+              pull(CVE_MUN)
+
+colnames <- names(Migrantes) %>% 
+             as.data.frame() %>% 
+              slice(-1) %>% 
+               rename("CVE_MUN" = ".") %>%
+                mutate(`CVE_MUN` = substr(.$CVE_MUN, 13, 18)) %>%
+                 pull(CVE_MUN)
+
+# Se elimina la variable CVE_MUN
+Migrantes <- Migrantes %>%
+              select(-CVE_MUN)
+
+rownames(Migrantes) <- rownames 
+colnames(Migrantes) <- colnames
+
+saveRDS(Migrantes, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intermunicipal 2015.RDS"))
+save(Migrantes, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intermunicipal 2015.RData"))
+
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "M.Intermunicipal")
+writeData(wb, 1, Migrantes %>% as.data.frame() %>% tibble::rownames_to_column(var = "CVE_MUN"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intermunicipal 2015.xlsx"), overwrite = TRUE)
+```
+
+**Matriz de movilidad estudiantil a nivel municipal, 2015**
+
+<div style="height:500px;overflow:auto;">
+```{r, echo = FALSE, eval = TRUE}
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intermunicipal 2015.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "CVE_MUN") %>%
+            mutate_if(is.numeric, as.numeric)
+
+tabla[1:30, 1:30] %>%  
+ gt() %>% 
+  tab_header(title = "Matriz de movilidad estudiantil", 
+             subtitle = "Nivel intermunicipal") %>%
+   tab_options(heading.title.font.size = 12, 
+               heading.align = "center",
+               heading.subtitle.font.size = 10,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 8) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "0") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
+</div>
+
+### Gráficos {.tabset .tabset-pills}
+
+#### ChordDiagram
+
+Se filtran los flujos migratorios que son exclusivos de los estados y que visualmente sean más interpretables.
+
+```{r, results = FALSE, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intermunicipal 2015.RData"))
+
+rownames <- rownames(Migrantes) %>% 
+             as.data.frame() %>%
+              rename("CVE_MUN" = ".") %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                 pull(CVE_MUN)
+
+colnames <- colnames(Migrantes) %>% 
+             as.data.frame() %>%
+              rename("CVE_MUN" = ".") %>%
+               left_join(., MUN %>% select(CVE_MUN, NOM_MUN)) %>%
+                mutate(CVE_MUN = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                 pull(CVE_MUN)
+
+rownames(Migrantes) <- rownames
+colnames(Migrantes) <- colnames
+
+# Nombre de los estados 
+estado <- stringr::str_wrap(nom_estados, 100)
+
+# Clave de los municipios 
+municipios <- MUN %>% 
+               mutate(municipios = stringr::str_wrap(paste(.$CVE_MUN, .$NOM_MUN), 100)) %>%
+                pull(municipios)
+             
+################################################################################
+################################## Filtro ######################################
+Inmigrantes <- Inmigrantes_function(municipios, Migrantes)
+
+Emigrantes <- Emigrantes_function(municipios, Migrantes)  
+
+################################## Filtro ######################################
+filtro  <- Inmigrantes %>%
+            full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+             mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+              filter(value > 0)
+
+filtro_est <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   filter(value > 0)
+
+### Sacar el promedio de los flujos migratiorios para determinar como se van a grupar los estados 
+#### Es importante correr la tabla1[[x]] sin filtros para determinar el número promedio de flujos de migración
+#### Filtro <<<<< filter(value < 0) %>%
+#### Filtro de estados filter(value > 100000000000 & rn != estados[x]) %>%
+#### Se mete el filtro dentro de la función tabla1[[x]]
+#p <- data.frame(estados = est,
+ #               filtro_municipio = filtro_mig,
+  #              filtro_estado = filtro_out)
+#write.table(p, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel intermunicipal.txt"), col.names = TRUE)
+#write.xlsx(p, file = paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel intermunicipal.xlsx"), overwrite = TRUE)
+
+#### Filtro de municipios
+filtro_mig <- read.xlsx(paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel intermunicipal.xlsx"), colNames = TRUE) %>%
+               pull(filtro_municipio)
+
+#### Filtro de estados 
+filtro_out <- read.xlsx(paste0(here::here(), "/Bases/Municipio/04_Movilidad estudiantil/2015/Filtro a nivel intermunicipal.xlsx"), colNames = TRUE) %>%
+               pull(filtro_estado)
+
+################################################################################
+## Se generan los filtros correspondientes a la matriz cuadrada por estados 
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character) %>% 
+              filter(value > 0)
+
+tabla1 <- migration_flows_municipality(tabla = tabla, 
+                                       filtro_mun = filtro,
+                                       filtro_est = filtro_est,
+                                       filtro_mig = filtro_mig, 
+                                       filtro_out = filtro_out, 
+                                       category_group = estados, 
+                                       category_names = nom_estados,
+                                       group_mun = "Otros municipios",
+                                       group_est = "Otros estados")
+
+################################################################################
+## Se sacan los flujos migratorios que pertencen a otros estados
+#tabla_estados <- sapply(1:32, function(i){
+#                                tabla1[[i]] %>%
+#                                 as.data.frame() %>%
+#                                  adorn_totals(c("row", "col"), 
+#                                               fill = "-", 
+#                                                na.rm = TRUE, 
+#                                                 ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                   select(`Otros estados`) %>%
+#                                    slice(nrow(.)) %>%
+#                                     mutate(`Otros estados` = .$`Otros estados`/10) %>%
+#                                      pull(`Otros estados`)
+#})
+
+## Se sacan los flujos migratorios que pertencen a otros municipios
+#tabla_municipios <- sapply(1:32, function(i){
+#                                  tabla1[[i]] %>%
+#                                   as.data.frame() %>%
+#                                    select(-c(`Otros estados`)) %>%
+#                                     adorn_totals(c("row", "col"), 
+#                                                   fill = "-", 
+#                                                    na.rm = TRUE, 
+#                                                     ,,,,contains(colnames(tabla1[[i]]))) %>% 
+#                                      slice(nrow(.)) %>%
+#                                       mutate(Total = .$Total/50) %>%
+#                                        pull(Total)
+#  })
+
+## Se guardan las matrices de movilidad estudiantil para analizarlos después. 
+wb <- createWorkbook()
+for(i in 1:32){
+     tabla <- tabla1[[i]] %>%
+                as.data.frame() %>%
+                 adorn_totals(c("row", "col"), 
+                               fill = "-", 
+                                na.rm = TRUE, 
+          ,,,,contains(colnames(tabla1[[i]])))
+                 
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, tabla, colNames = TRUE, rowNames = TRUE)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz MEst nivel intermunicipal_Reduccion.xlsx"), 
+               overwrite = TRUE)
+}
+
+saveRDS(tabla1, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Tabla MEst a nivel intermunicipal.RDS"))
+```
+
+```{r tablas de matrices intermunicipal}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Tabla MEst a nivel intermunicipal.RDS"))
+
+total_tablas <- totales(tabla1 = tabla1, 
+                        Clave = "CVE_MUN", 
+                        Inmigrantes = "Salen por estudio",  
+                        Emigrantes = "Entran por estudio")
+
+porcentajes_tablas <- porcentajes(tabla1 = tabla1, 
+                                  Clave = "CVE_MUN", 
+                                  Inmigrantes = "%Salen por estudio",  
+                                  Emigrantes = "%Entran por estudio")
+
+# Se guardan los totales de las matrices reducidas 
+wb <- createWorkbook()
+for(i in 1:32){
+     addWorksheet(wb, paste(est[i]))
+     writeData(wb, i, total_tablas[[i]], colNames = TRUE, startCol = 1)
+     writeData(wb, i, porcentajes_tablas[[i]], colNames = TRUE, startCol = 5)
+     saveWorkbook(wb, 
+                  file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz MEst nivel intermunicipal_Reduccion_Totales.xlsx"), 
+               overwrite = TRUE)
+}
+```
+
+**Dada la magnitud de municipios en algunos estados se seleccionan solo algunos de ellos.**
+
+```{r}
+tabla1 <- readRDS(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Tabla MEst a nivel intermunicipal.RDS"))
+
+# Paleta de colores
+#paleta <- rev(colorRampPalette(wesanderson::wes_palette("Rushmore1"))(50)) 
+paleta <- colorRampPalette(c("#000C7D", "#001599", "#0022B0", "#0035BB", "#004AB4", "#005EA3", "#00708D", "#078472","#3E9A85", "#49A980", "#58B877", "#70C669", "#94D25D", "#BBDA60", "#DBCE33", "#D6B92A", "#D1A521", "#CA911A"))(50)
+
+tabla2 <- color_chord_diagram(tabla1 = tabla1, paleta)
+```
+
+```{r grafico intermunicipal, eval = FALSE, results='hide'}
+file = "/Graficos/Municipio/04_Movilidad estudiantil/2015/ChordDiagram de MEst desagregado a nivel intermunicipal.pdf"
+
+## Gráficos a nivel intermunicipal
+chord_diagram_graph(file = file, 
+                    width = 15, 
+                    height = 10, 
+                    family = "Montserrat Medium", 
+                    paleta = paleta, 
+                    tabla1 = tabla1, 
+                    tabla2 = tabla2, 
+                    color_labels = "#000C7D",
+                    transparency = 0,
+                    circo.text = 9,
+                    circos.axis.text = 6,
+                    adj.text =c(-0.05, 0.5), #Ajuste de las etiquetas (x, y)
+                    adj.ylim = 0.1,
+                    gap.degree = 2, 
+                    clock.wise = FALSE,
+                    track.margin = c(-0.07, 0.1),
+                    margin = rep(0, 4))
+```
+
+**Etiquetas**
+
+```{r etiquetas_intermunicipal}
+file = "/Graficos/Municipio/04_Movilidad estudiantil/2015/Etiquetas a nivel intermunicipal.pdf"
+
+labels_chord_diagram(file = file, 
+                     width = 7, 
+                     height = 8, 
+                     family = "Montserrat Medium", 
+                     paleta = paleta, 
+                     tabla1 = tabla1, 
+                     labels = nom_estados)
+```
+
+#### Gráfico Sankey
+
+```{r, eval = FALSE}
+# Matriz cuadrada a nivel municipal 
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intermunicipal 2015.RData"))
+
+tabla <- Migrantes %>%
+          as.data.frame() %>%
+           tibble::rownames_to_column(var = "rn") %>%
+            melt(., id.vars = "rn", variable.name = "cn") %>%
+             mutate_if(is.factor, as.character)
+
+################################################################################
+################################## Filtro ######################################
+Inmigrantes  <- Migrantes %>%
+                 as.data.frame() %>%
+                  tibble::rownames_to_column(var = "rn") %>% 
+                   melt(., id.vars = "rn", variable.name = "cn") %>%
+                    mutate_if(is.factor, as.character) %>%
+                     mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                      filter(value > 0) %>%
+                       group_by(rn) %>% 
+                        summarise(Inmigrantes = sum(value, na.rm = TRUE)) 
+
+Emigrantes <- Migrantes %>%
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "rn") %>% 
+                 melt(., id.vars = "rn", variable.name = "cn") %>%
+                  mutate_if(is.factor, as.character) %>%
+                   mutate(value = ifelse((.$rn != .$cn) & (substr(.$rn, 1, 3) %in% estados | substr(.$cn, 1, 3) %in% estados), value, 0)) %>%
+                    filter(value > 0) %>%
+                     group_by(cn) %>% 
+                      summarise(Emigrantes = sum(value, na.rm = TRUE))     
+
+################################## Filtro ######################################
+filtro  <- Inmigrantes %>%
+            full_join(., Emigrantes, by = c("rn" = "cn")) %>%
+             mutate(value = sum_row(Inmigrantes, Emigrantes, na.rm = TRUE)) %>%
+              filter(value < 5000) %>% 
+               pull(rn)
+################################################################################
+
+tabla1 <- lapply(1:32, function(x){
+                   tabla %>%
+                    mutate(rn = case_when(substr(.$rn, 1, 3) %in% estados[x] & .$rn %in% filtro ~ paste0("Otros municipios (", estados[x], ")"),
+                                          substr(.$rn, 1, 3) %in% estados[x]  & .$rn %nin% filtro ~ .$rn,
+                                          substr(.$rn, 1, 3) %nin% estados[x] ~ substr(.$rn, 1, 3)),
+                           cn = case_when(substr(.$cn, 1, 3) %in% estados[x] & .$cn %in% filtro ~ paste0("Otros municipios (", estados[x], ")"),
+                                          substr(.$cn, 1, 3) %in% estados[x] & .$cn %nin% filtro ~ .$cn,
+                                          substr(.$cn, 1, 3) %nin% estados[x] ~ substr(.$cn, 1, 3))) %>%
+
+                     mutate(value = ifelse(.$rn != .$cn, .$value, 0)) %>%
+                      filter(value > 0) 
+  }
+)
+```
+
+```{r, eval = FALSE}
+p <- lapply(1:32, function(x){
+             tabla1[[x]] %>% 
+              ggplot(aes(axis1 = rn, 
+                          axis2 = cn, 
+                           y = value),  # c("value", "freq", "tasa")
+                      reverse = FALSE, 
+                       na.rm = TRUE) +
+               geom_alluvium(aes(fill = rn),
+                              curve_type = "quintic", 
+                               color = "transparent", 
+                                alpha = 0.85, 
+                                 lwd = 0.001, 
+                                  width = 1/5,
+                                   reverse = FALSE) +
+                 geom_stratum(aes(fill = cn), 
+                               color = "white", 
+                                alpha = 0.65,  
+                                 lwd = 0.001, 
+                                  width = 1/5,
+                                   reverse = FALSE) +
+                  geom_text_repel(aes(label = ifelse(after_stat(x) == 1, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""), 
+                                       fontface =  ifelse(after_stat(x) == 1, 'bold', 'plain')),
+                                   stat = "stratum", 
+                                    size = 3, 
+                                     direction = "y", 
+                                      nudge_x = -.2,
+                                       min.segment.length = unit(1, "lines"),
+                                        force = 1,
+                                         force_pull = 0,
+                                          family = "montserrat",
+                                           reverse = FALSE) +
+                   geom_text_repel(aes(label = ifelse(after_stat(x)  == 2, paste0(as.character(after_stat(stratum)),  ": ", prettyNum(count, big.mark = " ")), ""),
+                                        fontface =  ifelse(after_stat(x) == 2, 'bold', 'plain')),
+                                    stat = "stratum", 
+                                     size = 3,
+                                      direction = "y", 
+                                       nudge_x = .2, 
+                                        force = 1,
+                                         force_pull = 0,
+                                          family = "montserrat",
+                                           reverse = FALSE) +
+                     theme_void() + 
+                      theme(plot.margin = margin(t = 1, r = 5, b = 1, l = 0, "cm"),
+                             text = element_text(family = "montserrat"),
+                              axis.text = element_blank(),
+                               axis.title = element_blank(),
+                                strip.text = element_text(size = 10, face = "bold", family = "montserrat"),
+                                 legend.key.size = unit(0.5, "cm"),
+                                  legend.text = element_text(size = 7, family = "montserrat"),
+                                   legend.position = c(1.02, .5)) + 
+                       scale_x_discrete(expand = c(-0.1, 0.5)) +
+                        scale_fill_viridis_d(option = "A", end = 1, begin = 0.2) +
+                         guides(fill = guide_legend(ncol = 1, na.translate = F)) + 
+                          labs(fill = "", 
+                               color = "")
+  }
+)
+
+path = paste0(here::here(), "/Graficos/Municipio/04_Movilidad estudiantil/2015/GSankey de MEst desagregado a nivel intermunicipal.pdf")
+ggexport(list = p, width = 18, height = 10, dpi = 400, filename = path)
+```
+
+### Indicadores {.tabset .tabset-pills}
+
+Se realizan cálculos generales de movilidad:
+
+-   Residentes
+
+-   Inmigrantes
+
+-   Emigrantes
+
+-   $\%$ Inmigrantes
+
+-   $\%$ %Emigrante
+
+-   Migración bruta
+
+-   Migración Neta
+
+-   $\%$ Tasa de movilidad bruta
+
+-   $\%$ Tasa de movilidad neta
+
+Se trabaja con la matriz cuadrada, la cual de esta manera no se satura computacionalmente
+
+```{r, eval = FALSE}
+################################################################################
+############################ Población total ###################################
+Pob.Total <- mydata %>%
+              as.data.frame() %>%
+               filter(CVE_MUN %in% municipios) %>%
+                group_by(CVE_MUN) %>%
+                 summarise(Pob.Total = sum(FACTOR)) 
+
+################################################################################
+###################### Pob. estudiantil de 3 años y más ########################
+Pob.3ymas <- mydata %>%
+              as.data.frame() %>%
+               mutate(EDAD = as.numeric(.$EDAD)) %>%
+                subset(EDAD >= 3 & EDAD <= 130) %>%
+                 filter(CVE_MUN %in% municipios) %>%
+                  group_by(CVE_MUN) %>%
+                   summarise(Pob.3ymas = sum(FACTOR)) 
+
+################################################################################
+########################### Residentes #########################################
+load(paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Matriz de movilidad estudiantil a nivel intermunicipal 2015.RData"))
+
+Residentes <- Migrantes %>%
+               rownames_to_column() %>%
+                gather(CVE_MUN, Value ,-rowname)%>%
+                 filter(rowname == CVE_MUN) %>%
+                  select(-rowname) %>%
+                   droplevels() %>%
+                    rename("Residentes" = "Value") 
+
+################################################################################
+############################### Inmigrantes ####################################
+
+## Población que sale de su entidad de residencia y entra a otro demarcación por motivos de estudios
+Inmigrantes <- Migrantes %>% 
+                as.data.frame() %>%
+                 tibble::rownames_to_column(var = "CVE_MUN") %>%
+                  melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_ASI") %>%
+                   mutate_at(vars(3), as.numeric) %>%
+                    as_tibble() %>%
+                     filter(CVE_MUN != CVE_MUN_ASI) %>%
+                      group_by(CVE_MUN) %>%
+                       summarise(Inmigrantes = sum(value, na.rm = TRUE))
+
+################################################################################
+############################### Emigrantes #####################################
+
+## Población que entra a la entidad para estudiar 
+Emigrantes <- Migrantes %>% 
+               as.data.frame() %>%
+                tibble::rownames_to_column(var = "CVE_MUN") %>%
+                 melt(., id.vars = "CVE_MUN", variable.name = "CVE_MUN_ASI") %>%
+                  mutate_at(vars(3), as.numeric) %>%
+                   as_tibble() %>% 
+                    filter(CVE_MUN != CVE_MUN_ASI) %>%
+                     group_by(CVE_MUN_ASI) %>%
+                      summarise(Emigrantes = sum(value, na.rm = TRUE)) %>%
+                       rename("CVE_MUN" = "CVE_MUN_ASI") 
+
+tabla <- Pob.Total %>%
+          left_join(., Pob.3ymas, by = c("CVE_MUN")) %>%
+          left_join(., Residentes, by = c("CVE_MUN")) %>%
+          left_join(., Inmigrantes, by = c("CVE_MUN")) %>%
+          left_join(., Emigrantes, by = c("CVE_MUN")) %>%
+            mutate(Mig.Neta = .$Inmigrantes - .$Emigrantes,
+                   Mig.Bruta = .$Inmigrantes + .$Emigrantes, 
+                   Tasa.Inmig = ((.$Inmigrantes/ 5) /((.$Pob.Total + .$Pob.3ymas) / 2)) * 1000,
+                   Tasa.Emig = ((.$Emigrantes/ 5) /((.$Pob.Total + .$Pob.3ymas) / 2)) * 1000,
+                   Tasa.Mig = Tasa.Inmig - Tasa.Emig, 
+                   Eficacia = Mig.Neta - Mig.Bruta)
+
+write.xlsx(tabla, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Indicadores de movilidad estudiantil a nivel intermunicipal 2015.xlsx"), overwrite = TRUE)
+
+save(tabla, file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Indicadores de movilidad estudiantil a nivel intermunicipal 2015.RData"))
+```
+
+```{r, echo = FALSE, eval = TRUE}
+load(file = paste0(here::here(), "/Output/Municipio/04_Movilidad estudiantil/2015/Indicadores de movilidad estudiantil a nivel intermunicipal 2015.RData"))
+
+tabla[1:20,] %>%  
+ as.data.frame() %>%
+  gt() %>% 
+   tab_header(title = "Indicadores de  movilidad estudiantil", 
+              subtitle = "Nivel intermunicipal") %>%
+    tab_options(heading.title.font.size = 12, 
+                heading.align = "center",
+                heading.subtitle.font.size = 10,
+                data_row.padding = px(1),
+                column_labels.font.weight = "bold",
+                column_labels.padding = px(10), 
+                table.font.names = 'montserrat',
+                table.font.size = 8) %>%
+      tab_style(style = list(cell_text(align = "center",
+                                       weight = 'bold')),
+                locations = list(cells_title(groups = c("title")))) %>%
+       fmt_integer(columns = c(2:8, 12), sep_mark = " ") %>%
+        fmt_number(columns = c(11), decimals = 1) %>%
+         sub_missing(columns = everything(), missing_text = "0") %>%
+          tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+           as_raw_html()
+```
+
+# Referencias
+
+Librerias que se usaron en el documento
+
+```{r, echo = FALSE, eval = TRUE}
+sesion_info <- devtools::session_info()
+require(kableExtra)
+kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),
+                    c(package, loadedversion, source))) %>%
+ kable_styling(font_size = 10, 
+               bootstrap_options = c("condensed", "responsive", "bordered")) %>%
+  kable_classic(full_width = TRUE, html_font = "montserrat") %>% 
+   scroll_box(width = "100%", height = "400px") %>%  
+    gsub("font-size: initial !important;", "font-size: 10pt !important;", .)
+```
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img src="https://i.creativecommons.org/l/by/4.0/88x31.png" alt="Creative Commons Licence" style="border-width:0"/></a><br />This work by [**Diana Villasana Ocampo**]{xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName"} is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
