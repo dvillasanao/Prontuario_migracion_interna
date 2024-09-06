@@ -1,0 +1,837 @@
+---
+title: "Zonas Metropolitanas 2015"
+subtitle: "Movilidad estudiantil 2015 <br> Indicadores sociodemográficos"
+author: "Diana Villasana Ocampo"
+output:
+   html_document:
+      code_folding: hide
+      css: "../style.css"
+      highlight: tango
+      theme: flatly
+      toc: yes
+      toc_depth: 2
+      toc_float:
+        collapsed: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = FALSE, cache.lazy = FALSE, 
+                         eval = FALSE, class.source = "fold-show")
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+options(digits = 2, encoding = "UTF8")
+```
+
+```{r, echo=FALSE}
+rm(list = ls())
+```
+
+```{r, echo=FALSE}
+setwd(here::here())
+```
+
+```{r, echo=FALSE}
+#Font Stlye
+require(showtext)
+library(extrafont)
+windowsFonts()
+```
+
+```{r, echo = FALSE, eval = TRUE}
+# Librerías que se usaron en el documCVE_ENTo
+require(haven)
+require(Hmisc) # %nin%
+require(dplyr)
+require(stringr)
+require(sna)
+require(expss)
+require(knitr)
+require(sjlabelled)
+require(gt)
+require(janitor)
+require(tibble)
+require(tidyr)
+require(reshape2)
+require(openxlsx)
+require(rlang)
+require(doMC)
+library(dplyr)
+library(data.table)
+library(purrr)
+registerDoMC(cores = 18)
+```
+
+**Encuesta Intercensal 2015**
+
+La Encuesta Intercensal se guarda en un un archivo `.RData`.
+
+```{r, eval = FALSE}
+data <- read_sav("~/Persona.-Encuesta Intercensal 2015.sav")
+
+save(data, 
+      file = paste0(here::here(), "/Bases/Encuesta Intercensal_2015.RData"))
+```
+
+Se seleccionan las variables que se desean conservar para la realización de este documento y se guarda en un archivo `.RData` para practicidad del manejo de datos.
+
+**Posibles variables que se pueden contemplar en la movilidad estudiantil**
+
+-   `SEXO`
+-   `AFRODES`
+-   `HLENGUA`
+-   `QDIALECT_INALI`
+-   `PERTE_INDIGENA`
+-   `ALFABET`
+-   `NIVACAD` ¿Cuál fue el último año o grado aprobado por (NOMBRE) en la escuela?
+-   `TIE_TRASLADO_ESCU`
+-   `MED_TRASLADO_ESC1`
+-   `MED_TRASLADO_ESC2`
+-   `MED_TRASLADO_ESC3`
+
+La variable `mydata` contiene **22 692 265 observaciones** y **27 variables**.    
+
+✔️A partir de aquí se pueden correr los códidos 👇.  
+
+Se carga el archivo `Migracion por Zonas Metropolitanas_2015.RData`.
+
+```{r}
+load(file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2015.RData"))
+```
+
+**Claves de entidades y municipios**
+
+Se genera un vector con el nombre de las entidades llamado `estados` para facilitar los filtros en el documento. \
+Se genera un vector con las abreviaturas de las entidades llamado `ent` para fines prácticos.  \
+Se genera un vector con las claves de los municipios.   
+
+```{r}
+# Claves de los estados
+ENT <- readRDS(file = paste0(here::here(), "/Bases/estados.RDS"))
+estados <- ENT %>% pull(CVE_ENT)
+
+# Claves de los municipios
+MUN <- readRDS(paste0(here::here(), "/Bases/municipios_2015.RDS"))
+nom_municipios <- sjlabelled::get_labels(MUN$NOM_MUN) %>% as.factor()
+municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
+
+# Zonas metropolitanas 2015
+ZM_2015 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2015.xlsx"), sheet = "ZM_2015") 
+#Claves de las zonas metropolitanas 2015
+zm <- ZM_2015 %>% select(CVE_ZM) %>% unique() %>% pull
+```
+
+**Se reclasifican algunas variables**
+
+```{r, class.source = "fold-hide"}
+data <- mydata %>%
+         mutate(GEDAD = case_when(.$EDAD >= 0 & .$EDAD <= 4 ~ 1,
+                                  .$EDAD >= 5 & .$EDAD <= 14 ~ 2,
+                                  .$EDAD >= 15 & .$EDAD <= 29 ~ 3,
+                                  .$EDAD >= 30 & .$EDAD <= 59 ~ 4,
+                                  .$EDAD >= 60 & .$EDAD <= 130 ~ 5)) %>%
+         mutate(GEDAD = labelled(x = .$GEDAD, 
+                                 labels = c(`0 a 4 años` = 1,
+                                            `5 a 14 años` = 2,
+                                            `15 a 29 años` = 3,
+                                            `30 a 59 años` = 4, 
+                                            `60 años y más` = 5))) %>%
+          # Se genera una indicadora de zm 
+          mutate(I_ZM_2015 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+                 I_ASI_ZM_2015 = ifelse(is.na(.$CVE_ZM_ASI), '0', '1')) %>%
+          # Se clasifican a los movimientos internos 
+          mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_ASI ~ 'Pertenecen a la Zona Metropolitana', #Estudian en el mismo municipio
+                                  .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2015 %in% '1' & .$I_ASI_ZM_2015 %in% '1' & .$CVE_ZM == .$CVE_ZM_ASI ~ "Pertenecen a la Zona Metropolitana", #Estudian en otro municipio dentro de la misma zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2015 %in% '1' & .$I_ASI_ZM_2015 %in% '1' & .$CVE_ZM != .$CVE_ZM_ASI ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio pero de otra zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2015 %in% '1' & .$I_ASI_ZM_2015 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Estudian en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                  .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2015 %in% '0' & .$I_ASI_ZM_2015 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                  .$CVE_MUN != .$CVE_MUN_ASI & .$I_ZM_2015 %in% '0' & .$I_ASI_ZM_2015 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Estudian en otro municipio que no es ZM y no residen en una ZM
+                                  ))
+```
+
+```{r, echo = FALSE, eval = TRUE}
+require(gt)
+require(openxlsx)
+
+tabla <- read.xlsx(paste0(here::here(), "/Output/Tablas_SDEM.xlsx"), sheet = "2015") %>%
+          slice(15:20)
+
+tabla %>%  
+ gt(rowname_col = "row", groupname_col = c("Variable", "Categoria")) |>
+  tab_header(title = "Reclasificación de variables", 
+             subtitle = "Encuesta Intercensal 2015") %>%
+   tab_options(heading.title.font.size = 14, 
+               heading.align = "center",
+               heading.subtitle.font.size = 12,
+               data_row.padding = px(1),
+               column_labels.font.weight = "bold",
+               column_labels.padding = px(10), 
+               table.font.names = 'montserrat',
+               table.font.size = 10) %>%
+    tab_style(style = list(cell_text(align = "center",
+                                     weight = 'bold')),
+              locations = list(cells_title(groups = c("title")))) %>%
+     sub_missing(columns = everything(), missing_text = "") %>%
+      tab_footnote(footnote = "Fuente: Estimaciones del CONAPO.") %>%  
+       as_raw_html()
+```
+
+# Funciones {.tabset .tabset-pills}
+
+La función `Indicadores` en términos generales realiza lo siguiente:
+
+1.  `Selección y análisis de una variable`: La función toma una variable específica de un conjunto de datos y la analiza en términos de la población afectada por esa variable.
+
+2.  `Cálculo de población total`: Agrupa los datos según claves de municipio o estado, calculando la población total en cada grupo.
+
+3.  `Cálculo de subpoblaciones`: Luego calcula subpoblaciones, como la población **residente**, **inmigrante**, y **emigrante**, aplicando filtros específicos (como la edad) y agrupando de según se por municipio o estado.
+
+4.  `Generación de resultados`: Finalmente, combina todos estos cálculos en una tabla que resume la información, mostrando la `población total`, `residente`, `inmigrante` y `emigrante`, con la posibilidad de agregar una fila de "Total" para cada grupo.
+
+## Valores absolutos
+
+```{r, class.source = "fold-hide"}
+Indicadores <- function(Variable, df.claves = CVE_MUN, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"){
+                  
+                          # Variable que se desea analizar
+                          X <- get_values(dt[[Variable]], drop.na = TRUE) %>%
+                                unlist()
+                          
+                          # Etiquetas para las columnas
+                          etiquetas <- get_labels(dt[[Variable]], drop.na = TRUE) %>%
+                                        unlist()
+                        
+                          # Población total
+                          Pob.Total <- dt[get(Origen) %in% grupo,  #municipios
+                                          .(Pob.Total = sum(FACTOR, na.rm = TRUE)), 
+                                          by = names(df.claves)] # CVE_ENT
+       
+                          # Crear una nueva fila para "Total"
+                          total_row <- data.table(Pob.Total = sum(Pob.Total$Pob.Total, na.rm = TRUE))
+                          total_row[, (names(df.claves)) := "Total"]
+                          
+                          # Añadir la fila total al data.table original
+                          Pob.Total <- rbind(Pob.Total, total_row)
+                          
+                            # Función auxiliar para calcular poblaciones
+                              calcular_poblacion <- function(filtro_adicional, group, nombre_columna){
+                                dt_filtrada <- dt[eval(parse(text = filtro)) & filtro_adicional, ]
+                            
+                                 resultados <- lapply(1:length(X), function(x) {
+                                                       resultado <- dt_filtrada[get(Variable) %in% X[x], 
+                                                                                .(Pob = sum(FACTOR, na.rm = TRUE)), 
+                                                                                by = group]
+                                  
+                                                        # Asegurarse de que todas las categorías estén representadas
+                                                        if(nrow(resultado) == 0) {
+                                                            resultado <- data.table(group = unique(dt_filtrada[[group]]))
+                                                            resultado[, Pob := 0]  %>%
+                                                             setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
+                                                        } else {
+                                                          setnames(resultado, c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
+                                                        }
+                                                        
+                                                        return(resultado)
+                                                      })
+                            
+                                  resultados <- Reduce(function(...) merge(..., by = Origen, all = TRUE), resultados)
+                              
+                                      if (names(df.claves) != Origen) {
+                                        resultados[, (names(df.claves)) := substr(get(Origen), 1, 3)]
+                                        resultados <- resultados[, lapply(.SD, sum, na.rm = TRUE), 
+                                                                 by = names(df.claves), 
+                                                                 .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
+                                                       adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                                      } else {
+                                        resultados <- resultados %>%
+                                                        merge(df.claves, by = c(Origen), all = TRUE) %>%
+                                                         adorn_totals(c("row"), fill = "-", na.rm = TRUE)
+                                      }
+                                  
+                                      return(resultados)
+                                    }
+                                                  
+                                      # Población desagregada                  CVE_MUN                                         
+                                      Pob.Objetivo <- calcular_poblacion(dt[[Origen]] %in% grupo & dt[[Destino]] %in% grupo, Origen, "Pob")
+                                                  
+                                      # Población residente
+                                      Residentes <- calcular_poblacion(dt[[Origen]] == dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Residentes")
+                                  
+                                      # Población inmigrante
+                                      Inmigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Inmigrantes")
+                                                  
+                                      # Población emigrante
+                                      Emigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Destino, "Emigrantes")
+                                                  
+                                      # Tabla de resultados
+                                      Resultados <- list(Pob.Total, Pob.Objetivo, Residentes, Inmigrantes, Emigrantes) %>%
+                                                    Reduce(function(...) merge(..., by = names(df.claves), all = TRUE), .)
+                          
+                                      return(Resultados)
+                        }
+
+#tabla1 <-  Indicadores("SEXO", df.claves = CVE_ZM,  grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_RES", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)")
+```
+
+## Valores relativos
+
+```{r, class.source = "fold-hide"}
+Indicadores_P <- function(Variable, df.claves = CVE_MUN, grupo = municipios,  Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"){
+                  
+                            # Variable que se desea analizar
+                            X <- get_values(dt[[Variable]], drop.na = TRUE) %>%
+                                  unlist()
+                            
+                            # Etiquetas para las columnas
+                            etiquetas <- get_labels(dt[[Variable]], drop.na = TRUE) %>%
+                                          unlist()
+                          
+                            # Población total
+                            Pob.Total <- dt[get(Origen) %in% grupo,  #municipios
+                                            .(Pob.Total = sum(FACTOR, na.rm = TRUE)), 
+                                            by = names(df.claves)] # CVE_ENT
+         
+                            # Crear una nueva fila para "Total"
+                            total_row <- data.table(Pob.Total = sum(Pob.Total$Pob.Total, na.rm = TRUE))
+                            total_row[, (names(df.claves)) := "Total"]
+                            
+                            # Añadir la fila total al data.table original
+                            Pob.Total <- rbind(Pob.Total, total_row)
+                            
+                            # Añadir la fila total al data.table original
+                            Pob.Total <- rbind(Pob.Total, total_row)
+                              
+                                # Función auxiliar para calcular poblaciones
+                                  calcular_poblacion <- function(filtro_adicional, group, nombre_columna){
+                                    dt_filtrada <- dt[eval(parse(text = filtro)) & filtro_adicional, ]
+                                
+                                     resultados <- lapply(1:length(X), function(x) {
+                                                           resultado <- dt_filtrada[get(Variable) %in% X[x], 
+                                                                                    .(Pob = sum(FACTOR, na.rm = TRUE)), 
+                                                                                    by = group]
+                                      
+                                                            # Asegurarse de que todas las categorías estén representadas
+                                                            if(nrow(resultado) == 0) {
+                                                                resultado <- data.table(group = unique(dt_filtrada[[group]]))
+                                                                resultado[, Pob := 0]  %>%
+                                                                 setnames(c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
+                                                            } else {
+                                                              setnames(resultado, c(Origen, paste0(nombre_columna, "_", etiquetas[x])))
+                                                            }
+                                                            
+                                                            return(resultado)
+                                                          })
+                                
+                                      resultados <- Reduce(function(...) merge(..., by = Origen, all = TRUE), resultados)
+                                  
+                                          if (names(df.claves) != Origen) {
+                                            resultados[, (names(df.claves)) := substr(get(Origen), 1, 3)]
+                                            resultados <- resultados[, lapply(.SD, sum, na.rm = TRUE), 
+                                                                     by = names(df.claves), 
+                                                                     .SDcols = paste0(nombre_columna, "_", etiquetas)] %>% 
+                                                           adorn_totals(c("row"), fill = "-", na.rm = TRUE) %>%
+                                                            adorn_percentages(denominator = "row", na.rm = TRUE)   
+                                          } else {
+                                            resultados <- resultados %>%
+                                                           merge(df.claves, by = c(Origen), all = TRUE) %>%
+                                                            adorn_totals(c("row"), fill = "-", na.rm = TRUE) %>%
+                                                             adorn_percentages(denominator = "row", na.rm = TRUE)   
+                                          }
+                                      
+                                          return(resultados)
+                                  }
+                                  
+                                # Población desagregada                                               
+                                Pob.Objetivo <- calcular_poblacion(dt[[Origen]] %in% grupo & dt[[Destino]] %in% grupo, Origen, "Pob")
+                                
+                                # Población residente
+                                Residentes <- calcular_poblacion(dt[[Origen]] == dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Residentes")
+                
+                                # Población inmigrante
+                                Inmigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Origen, "Inmigrantes")
+                                
+                                # Población emigrante
+                                Emigrantes <- calcular_poblacion(dt[[Origen]] != dt[[Destino]] & dt[[Destino]] %in% grupo, Destino, "Emigrantes")
+                                
+                                # Tabla de resultados
+                                Resultados <- list(Pob.Total, Pob.Objetivo, Residentes, Inmigrantes, Emigrantes) %>%
+                                  Reduce(function(...) merge(..., by = names(df.claves), all = TRUE), .)
+        
+                                return(Resultados)
+}
+```
+
+# Nivel municipal {.tabset .tabset-pills}
+
+```{r}
+#Clave de municipios   
+CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.data.frame()
+#Clave de las zonas metropolitanas 2015   
+CVE_ZM <- ZM_2015 %>% select(CVE_ZM) %>% distinct()
+
+# Convertir el data frame en data.table para mayor eficiencia
+dt <- data %>% 
+       filter(I_ZM_2015 %in% '1' | I_ASI_ZM_2015 %in% '1') %>%
+        as.data.table()
+
+# Ejemplo
+tabla <- Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
+tabla1 <- Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130")
+```
+
+
+## Nivel municipal {.tabset .tabset-pills}
+
+-   Nivel municipal
+    -   Valores absolutos
+    -   Valores relativos
+    -   Agrupados por zonas metropolitanas
+        -   Valores absolutos
+        -   Valores relativos
+-   Nivel intramunicipal (Pertenecen a la zonas metropolitanas)
+    -   Valores absolutos
+    -   Valores relativos
+    -   Agrupados por zonas metropolitanas
+        -   Valores absolutos
+        -   Valores relativos
+-   Nivel intermunicipal (No pertenecen a las zonas metropolitanas)
+    -   Valores absolutos
+    -   Valores relativos
+    -   Agrupados por zonas metropolitanas
+        -   Valores absolutos
+        -   Valores relativos
+
+### Nivel municipal {.tabset .tabset-pills}
+
+-   Valores absolutos
+-   Valores relativo
+-   Agrupados por zonas metropolitanas
+    -   Valores absolutos
+    -   Valores relativos
+    
+#### Valores absolutos
+    
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("TIE_TRASLADO_ESCU", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("MED_TRASLADO_ESC1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("MED_TRASLADO_ESC2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores("MED_TRASLADO_ESC3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel municipal 2015.xlsx"), overwrite = TRUE)
+```
+
+
+#### Valores relativos
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("TIE_TRASLADO_ESCU", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("MED_TRASLADO_ESC1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("MED_TRASLADO_ESC2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("MED_TRASLADO_ESC3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel municipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+```
+
+#### Por zonas metropolitanas {.tabset .tabset-pills}
+
+##### Valores absolutos
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("TIE_TRASLADO_ESCU", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("MED_TRASLADO_ESC1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("MED_TRASLADO_ESC2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores("MED_TRASLADO_ESC3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel municipal 2015 (ZM).xlsx"), overwrite = TRUE)
+```
+
+##### Valores relativos
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("TIE_TRASLADO_ESCU", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("MED_TRASLADO_ESC1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("MED_TRASLADO_ESC2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("MED_TRASLADO_ESC3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel municipal 2015_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+```
+
+### Nivel intramunicipal {.tabset .tabset-pills}
+
+-   Valores absolutos
+-   Valores relativo
+-   Agrupados por zonas metropolitanas
+    -   Valores absolutos
+    -   Valores relativos
+
+```{r}
+#Clave de municipios   
+## Se excluyen 3 municipios
+CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.data.frame()
+
+# Convertir el data frame en data.table para mayor eficiencia
+dt <- data %>%
+       filter(CVE_MUN_ASI %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana") %>%
+        as.data.table()
+```
+
+#### Valores absolutos
+    
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("TIE_TRASLADO_ESCU", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("MED_TRASLADO_ESC1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("MED_TRASLADO_ESC2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores("MED_TRASLADO_ESC3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015.xlsx"), overwrite = TRUE)
+```
+
+
+#### Valores relativos
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("TIE_TRASLADO_ESCU", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("MED_TRASLADO_ESC1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("MED_TRASLADO_ESC2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("MED_TRASLADO_ESC3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+```
+
+#### Por zonas metropolitanas {.tabset .tabset-pills}
+
+##### Valores absolutos
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("TIE_TRASLADO_ESCU", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("MED_TRASLADO_ESC1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("MED_TRASLADO_ESC2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores("MED_TRASLADO_ESC3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015 (ZM).xlsx"), overwrite = TRUE)
+```
+
+##### Valores relativos
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("TIE_TRASLADO_ESCU", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("MED_TRASLADO_ESC1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("MED_TRASLADO_ESC2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("MED_TRASLADO_ESC3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+```
+
+### Nivel intermunicipal {.tabset .tabset-pills}
+
+-   Valores absolutos
+-   Valores relativo
+-   Agrupados por zonas metropolitanas
+    -   Valores absolutos
+    -   Valores relativos
+
+```{r}
+#Clave de municipios   
+## Se excluyen 3 municipios
+CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.data.frame()
+
+# Convertir el data frame en data.table para mayor eficiencia
+dt <- data %>%
+       filter(CVE_MUN_ASI %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>% 
+        as.data.table()
+```
+
+#### Valores absolutos
+    
+```{r}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("TIE_TRASLADO_ESCU", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("MED_TRASLADO_ESC1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("MED_TRASLADO_ESC2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores("MED_TRASLADO_ESC3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015.xlsx"), overwrite = TRUE)
+```
+
+
+#### Valores relativos
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("AFRODES", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("HLENGUA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("ALFABET", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("TIE_TRASLADO_ESCU", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("MED_TRASLADO_ESC1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("MED_TRASLADO_ESC2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("MED_TRASLADO_ESC3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+```
+
+#### Por zonas metropolitanas {.tabset .tabset-pills}
+
+##### Valores absolutos
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores("TIE_TRASLADO_ESCU", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores("MED_TRASLADO_ESC1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores("MED_TRASLADO_ESC2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores("MED_TRASLADO_ESC3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015 (ZM).xlsx"), overwrite = TRUE)
+```
+
+##### Valores relativos
+
+```{r, class.source = "fold-hide"}
+require(openxlsx)
+wb <- createWorkbook()
+addWorksheet(wb, "SEXO")
+addWorksheet(wb, "GEDAD")
+addWorksheet(wb, "AFRODES")
+addWorksheet(wb, "HLENGUA")
+addWorksheet(wb, "PERTE_INDIGENA")
+addWorksheet(wb, "ALFABET")
+addWorksheet(wb, "NIVACAD")
+addWorksheet(wb, "TIE_TRASLADO_ESCU")
+addWorksheet(wb, "MED_TRASLADO_ESC1")
+addWorksheet(wb, "MED_TRASLADO_ESC2")
+addWorksheet(wb, "MED_TRASLADO_ESC3")
+writeData(wb, 1, Indicadores_P("SEXO", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 2, Indicadores_P("GEDAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 3, Indicadores_P("AFRODES", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 4, Indicadores_P("HLENGUA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 5, Indicadores_P("PERTE_INDIGENA", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 6, Indicadores_P("ALFABET", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 7, Indicadores_P("NIVACAD", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 8, Indicadores_P("TIE_TRASLADO_ESCU", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 9, Indicadores_P("MED_TRASLADO_ESC1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 10, Indicadores_P("MED_TRASLADO_ESC2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+writeData(wb, 11, Indicadores_P("MED_TRASLADO_ESC3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_ASI", filtro = "EDAD >= 3 & EDAD <= 130"), colNames = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/04_Movilidad estudiantil/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+```
+
+# Referencias
+
+Librerias que se usaron en el documento
+
+```{r, echo = FALSE, eval = TRUE}
+sesion_info <- devtools::session_info()
+require(knitr)
+require(kableExtra)
+kable(dplyr::select(tibble::as_tibble(sesion_info$packages %>% dplyr::filter(attached == TRUE)),
+                    c(package, loadedversion, source))) %>%
+ kable_styling(font_size = 10, 
+               bootstrap_options = c("condensed", "responsive", "bordered")) %>%
+  kable_classic(full_width = TRUE, html_font = "montserrat") %>% 
+   scroll_box(width = "100%", height = "400px") %>%  
+    gsub("font-size: initial !important;", "font-size: 10pt !important;", .)
+```
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img src="https://i.creativecommons.org/l/by/4.0/88x31.png" alt="Creative Commons Licence" style="border-width:0"/></a><br />This work by [**Diana Villasana Ocampo**]{xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName"} is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+
+
+
