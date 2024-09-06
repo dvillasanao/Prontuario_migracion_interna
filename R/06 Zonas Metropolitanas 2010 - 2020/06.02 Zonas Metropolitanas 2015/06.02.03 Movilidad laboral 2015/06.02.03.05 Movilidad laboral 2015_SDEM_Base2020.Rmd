@@ -127,10 +127,10 @@ La variable `mydata` contiene **22 692 265 observaciones** y **54 variables**.
 
 ✔️A partir de aquí se pueden correr los códidos 👇.
 
-Se carga el archivo `Migracion por Zonas Metropolitanas_2015.RData`.   
+Se carga el archivo `Migracion por Zonas Metropolitanas_2015_Base 2020.RData`.   
 
 ```{r}
-load(file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2015.RData"))
+load(file = paste0(here::here(), "/Bases/06_Migracion por Zonas Metropolitanas_2015_Base 2020.RData"))
 ```
 
 
@@ -150,10 +150,15 @@ MUN <- readRDS(paste0(here::here(), "/Bases/municipios_2015.RDS"))
 nom_municipios <- sjlabelled::get_labels(MUN$NOM_MUN) %>% as.factor()
 municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 
-# Zonas metropolitanas 2015
-ZM_2015 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2015.xlsx"), sheet = "ZM_2015")
+# Zonas metropolitanas 2020
+ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"), 
+                      startRow = 7, 
+                       skipEmptyRows = TRUE) %>%
+            select(CVE_ZM, NOM_ZM, CVE_ENT, NOM_ENT, CVE_MUN, NOM_MUN, MC, CF) %>%
+             mutate(CVE_ENT = stringr::str_pad(.$CVE_ENT, width = 3, side = c("left"), pad = "0"),
+                    CVE_MUN = stringr::str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0"))
 #Claves de las zonas metropolitanas 2015
-zm <- ZM_2015 %>% select(CVE_ZM) %>% unique() %>% pull
+zm <- ZM_2020 %>% select(CVE_ZM) %>% unique() %>% pull
 ```
 
 
@@ -180,15 +185,15 @@ data <- mydata %>%
                                              `30 a 59 años` = 4, 
                                              `60 años y más` = 5))) %>%
           # Se genera una indicadora de zm 
-          mutate(I_ZM_2015 = ifelse(is.na(.$CVE_ZM), '0', '1'),
-                 I_TRAB_ZM_2015 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
+          mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+                 I_TRAB_ZM_2020 = ifelse(is.na(.$CVE_ZM_TRABAJO), '0', '1')) %>%
           # Se clasifican a los migrantes internos 
           mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_TRABAJO ~ 'Pertenecen a la Zona Metropolitana', #Trabajan en el mismo municipio
-                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2015 %in% '1' & .$I_TRAB_ZM_2015 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
-                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2015 %in% '1' & .$I_TRAB_ZM_2015 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
-                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2015 %in% '1' & .$I_TRAB_ZM_2015 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
-                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2015 %in% '0' & .$I_TRAB_ZM_2015 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
-                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2015 %in% '0' & .$I_TRAB_ZM_2015 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_TRABAJO ~ "Pertenecen a la Zona Metropolitana", #Trabajan en otro municipio dentro de la misma zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_TRABAJO ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio pero de otra zona metropolitana
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '1' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Trabajan en otro municipio que no pertenece a la zona metropolitana pero viven en una ZM
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
+                                  .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
                                   ))
 ```
 
@@ -411,11 +416,11 @@ Indicadores_P <- function(Variable, df.claves = CVE_ZM, grupo = municipios,  Ori
 #Clave de municipios   
 CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.data.frame()
 #Clave de las zonas metropolitanas 2015   
-CVE_ZM <- ZM_2015 %>% select(CVE_ZM) %>% distinct()
+CVE_ZM <- ZM_2020 %>% select(CVE_ZM) %>% distinct()
 
 # Convertir el data frame en data.table para mayor eficiencia
 dt <- data %>% 
-       filter(I_ZM_2015 %in% '1' | I_TRAB_ZM_2015 %in% '1') %>%
+       filter(I_ZM_2020 %in% '1' | I_TRAB_ZM_2020 %in% '1') %>%
         as.data.table()
 
 # Ejemplo
@@ -488,7 +493,7 @@ writeData(wb, 12, Indicadores("TIE_TRASLADO_TRAB", df.claves = CVE_MUN, grupo = 
 writeData(wb, 13, Indicadores("MED_TRASLADO_TRAB1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores("MED_TRASLADO_TRAB2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores("MED_TRASLADO_TRAB3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel municipal 2015.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel municipal 2015.xlsx"), overwrite = TRUE)
 ```
 
 
@@ -527,7 +532,7 @@ writeData(wb, 12, Indicadores_P("TIE_TRASLADO_TRAB", df.claves = CVE_MUN, grupo 
 writeData(wb, 13, Indicadores_P("MED_TRASLADO_TRAB1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores_P("MED_TRASLADO_TRAB2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores_P("MED_TRASLADO_TRAB3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel municipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel municipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
 #### Por zonas metropolitanas {.tabset .tabset-pills}
@@ -567,7 +572,7 @@ writeData(wb, 12, Indicadores("TIE_TRASLADO_TRAB", df.claves = CVE_ZM, grupo = z
 writeData(wb, 13, Indicadores("MED_TRASLADO_TRAB1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores("MED_TRASLADO_TRAB2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores("MED_TRASLADO_TRAB3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel municipal 2015 (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel municipal 2015 (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ##### Valores relativos
@@ -605,7 +610,7 @@ writeData(wb, 12, Indicadores_P("TIE_TRASLADO_TRAB", df.claves = CVE_ZM, grupo =
 writeData(wb, 13, Indicadores_P("MED_TRASLADO_TRAB1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores_P("MED_TRASLADO_TRAB2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores_P("MED_TRASLADO_TRAB3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel municipal 2015_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel municipal 2015_Porcentajes (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ### Nivel intramunicipal {.tabset .tabset-pills}
@@ -662,7 +667,7 @@ writeData(wb, 12, Indicadores("TIE_TRASLADO_TRAB", df.claves = CVE_MUN, grupo = 
 writeData(wb, 13, Indicadores("MED_TRASLADO_TRAB1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores("MED_TRASLADO_TRAB2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores("MED_TRASLADO_TRAB3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015.xlsx"), overwrite = TRUE)
 ```
 
 
@@ -701,7 +706,7 @@ writeData(wb, 12, Indicadores_P("TIE_TRASLADO_TRAB", df.claves = CVE_MUN, grupo 
 writeData(wb, 13, Indicadores_P("MED_TRASLADO_TRAB1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores_P("MED_TRASLADO_TRAB2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores_P("MED_TRASLADO_TRAB3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
 #### Por zonas metropolitanas {.tabset .tabset-pills}
@@ -741,7 +746,7 @@ writeData(wb, 12, Indicadores("TIE_TRASLADO_TRAB", df.claves = CVE_ZM, grupo = z
 writeData(wb, 13, Indicadores("MED_TRASLADO_TRAB1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores("MED_TRASLADO_TRAB2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores("MED_TRASLADO_TRAB3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015 (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015 (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ##### Valores relativos
@@ -779,7 +784,7 @@ writeData(wb, 12, Indicadores_P("TIE_TRASLADO_TRAB", df.claves = CVE_ZM, grupo =
 writeData(wb, 13, Indicadores_P("MED_TRASLADO_TRAB1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores_P("MED_TRASLADO_TRAB2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores_P("MED_TRASLADO_TRAB3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel intramunicipal 2015_Porcentajes (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ### Nivel intermunicipal {.tabset .tabset-pills}
@@ -836,7 +841,7 @@ writeData(wb, 12, Indicadores("TIE_TRASLADO_TRAB", df.claves = CVE_MUN, grupo = 
 writeData(wb, 13, Indicadores("MED_TRASLADO_TRAB1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores("MED_TRASLADO_TRAB2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores("MED_TRASLADO_TRAB3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(),  "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015.xlsx"), overwrite = TRUE)
 ```
 
 
@@ -875,7 +880,7 @@ writeData(wb, 12, Indicadores_P("TIE_TRASLADO_TRAB", df.claves = CVE_MUN, grupo 
 writeData(wb, 13, Indicadores_P("MED_TRASLADO_TRAB1", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores_P("MED_TRASLADO_TRAB2", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores_P("MED_TRASLADO_TRAB3", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
 ```
 
 #### Por zonas metropolitanas {.tabset .tabset-pills}
@@ -915,7 +920,7 @@ writeData(wb, 12, Indicadores("TIE_TRASLADO_TRAB", df.claves = CVE_ZM, grupo = z
 writeData(wb, 13, Indicadores("MED_TRASLADO_TRAB1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores("MED_TRASLADO_TRAB2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores("MED_TRASLADO_TRAB3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015 (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015 (ZM).xlsx"), overwrite = TRUE)
 ```
 
 ##### Valores relativos
@@ -953,7 +958,7 @@ writeData(wb, 12, Indicadores_P("TIE_TRASLADO_TRAB", df.claves = CVE_ZM, grupo =
 writeData(wb, 13, Indicadores_P("MED_TRASLADO_TRAB1", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 14, Indicadores_P("MED_TRASLADO_TRAB2", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
 writeData(wb, 15, Indicadores_P("MED_TRASLADO_TRAB3", df.claves = CVE_ZM, grupo = zm, Origen = "CVE_ZM", Destino = "CVE_ZM_TRABAJO", filtro = "(EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)"), colNames = TRUE)
-saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015_Porcentajes (ZM).xlsx"), overwrite = TRUE)
+saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/03_Movilidad laboral/Base 2020/SDEM/Indicadores sociodemograficos a nivel intermunicipal 2015_Porcentajes (ZM).xlsx"), overwrite = TRUE)
 ```
 
 # Referencias
