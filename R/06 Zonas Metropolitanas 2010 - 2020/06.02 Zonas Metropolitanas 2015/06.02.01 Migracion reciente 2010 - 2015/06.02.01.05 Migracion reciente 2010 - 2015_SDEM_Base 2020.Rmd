@@ -29,7 +29,7 @@ rm(list = ls())
 setwd(here::here())
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval = FALSE}
 #Font Stlye
 require(showtext)
 library(extrafont)
@@ -124,7 +124,7 @@ ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"),
              mutate(CVE_ENT = stringr::str_pad(.$CVE_ENT, width = 3, side = c("left"), pad = "0"),
                     CVE_MUN = stringr::str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0"))
 #Claves de las zonas metropolitanas 2015
-zm <- ZM_2015 %>% select(CVE_ZM) %>% unique() %>% pull
+zm <- ZM_2020 %>% select(CVE_ZM) %>% unique() %>% pull
 ```
 
 
@@ -151,15 +151,15 @@ data <- mydata %>%
                                              `30 a 59 años` = 4, 
                                              `60 años y más` = 5)))  %>%
         # Se genera una indicadora de zm 
-        mutate(I_ZM_2015 = ifelse(is.na(.$CVE_ZM), '0', '1'),
-               I_RES5A_ZM_2015 = ifelse(is.na(.$CVE_ZM_RES), '0', '1')) %>%
+        mutate(I_ZM_2020 = ifelse(is.na(.$CVE_ZM), '0', '1'),
+               I_RES5A_ZM_2020 = ifelse(is.na(.$CVE_ZM_RES), '0', '1')) %>%
         # Se clasifican a los migrantes internos 
         mutate(I_ZM = case_when(.$CVE_MUN == .$CVE_MUN_RES ~ 'Pertenecen a la Zona Metropolitana', #Residentes
-                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '1' & .$I_RES5A_ZM_2015 %in% '1' & .$CVE_ZM == .$CVE_ZM_RES ~ "Pertenecen a la Zona Metropolitana", #Migrantes que residen en la misma zona metropolitana
-                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '1' & .$I_RES5A_ZM_2015 %in% '1' & .$CVE_ZM != .$CVE_ZM_RES ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residen en otra zona metropolitana
-                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '1' & .$I_RES5A_ZM_2015 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian fuera de la zona metropolitana
-                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '0' & .$I_RES5A_ZM_2015 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian dentro de una zona metropolitana
-                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2015 %in% '0' & .$I_RES5A_ZM_2015 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Migrantes que no residen en la zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM == .$CVE_ZM_RES ~ "Pertenecen a la Zona Metropolitana", #Migrantes que residen en la misma zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '1' & .$CVE_ZM != .$CVE_ZM_RES ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residen en otra zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '1' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian fuera de la zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Migrantes que residian dentro de una zona metropolitana
+                                .$CVE_MUN != .$CVE_MUN_RES & .$I_ZM_2020 %in% '0' & .$I_RES5A_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Migrantes que no residen en la zona metropolitana
         ))
 ```
 
@@ -381,11 +381,11 @@ Indicadores_P <- function(Variable, df.claves = CVE_ZM, grupo = municipios,  Ori
 #Clave de municipios   
 CVE_MUN <- MUN %>% select(CVE_MUN) %>% filter(CVE_MUN %in% municipios) %>% as.data.frame()
 #Clave de las zonas metropolitanas 2015   
-CVE_ZM <- ZM_2015 %>% select(CVE_ZM) %>% distinct()
+CVE_ZM <- ZM_2020 %>% select(CVE_ZM) %>% distinct()
 
 # Convertir el data frame en data.table para mayor eficiencia
 dt <- data %>% 
-       filter(I_ZM_2015 %in% '1' | I_RES5A_ZM_2015 %in% '1') %>%
+       filter(I_ZM_2020 %in% '1' | I_RES5A_ZM_2020 %in% '1') %>%
         as.data.table()
 
 # Ejemplo
@@ -479,6 +479,7 @@ writeData(wb, 9, Indicadores_P("SITUA_CONYUGAL", df.claves = CVE_MUN, grupo = mu
 writeData(wb, 10, Indicadores_P("NIVACAD", df.claves = CVE_MUN, grupo = municipios, Origen = "CVE_MUN", Destino = "CVE_MUN_RES", filtro = "EDAD >= 5 & EDAD <= 130"), colNames = TRUE)
 saveWorkbook(wb, file = paste0(here::here(), "/Output/Municipio/06_Zonas Metropolitanas/2015/01_Migracion reciente/Base 2020/SDEM/Indicadores sociodemograficos a nivel municipal 2015_Porcentajes.xlsx"), overwrite = TRUE)
 ```
+
 
 #### Por zonas metropolitanas {.tabset .tabset-pills}
 

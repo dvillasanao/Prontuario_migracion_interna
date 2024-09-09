@@ -121,7 +121,7 @@ ZM_2020 <- read.xlsx(paste0(here::here(), "/Bases/Municipio/ZM_2020.xlsx"),
              mutate(CVE_ENT = stringr::str_pad(.$CVE_ENT, width = 3, side = c("left"), pad = "0"),
                     CVE_MUN = stringr::str_pad(.$CVE_MUN, width = 6, side = c("left"), pad = "0"))
 
-#Claves de las zonas metropolitanas 2015
+#Claves de las zonas metropolitanas 2020
 zm <- ZM_2020 %>% select(CVE_ZM) %>% unique() %>% pull
 ```
 
