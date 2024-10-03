@@ -117,23 +117,33 @@ Bases
 		✓	06.01.01.01 Migración reciente 2005 - 2010
 			06.01.01.02 Migración reciente 2005 - 2010_SDEM
 			06.01.01.03 Migración reciente 2005 - 2010_Graficos
+			06.01.01.04 Migración reciente 2005 - 2010_Cambio de base 2020
+			06.01.01.05 Migración reciente 2005 - 2010_Cambio de base 2020_SDEM
 		06.01.03 Movilidad laboral 2010
 		✓	06.01.03.01 Movilidad laboral 2010
 			06.01.03.02 Movilidad laboral 2010_SDEM
 			06.01.03.03 Movilidad laboral 2010_Graficos
+			06.01.03.04 Movilidad laboral 2005 - 2010_Cambio de base 2020
+			06.01.03.05 Movilidad laboral 2005 - 2010_Cambio de base 2020_SDEM
 	06.02 Zonas Metropolitanas 2015 
 		06.02.01 Migración reciente 2010 - 2015 (10 Scripts)
 		✓	06.02.01.01 Migración reciente 2010 - 2015
 			06.02.01.02 Migración reciente 2010 - 2015_SDEM
 			06.02.01.03 Migración reciente 2010 - 2015_Graficos
+			06.02.01.04 Migración reciente 2010 - 2015_Cambio de base 2020
+			06.02.01.05 Migración reciente 2010 - 2015_Cambio de base 2020_SDEM
 		06.02.03 Movilidad laboral 2015
 		✓	06.02.03.01 Movilidad laboral 2015
 			06.02.03.02 Movilidad laboral 2015_SDEM
 			06.02.03.03 Movilidad laboral 2015_Graficos
+			06.02.03.04 Movilidad laboral 2015_Cambio de base 2020
+			06.02.03.05 Movilidad laboral 2015_Cambio de base 2020_SDEM
 		06.02.04 Movilidad estudiantil 2015
 		✓	06.02.04.01 Movilidad estudiantil 2015
 			06.02.04.02 Movilidad estudiantil 2015_SDEM
 			06.02.04.03 Movilidad estudiantil 2015_Graficos
+			06.02.04.04 Movilidad estudiantil 2015_Cambio de base 2020
+			06.02.04.05 Movilidad estudiantil 2015_Cambio de base 2020_SDEM
 	06.03 Zonas Metropolitanas 2020 
 		06.03.01 Migración reciente 2015 - 2020 (10 Scripts)
 		✓	06.03.01.01 Migración reciente 2015 - 2020 
