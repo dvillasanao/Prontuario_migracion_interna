@@ -200,7 +200,7 @@ levels(mydata$NOM_ENT) <- estados
 
 Se identifica a la población ocupada de 15 años y más.
 
-`filter((EDAD >= 12 & EDAD != 999) & (CONACT >= 10 & CONACT <= 20))'.`
+`filter((EDAD >= 15 & EDAD != 999) & (CONACT >= 10 & CONACT <= 20))'.`
 
 ```{r}
 # Clave de los estados
