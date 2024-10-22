@@ -195,9 +195,9 @@ municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 levels(mydata$NOM_ENT) <- estados
 ```
 
-**Población ocupada de 12 años y más**
+**Población ocupada de 15 años y más**
 
-Se identifica a la población ocupada de 12 años y más.
+Se identifica a la población ocupada de 15 años y más.
 
 `filter((EDAD >= 12 & EDAD != 999) & (CONACT >= 10 & CONACT <= 20))'.`
 
@@ -205,25 +205,25 @@ Se identifica a la población ocupada de 12 años y más.
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
+                  subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
                    filter(CVE_MUN_TRABAJO %in% municipios)  # Filtro del lugar de trabajo dentro del país. 
 ```
 
-**Población ocupada de 12 años y más**
+**Población ocupada de 15 años y más**
 
 ```{r, echo = FALSE}
-# Población ocupada de 12 años y más
+# Población ocupada de 15 años y más
 tabla <- mydata %>%
           as.data.frame() %>%
            mutate(EDAD = as.numeric(.$EDAD)) %>%
-            subset((EDAD >= 12 & EDAD <= 130)) %>%
+            subset((EDAD >= 15 & EDAD <= 130)) %>%
              summarise(P.15ymas = sum(.$FACTOR))
         
 as.integer(tabla) %>%  
  as.data.frame() %>%
   mutate(across(where(is.numeric), ~ prettyNum(., big.mark = " ", preserve.width = "none"))) %>%
    gt() %>% 
-    tab_header(title = "Población ocupada de 12 años y más") %>%
+    tab_header(title = "Población ocupada de 15 años y más") %>%
      tab_options(heading.title.font.size = 12, 
                  heading.align = "center",
                  heading.subtitle.font.size = 10,
@@ -234,14 +234,14 @@ as.integer(tabla) %>%
        as_raw_html()
 ```
 
-**Población economicámente activa de 12 años y más**
+**Población economicámente activa de 15 años y más**
 
 ```{r, echo = FALSE}
-# Población economicámente activa de 12 años y más
+# Población economicámente activa de 15 años y más
 tabla <- mydata %>%
           as.data.frame() %>%
            mutate(EDAD = as.numeric(.$EDAD)) %>%
-            subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
+            subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
              filter(CVE_MUN_TRABAJO %in% municipios) %>%
               summarise(P.ocupada = sum(.$FACTOR))
 
@@ -249,7 +249,7 @@ as.integer(tabla) %>%
  as.data.frame() %>%
   mutate(across(where(is.numeric), ~ prettyNum(., big.mark = " ", preserve.width = "none"))) %>%
    gt() %>% 
-    tab_header(title = "Población economicámente activa de 12 años y más") %>%
+    tab_header(title = "Población economicámente activa de 15 años y más") %>%
      tab_options(heading.title.font.size = 12, 
                  heading.align = "center",
                  heading.subtitle.font.size = 10,
@@ -264,7 +264,7 @@ as.integer(tabla) %>%
 
 ## Migración laboral {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 12 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 15 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -272,7 +272,7 @@ options(survey.lonely.psu = "adjust")
 MC <- mydata %>%
        as.data.frame() %>%
         mutate(EDAD = as.numeric(.$EDAD)) %>%
-         subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
+         subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
           filter(ENT_PAIS_TRAB %in% estados) %>%
            svydesign(data = ., id = ~UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
@@ -589,7 +589,7 @@ Migrantes <- Migrantes %>%
 rownames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
 colnames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
 
-# Matiz migración laboral (Población de 12 años y más)
+# Matiz migración laboral (Población de 15 años y más)
 tabla <- Migrantes %>% 
           as.data.frame() %>%
            tibble::rownames_to_column(var = "rn") %>%
@@ -778,11 +778,11 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-###################### Población ocupada de 12 años y más ###############################
+###################### Población ocupada de 15 años y más ###############################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
+                  subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
                    group_by(CVE_ENT) %>%
                     summarise(Pob.ocupada = sum(FACTOR)) 
 
@@ -903,7 +903,7 @@ Pob.ocupada <- mydata %>%
                                                     .$ENT_PAIS_TRAB %in% "999" ~ "999",
                                                     .$MUN_TRAB %in% "999" ~ "999")) %>%
                   mutate(EDAD = as.numeric(.$EDAD)) %>%
-                   subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16) 
+                   subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16) 
                           ) %>%
                     select(FACTOR, ESTRATO, UPM, CVE_MUN, CVE_MUN_TRABAJO, EDAD, CONACT) %>%
                      filter(CVE_MUN_TRABAJO %in% municipios) 
@@ -1236,11 +1236,11 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-############# Población ocupada de 12 años y más ###############################
+############# Población ocupada de 15 años y más ###############################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)
+                  subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)
                          ) %>%
                    group_by(CVE_MUN) %>%
                     summarise(Pob.ocupada = sum(FACTOR)) 
@@ -1358,7 +1358,7 @@ Pob.ocupada <- mydata %>%
                                                  .$CVE_ENT != .$ENT_PAIS_TRAB & .$ENT_PAIS_TRAB %in% estados ~ 2,
                                                  .$ENT_PAIS_TRAB %nin% estados ~ 3)) %>%
                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                    subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
+                    subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
                      select(FACTOR, ESTRATO, UPM, CVE_MUN, CVE_MUN_TRABAJO, EDAD, CONACT, I_Migracion) %>%
                       filter(CVE_MUN_TRABAJO %in% municipios & I_Migracion == 1) 
 
@@ -1782,11 +1782,11 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-################## Población ocupada de 12 años y más ##########################
+################## Población ocupada de 15 años y más ##########################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
+                  subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
                    group_by(CVE_MUN) %>%
                     summarise(Pob.ocupada = sum(FACTOR)) 
 
@@ -1903,7 +1903,7 @@ Pob.ocupada <- mydata %>%
                                                  .$CVE_ENT != .$ENT_PAIS_TRAB & .$ENT_PAIS_TRAB %in% estados ~ 2,
                                                  .$ENT_PAIS_TRAB %nin% estados ~ 3)) %>%
                    mutate(EDAD = as.numeric(.$EDAD)) %>%
-                    subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
+                    subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
                      select(FACTOR, ESTRATO, UPM, CVE_MUN, CVE_MUN_TRABAJO, EDAD, CONACT, I_Migracion) %>%
                       filter(CVE_MUN_TRABAJO %in% municipios & I_Migracion == 2) 
 
@@ -2357,11 +2357,11 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-################## Población ocupada de 12 años y más ##########################
+################## Población ocupada de 15 años y más ##########################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
+                  subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 16)) %>%
                    group_by(CVE_MUN) %>%
                     summarise(Pob.ocupada = sum(FACTOR)) 
 

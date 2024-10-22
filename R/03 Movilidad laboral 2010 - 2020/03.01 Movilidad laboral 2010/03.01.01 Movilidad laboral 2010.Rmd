@@ -174,9 +174,9 @@ municipios <- sjlabelled::get_labels(MUN$CVE_MUN) %>% as.factor()
 levels(mydata$NOM_ENT) <- estados
 ```
 
-**Población ocupada de 12 años y más**
+**Población ocupada de 15 años y más**
 
-Se identifica a la población ocupada de 12 años y más.
+Se identifica a la población ocupada de 15 años y más.
 
 `filter((EDAD >= 12 & EDAD != 999) & (CONACT >= 10 & CONACT <= 20))'.`
 
@@ -188,10 +188,10 @@ Pob.ocupada <- mydata %>%
                    filter(CVE_MUN_TRABAJO %in% municipios)  # Filtro del lugar de trabajo dentro del país. 
 ```
 
-**Población ocupada de 12 años y más**
+**Población ocupada de 15 años y más**
 
 ```{r, echo = FALSE}
-# Población ocupada de 12 años y más
+# Población ocupada de 15 años y más
 tabla <- mydata %>%
           as.data.frame() %>%
            mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -202,7 +202,7 @@ as.integer(tabla) %>%
  as.data.frame() %>%
   mutate(across(where(is.numeric), ~ prettyNum(., big.mark = " ", preserve.width = "none"))) %>%
    gt() %>% 
-    tab_header(title = "Población ocupada de 12 años y más") %>%
+    tab_header(title = "Población ocupada de 15 años y más") %>%
      tab_options(heading.title.font.size = 12, 
                  heading.align = "center",
                  heading.subtitle.font.size = 10,
@@ -213,10 +213,10 @@ as.integer(tabla) %>%
        as_raw_html()
 ```
 
-**Población economicámente activa de 12 años y más**
+**Población economicámente activa de 15 años y más**
 
 ```{r, echo = FALSE}
-# Población economicámente activa de 12 años y más
+# Población economicámente activa de 15 años y más
 tabla <- mydata %>%
           as.data.frame() %>%
            mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -228,7 +228,7 @@ as.integer(tabla) %>%
  as.data.frame() %>%
   mutate(across(where(is.numeric), ~ prettyNum(., big.mark = " ", preserve.width = "none"))) %>%
    gt() %>% 
-    tab_header(title = "Población economicámente activa de 12 años y más") %>%
+    tab_header(title = "Población economicámente activa de 15 años y más") %>%
      tab_options(heading.title.font.size = 12, 
                  heading.align = "center",
                  heading.subtitle.font.size = 10,
@@ -243,7 +243,7 @@ as.integer(tabla) %>%
 
 ## Migración laboral {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 12 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 15 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -568,7 +568,7 @@ Migrantes <- Migrantes %>%
 rownames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
 colnames(Migrantes) <- stringr::str_wrap(nom_estados, 50)
 
-# Matiz movilidad laboral (Población de 12 años y más)
+# Matiz movilidad laboral (Población de 15 años y más)
 tabla <- Migrantes %>% 
           as.data.frame() %>%
            tibble::rownames_to_column(var = "rn") %>%
@@ -757,7 +757,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-###################### Población ocupada de 12 años y más ###############################
+###################### Población ocupada de 15 años y más ###############################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -1215,7 +1215,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-############# Población ocupada de 12 años y más ###############################
+############# Población ocupada de 15 años y más ###############################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -1762,7 +1762,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-################## Población ocupada de 12 años y más ##########################
+################## Población ocupada de 15 años y más ##########################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
@@ -2337,7 +2337,7 @@ Pob.Total <- mydata %>%
                 summarise(Pob.Total = sum(FACTOR)) 
 
 ################################################################################
-################## Población ocupada de 12 años y más ##########################
+################## Población ocupada de 15 años y más ##########################
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
