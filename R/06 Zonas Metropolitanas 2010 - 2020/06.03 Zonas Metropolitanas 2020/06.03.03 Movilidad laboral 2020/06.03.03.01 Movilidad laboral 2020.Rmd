@@ -214,7 +214,7 @@ nom_zm <- sjlabelled::get_labels(mydata$NOM_ZM)[-2]
 
 ### Matrices
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 12 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población ocupada de 15 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -233,7 +233,7 @@ MC <- mydata %>%
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
                                 )) %>%
-         filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+         filter((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios) %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
@@ -1023,7 +1023,7 @@ Pob.Total <- mydata %>%
 Pob.ocupada <- mydata %>%
               as.data.frame() %>%
                mutate(EDAD = as.numeric(.$EDAD)) %>%
-                subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                  group_by(CVE_MUN) %>%
                   summarise(Pob.ocupada = sum(FACTOR)) 
 
@@ -1114,7 +1114,7 @@ tabla[1:20,] %>%
 
 ### Matrices
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 12 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 15 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -1133,7 +1133,7 @@ MC <- mydata %>%
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
                                 )) %>%
-         filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+         filter((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana") %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
@@ -1928,7 +1928,7 @@ Pob.Total <- mydata %>%
 Pob.ocupada <- mydata %>%
               as.data.frame() %>%
                mutate(EDAD = as.numeric(.$EDAD)) %>%
-                subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                  group_by(CVE_MUN) %>%
                   summarise(Pob.ocupada = sum(FACTOR)) 
 
@@ -2018,7 +2018,7 @@ tabla[1:20,] %>%
 
 ## Migración intermunicipal {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 12 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 15 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -2037,7 +2037,7 @@ MC <- mydata %>%
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
                                 )) %>%
-         filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+         filter((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
@@ -2859,7 +2859,7 @@ Pob.Total <- mydata %>%
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                  subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                    group_by(CVE_MUN) %>%
                     summarise(Pob.ocupada = sum(FACTOR)) 
 
@@ -2948,7 +2948,7 @@ tabla[1:20,] %>%
 
 ## Movilidad metropolitana {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 12 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 15 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -2967,7 +2967,7 @@ MC <- mydata %>%
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
                                 )) %>%
-         filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+         filter((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios) %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
@@ -3320,7 +3320,7 @@ Pob.Total <- mydata %>%
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                  subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                    group_by(CVE_ZM) %>%
                     summarise(Pob.ocupada = sum(FACTOR)) 
 
@@ -3430,7 +3430,7 @@ tabla[1:20,] %>%
 
 ## Migración intrametropolitana {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 12 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 15 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -3449,7 +3449,7 @@ MC <- mydata %>%
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
                                 )) %>%
-         filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+         filter((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "Pertenecen a la Zona Metropolitana") %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
@@ -3493,7 +3493,7 @@ Pob.Total <- mydata %>%
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                  subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                    group_by(CVE_ZM) %>%
                     summarise(Pob.ocupada = sum(FACTOR))  
 
@@ -3591,7 +3591,7 @@ tabla[1:20,] %>%
 
 ## Migración intermetropolitana {.tabset .tabset-pills}
 
-Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 12 años y más.
+Se utiliza la paquetería `survey` para poder trabajar con la muestra del cuestionario ampliado, en la cual se selecciona a la población de 15 años y más.
 
 ```{r, eval = FALSE}
 options(survey.lonely.psu = "adjust")
@@ -3610,7 +3610,7 @@ MC <- mydata %>%
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '1' ~ 'No pertenecen a la Zona Metropolitana', #Entran a trabajar a la zona metropolitana pero no pertecen a la ZM
                                 .$CVE_MUN != .$CVE_MUN_TRABAJO & .$I_ZM_2020 %in% '0' & .$I_TRAB_ZM_2020 %in% '0' ~ 'No pertenecen a la Zona Metropolitana' #Trabajan en otro municipio que no es ZM y no residen en una ZM
                                 )) %>%
-         filter((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+         filter((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
           filter(CVE_MUN_TRABAJO %in% municipios & .$I_ZM %in% "No pertenecen a la Zona Metropolitana") %>%
            svydesign(data = ., id = ~ UPM, strata = ~ESTRATO, weight = ~FACTOR, nest = T)
 
@@ -3654,7 +3654,7 @@ Pob.Total <- mydata %>%
 Pob.ocupada <- mydata %>%
                 as.data.frame() %>%
                  mutate(EDAD = as.numeric(.$EDAD)) %>%
-                  subset((EDAD >= 12 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
+                  subset((EDAD >= 15 & EDAD <= 130) & (CONACT >= 10 & CONACT <= 20)) %>%
                    group_by(CVE_ZM) %>%
                     summarise(Pob.ocupada = sum(FACTOR)) 
 
